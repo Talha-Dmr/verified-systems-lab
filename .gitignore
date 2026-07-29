@@ -1,0 +1,4 @@
+.tools/
+verified-compiler/.lake/
+weak-memory/.lake/
+weak-memory/build/

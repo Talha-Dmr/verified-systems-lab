@@ -1,0 +1,3 @@
+* text=auto eol=lf
+*.pdf binary
+references/msc2020/MSC_2020.* -text
