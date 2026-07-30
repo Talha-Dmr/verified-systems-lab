@@ -19,9 +19,10 @@ This module makes that remaining boundary executable and auditable:
 4. `AcceptedExecution.certifiedSchedule` constructs the certificate required
    by the graph-to-linearizability theorem.
 
-The event order is currently supplied by the finite graph enumeration and
-certified to respect `po` and all of `eco`. A later topological-order theorem can
-replace that witness with one constructed from graph acyclicity.
+The accepted-execution interface below uses the finite graph enumeration as
+its event order and certifies that it respects `po` and all of `eco`.
+`WeakMemory.TreiberSchedule` separately constructs an arbitrary respecting
+order from explicit acyclicity of the combined scheduling relation.
 -/
 
 /--

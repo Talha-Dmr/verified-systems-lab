@@ -12,9 +12,10 @@ three layers separate:
 
 The theorem `Treiber.commitTrace_linearizable` proves that every abstract
 commit trace is a legal sequential stack history. `TreiberRA` proves the next
-bridge for a release-acquire operational model, while `TreiberRC11` introduces
-the finite execution-graph layer and states the remaining scheduling
-obligation. We deliberately do not claim a complete C11 semantics.
+bridge for a release-acquire operational model, `TreiberRC11` introduces the
+finite execution-graph layer, and `TreiberSchedule` constructs a respecting
+event order from an explicit acyclicity premise. We deliberately do not claim
+a complete C11 semantics.
 -/
 
 inductive MemoryOrder where

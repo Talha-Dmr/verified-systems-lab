@@ -31,6 +31,12 @@ theorems.
   acceptance exactly characterizes the corresponding operational judgments
 - `acceptedExecution_linearizable`, closing the proof chain for graphs whose
   supplied order respects `po` and `eco` and passes deterministic replay
+- `TreiberRC11.Graph.OrderEdge`, the combined `po ∪ eco` scheduling
+  constraint, and `Graph.OrderAcyclic`, which rules out cycles in its
+  transitive closure
+- `exists_respectsGraph_of_orderAcyclic`, constructing a finite topological
+  schedule and proving that it covers every event exactly once and respects
+  both constituent orders
 
 ## Exactly What Is Proved?
 
@@ -72,9 +78,14 @@ source directly.
 The RC11-style and replay layers now prove:
 
 ```text
+well-formed finite graph
+ + acyclic transitive closure of (po ∪ eco)
+                 ↓ proved
+ order respecting po and eco
+
 core-consistent graph
- + order respecting po and eco
- + successful executable replay
+ + respecting order
+ + successful executable replay in that order
                  ↓ proved
  certified operational schedule
                  ↓ proved
@@ -82,10 +93,11 @@ core-consistent graph
 ```
 
 Executable replay is not treated as an oracle: its acceptance is proved
-equivalent to the inductive operational semantics. The remaining mathematical
-obligation is stronger: derive a suitable event order and successful replay
-from relational graph conditions and Treiber-specific publication invariants,
-rather than supplying the order and replay equation.
+equivalent to the inductive operational semantics. Combined-order acyclicity
+is an explicit premise: the current `CoreConsistent` fields do not silently
+claim to imply it. The main remaining mathematical obligation is to derive
+successful replay of the constructed schedule from relational graph
+conditions and Treiber-specific publication invariants.
 
 ## Model References
 
@@ -147,8 +159,10 @@ implementation. The Lean proof boundary described above remains unchanged.
 
 ## Next Precise Milestone
 
-Define the combined `po ∪ eco` ordering constraint and construct a finite
-topological schedule from its acyclicity. Then derive replay acceptance from
-explicit Treiber publication, freshness, payload, and next-pointer invariants.
-Until those derivations are complete, the project does not claim that the C
-Treiber stack is fully verified under RC11.
+State explicit Treiber publication, allocation freshness, payload, and
+next-pointer invariants over the RC11 graph. Use them to prove that replay of
+the constructed topological schedule succeeds. A separate model-level
+obligation is to justify `OrderAcyclic` from the intended RC11 assumptions, or
+to retain it visibly as part of the accepted graph interface. Until those
+derivations are complete, the project does not claim that the C Treiber stack
+is fully verified under RC11.
