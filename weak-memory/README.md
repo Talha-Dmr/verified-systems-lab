@@ -37,6 +37,14 @@ theorems.
 - `exists_respectsGraph_of_orderAcyclic`, constructing a finite topological
   schedule and proving that it covers every event exactly once and respects
   both constituent orders
+- `TreiberRC11.ReplayInvariant`, stating fresh and unique node allocation,
+  immutable pop publication, an empty initial head, and genuinely stale failed
+  compare-exchanges
+- `replay?_eq_some_advanceUncheckedList`, deriving successful executable
+  replay from a respecting order and those explicit invariants
+- `linearizable_of_replayInvariant`, constructing the schedule and final state
+  and proving that the resulting completed history is a legal sequential
+  stack history
 
 ## Exactly What Is Proved?
 
@@ -62,12 +70,12 @@ In `WeakMemory/TreiberRA.lean`, nodes are immutable and enter the shared heap
 only at a successful release push CAS. Pop observations are acquiring. Failed
 CAS attempts are stuttering steps that do not change shared state.
 
-The remaining boundary is:
+The remaining source-level boundary is:
 
 ```text
-full C11/RC11 execution graph
-            ↓ not yet proved
-operational RA Treiber execution
+C11 Treiber source / complete RC11 semantics
+                    ↓ not yet proved
+core-consistent graph + OrderAcyclic + ReplayInvariant
 ```
 
 The current theorems establish the linearization-point core, not yet the full
@@ -78,26 +86,26 @@ source directly.
 The RC11-style and replay layers now prove:
 
 ```text
-well-formed finite graph
+core-consistent finite graph
  + acyclic transitive closure of (po ∪ eco)
-                 ↓ proved
- order respecting po and eco
-
-core-consistent graph
- + respecting order
- + successful executable replay in that order
-                 ↓ proved
- certified operational schedule
-                 ↓ proved
-    legal sequential stack history
+ + explicit Treiber ReplayInvariant
+                    ↓ proved
+  constructed order respecting po and eco
+                    ↓ proved
+       successful executable replay
+                    ↓ proved
+       certified operational schedule
+                    ↓ proved
+          legal sequential stack history
 ```
 
 Executable replay is not treated as an oracle: its acceptance is proved
 equivalent to the inductive operational semantics. Combined-order acyclicity
 is an explicit premise: the current `CoreConsistent` fields do not silently
-claim to imply it. The main remaining mathematical obligation is to derive
-successful replay of the constructed schedule from relational graph
-conditions and Treiber-specific publication invariants.
+claim to imply it. The replay proof uses `rf`, modification-order totality,
+and reads-before to show that every event observes the current head. The
+remaining heap obligations are visible in `ReplayInvariant`; they are not
+hidden inside a replay-success assumption.
 
 ## Model References
 
@@ -159,10 +167,11 @@ implementation. The Lean proof boundary described above remains unchanged.
 
 ## Next Precise Milestone
 
-State explicit Treiber publication, allocation freshness, payload, and
-next-pointer invariants over the RC11 graph. Use them to prove that replay of
-the constructed topological schedule succeeds. A separate model-level
+Define a typed or generative Treiber candidate-graph interface that records
+which push allocates each node and how each algorithm event is produced. Prove
+that its local construction rules imply `ReplayInvariant`, rather than asking
+graph clients to supply those fields separately. A parallel model-level
 obligation is to justify `OrderAcyclic` from the intended RC11 assumptions, or
-to retain it visibly as part of the accepted graph interface. Until those
-derivations are complete, the project does not claim that the C Treiber stack
-is fully verified under RC11.
+to retain it visibly as part of the accepted graph interface. Until the
+source-to-graph and complete memory-model links are proved, the project does
+not claim that the C Treiber stack is fully verified under RC11.

@@ -12,6 +12,8 @@ graph when the union of those two ordering constraints is acyclic.
 The acyclicity premise is explicit. `CoreConsistent` rules out the RC11 cycles
 represented by its no-thin-air and coherence fields, but it does not by itself
 state acyclicity of the full `po ∪ eco` scheduling relation.
+`WeakMemory.TreiberInvariant` consumes the resulting order and proves replay
+acceptance under explicit Treiber-specific graph invariants.
 -/
 
 namespace Graph
