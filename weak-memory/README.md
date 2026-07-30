@@ -45,6 +45,11 @@ theorems.
 - `linearizable_of_replayInvariant`, constructing the schedule and final state
   and proving that the resulting completed history is a legal sequential
   stack history
+- `AllocatorTable`, `Event.TypedBy`, and `GraphTyping`, replacing pairwise
+  replay obligations with one functional node-provenance table and local
+  event-typing rules
+- `GraphTyping.toReplayInvariant` and `linearizable_of_graphTyping`, deriving
+  the replay obligations and end-to-end result from that typed interface
 
 ## Exactly What Is Proved?
 
@@ -75,7 +80,7 @@ The remaining source-level boundary is:
 ```text
 C11 Treiber source / complete RC11 semantics
                     ↓ not yet proved
-core-consistent graph + OrderAcyclic + ReplayInvariant
+core-consistent graph + OrderAcyclic + GraphTyping
 ```
 
 The current theorems establish the linearization-point core, not yet the full
@@ -88,7 +93,9 @@ The RC11-style and replay layers now prove:
 ```text
 core-consistent finite graph
  + acyclic transitive closure of (po ∪ eco)
- + explicit Treiber ReplayInvariant
+ + local allocator-table GraphTyping
+                    ↓ proved
+       explicit Treiber ReplayInvariant
                     ↓ proved
   constructed order respecting po and eco
                     ↓ proved
@@ -105,7 +112,10 @@ is an explicit premise: the current `CoreConsistent` fields do not silently
 claim to imply it. The replay proof uses `rf`, modification-order totality,
 and reads-before to show that every event observes the current head. The
 remaining heap obligations are visible in `ReplayInvariant`; they are not
-hidden inside a replay-success assumption.
+hidden inside a replay-success assumption. `GraphTyping` derives those
+obligations from a functional allocator table: successful pushes record fresh
+immutable nodes, pops name their recorded publisher, and failed
+compare-exchanges carry stale expected values.
 
 ## Model References
 
@@ -167,11 +177,12 @@ implementation. The Lean proof boundary described above remains unchanged.
 
 ## Next Precise Milestone
 
-Define a typed or generative Treiber candidate-graph interface that records
-which push allocates each node and how each algorithm event is produced. Prove
-that its local construction rules imply `ReplayInvariant`, rather than asking
-graph clients to supply those fields separately. A parallel model-level
-obligation is to justify `OrderAcyclic` from the intended RC11 assumptions, or
-to retain it visibly as part of the accepted graph interface. Until the
-source-to-graph and complete memory-model links are proved, the project does
-not claim that the C Treiber stack is fully verified under RC11.
+Define a generative candidate-execution constructor for Treiber's invocation,
+retry, and compare-exchange control flow. The constructor should emit both the
+RC11 events and their allocator table, then prove `GraphTyping` by
+construction rather than asking clients to populate the table manually. A
+parallel model-level obligation is to justify `OrderAcyclic` from the intended
+RC11 assumptions, or to retain it visibly as part of the accepted graph
+interface. Until the source-to-graph and complete memory-model links are
+proved, the project does not claim that the C Treiber stack is fully verified
+under RC11.

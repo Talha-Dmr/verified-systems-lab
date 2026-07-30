@@ -12,6 +12,8 @@ published earlier.
 
 This module states those Treiber-specific obligations explicitly and uses them
 to bridge a respecting finite graph schedule to executable replay.
+`WeakMemory.TreiberTyping` derives the obligations from a functional allocator
+table and local event-typing rules.
 -/
 
 namespace Event

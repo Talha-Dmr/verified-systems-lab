@@ -1,4 +1,4 @@
-import WeakMemory.TreiberInvariant
+import WeakMemory.TreiberTyping
 
 open WeakMemory
 
@@ -15,3 +15,5 @@ def main : IO Unit := do
   IO.println "Lean theorem checked: acyclic po-union-eco constraints have a finite respecting schedule."
   IO.println "Lean theorem checked: explicit Treiber graph invariants make the constructed schedule replayable."
   IO.println "Lean theorem checked: invariant RC11-style Treiber graphs yield legal sequential stack histories."
+  IO.println "Lean theorem checked: local allocator-table typing implies every replay invariant."
+  IO.println "Lean theorem checked: typed RC11-style Treiber graphs are linearizable."
