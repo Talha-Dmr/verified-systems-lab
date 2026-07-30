@@ -97,8 +97,9 @@ structure State (α : Type) where
 /--
 One observable atomic action of the reclamation-free algorithm.
 
-Failure constructors retain the stale expected head, making interference
-explicit while leaving the shared state unchanged.
+Failure constructors retain both the expected and observed head. Because the
+C implementation uses weak compare-exchange, these values may be equal when a
+failure is spurious.
 -/
 inductive Action (α : Type) where
   | pushSuccess
@@ -151,8 +152,8 @@ end Action
 Atomic transition relation for the small RA fragment.
 
 The successful push constructor enforces fresh allocation. Successful pop can
-only use the node currently at `head`; failed CAS steps require a stale
-expected value and do not change shared state.
+only use the node currently at `head`; failed weak-CAS steps record the current
+head and do not change shared state, including on spurious failure.
 -/
 inductive Step : State α → Action α → State α → Prop where
   | pushSuccess
@@ -171,8 +172,7 @@ inductive Step : State α → Action α → State α → Prop where
       (thread : Nat)
       (nodeId : NodeId)
       (value : α)
-      (expected : Option NodeId)
-      (stale : expected ≠ state.head) :
+      (expected : Option NodeId) :
       Step state
         (.pushFailure thread nodeId value expected state.head)
         state
@@ -189,8 +189,7 @@ inductive Step : State α → Action α → State α → Prop where
   | popFailure
       (state : State α)
       (thread : Nat)
-      (expected : Option NodeId)
-      (stale : expected ≠ state.head) :
+      (expected : Option NodeId) :
       Step state
         (.popFailure thread expected state.head)
         state
@@ -237,7 +236,7 @@ theorem step_refines {beforeState afterState : State α}
           (Heap.insert_same beforeState.heap nodeId node)
           oldTail
       · exact Treiber.CommitStep.push value beforeValues
-  | pushFailure state thread nodeId value expected stale =>
+  | pushFailure state thread nodeId value expected =>
       exact ⟨beforeValues, representation, rfl⟩
   | popSuccess heap thread nodeId node lookup =>
       cases representation with
@@ -248,7 +247,7 @@ theorem step_refines {beforeState afterState : State α}
           subst nodesEqual
           exact ⟨representedRest, tail,
             Treiber.CommitStep.popValue node.value representedRest⟩
-  | popFailure state thread expected stale =>
+  | popFailure state thread expected =>
       exact ⟨beforeValues, representation, rfl⟩
   | popEmpty heap thread =>
       cases representation

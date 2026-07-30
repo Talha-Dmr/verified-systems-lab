@@ -24,14 +24,6 @@ def allocation? : Event α → Option (TreiberRA.NodeId × TreiberRA.Node α)
       some (nodeId, { value := value, next := expected })
   | _ => none
 
-/-- Failed compare-exchanges carry a genuinely stale expected value. -/
-def FailureIsStale : Event α → Prop
-  | ⟨_, .algorithm (.pushFailure _ _ _ expected actual)⟩ =>
-      expected ≠ actual
-  | ⟨_, .algorithm (.popFailure _ expected actual)⟩ =>
-      expected ≠ actual
-  | _ => True
-
 end Event
 
 /--
@@ -71,10 +63,6 @@ structure ReplayInvariant
           publisher.allocation? =
             some (nodeId, { value := value, next := next }) ∧
           graph.ExtendedCoherence publisher event
-  failuresStale :
-    ∀ event,
-      event ∈ graph.events →
-      event.FailureIsStale
 
 /--
 Apply the state update encoded by an event without checking whether its
@@ -860,8 +848,6 @@ private theorem scheduled_algorithm_enabled
     readsFrom_matches_unchecked_head
       wellFormed respects invariant scheduleShape
       readsFrom sourceWritesValue
-  have failureStale : target.FailureIsStale :=
-    invariant.failuresStale target targetMember
   cases action with
   | pushSuccess thread nodeId value expected =>
       simp only [target, Event.readValue, Option.some.injEq] at targetReadsValue
@@ -878,9 +864,7 @@ private theorem scheduled_algorithm_enabled
       have headEquals :
           (advanceUncheckedList initial processed).head = actual :=
         headMatches.trans targetReadsValue.symm
-      have stale : expected ≠ actual := by
-        simpa [target, Event.FailureIsStale] using failureStale
-      simp [applyAction?, advanceUnchecked, headEquals, stale]
+      simp [applyAction?, advanceUnchecked, headEquals]
   | popSuccess thread nodeId value next =>
       simp only [target, Event.readValue, Option.some.injEq] at targetReadsValue
       have headEquals :
@@ -901,9 +885,7 @@ private theorem scheduled_algorithm_enabled
       have headEquals :
           (advanceUncheckedList initial processed).head = actual :=
         headMatches.trans targetReadsValue.symm
-      have stale : expected ≠ actual := by
-        simpa [target, Event.FailureIsStale] using failureStale
-      simp [applyAction?, advanceUnchecked, headEquals, stale]
+      simp [applyAction?, advanceUnchecked, headEquals]
   | popEmpty thread =>
       simp only [target, Event.readValue, Option.some.injEq] at targetReadsValue
       have headEquals :

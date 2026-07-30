@@ -11,8 +11,10 @@ publication separately. This module packages node provenance as a functional
 allocator table and checks every graph event against that table.
 
 Functionality of the table makes allocation uniqueness automatic. Local event
-typing supplies initial freshness, immutable pop contents, publication order,
-and stale failed compare-exchanges.
+typing supplies initial freshness, immutable pop contents, and publication
+order. Failed weak compare-exchanges may be spurious.
+`WeakMemory.TreiberGeneration` constructs the table and event list together,
+then derives this interface automatically.
 -/
 
 /--
@@ -39,15 +41,15 @@ def TypedBy
           initial.heap nodeId = none ∧
             allocator nodeId =
               some (event, { value := value, next := expected })
-      | .pushFailure _ _ _ expected actual =>
-          expected ≠ actual
+      | .pushFailure .. =>
+          True
       | .popSuccess _ nodeId value next =>
           ∃ publisher,
             allocator nodeId =
                 some (publisher, { value := value, next := next }) ∧
               graph.ExtendedCoherence publisher event
-      | .popFailure _ expected actual =>
-          expected ≠ actual
+      | .popFailure .. =>
+          True
       | .popEmpty _ =>
           True
 
@@ -154,16 +156,6 @@ theorem GraphTyping.toReplayInvariant
     obtain ⟨publisher, recorded, publication⟩ := typed
     have sound := typing.allocatorSound recorded
     exact ⟨publisher, sound.1, sound.2, publication⟩
-  failuresStale event eventMember := by
-    have typed := typing.eventTyped event eventMember
-    cases event with
-    | mk id kind =>
-        cases kind with
-        | initial =>
-            trivial
-        | algorithm action =>
-            cases action <;>
-              simp_all [Event.TypedBy, Event.FailureIsStale]
 
 /-- A typed candidate graph replays in every respecting schedule. -/
 theorem GraphTyping.replayAccepted

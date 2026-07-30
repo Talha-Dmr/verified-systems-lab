@@ -1,4 +1,4 @@
-import WeakMemory.TreiberTyping
+import WeakMemory.TreiberGeneration
 
 open WeakMemory
 
@@ -17,3 +17,5 @@ def main : IO Unit := do
   IO.println "Lean theorem checked: invariant RC11-style Treiber graphs yield legal sequential stack histories."
   IO.println "Lean theorem checked: local allocator-table typing implies every replay invariant."
   IO.println "Lean theorem checked: typed RC11-style Treiber graphs are linearizable."
+  IO.println "Lean theorem checked: locally generated Treiber events produce a sound allocator table."
+  IO.println "Lean theorem checked: generated RC11-style Treiber candidates are linearizable."

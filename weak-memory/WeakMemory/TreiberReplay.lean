@@ -24,14 +24,15 @@ its event order and certifies that it respects `po` and all of `eco`.
 `WeakMemory.TreiberSchedule` separately constructs an arbitrary respecting
 order from explicit acyclicity of the combined scheduling relation.
 `WeakMemory.TreiberInvariant` then derives replay acceptance for that order
-from explicit allocation, publication, and failed-CAS invariants.
+from explicit allocation and publication invariants.
 -/
 
 /--
 Check one Treiber action against the current operational state.
 
 The checker validates successful-CAS expectations, fresh push allocation,
-failed-CAS observations, published node contents, and empty-stack reads.
+failed weak-CAS observations (including spurious failures), published node
+contents, and empty-stack reads.
 -/
 def applyAction? [DecidableEq α]
     (state : TreiberRA.State α)
@@ -49,9 +50,9 @@ def applyAction? [DecidableEq α]
         | some _ => none
       else
         none
-  | .pushFailure _ _ _ expected actual =>
+  | .pushFailure _ _ _ _ actual =>
       if actual = state.head then
-        if expected ≠ actual then some state else none
+        some state
       else
         none
   | .popSuccess _ nodeId value next =>
@@ -68,13 +69,40 @@ def applyAction? [DecidableEq α]
               none
       else
         none
-  | .popFailure _ expected actual =>
+  | .popFailure _ _ actual =>
       if actual = state.head then
-        if expected ≠ actual then some state else none
+        some state
       else
         none
   | .popEmpty _ =>
       if state.head = none then some state else none
+
+/--
+A weak push compare-exchange may fail spuriously even when its expected value
+equals the current head.
+-/
+@[simp] theorem applyAction?_pushFailure_spurious
+    [DecidableEq α]
+    (state : TreiberRA.State α)
+    (thread nodeId : Nat)
+    (value : α) :
+    applyAction? state
+        (.pushFailure thread nodeId value state.head state.head) =
+      some state := by
+  simp [applyAction?]
+
+/--
+A weak pop compare-exchange may likewise fail spuriously without changing the
+shared head.
+-/
+@[simp] theorem applyAction?_popFailure_spurious
+    [DecidableEq α]
+    (state : TreiberRA.State α)
+    (thread : Nat) :
+    applyAction? state
+        (.popFailure thread state.head state.head) =
+      some state := by
+  simp [applyAction?]
 
 /-- Every state transition accepted by `applyAction?` is an RA step. -/
 theorem applyAction?_sound [DecidableEq α]
@@ -104,15 +132,11 @@ theorem applyAction?_sound [DecidableEq α]
           simp only [applyAction?] at accepted
           split at accepted
           next actualMatches =>
-            split at accepted
-            next stale =>
-              cases accepted
-              subst actual
-              exact TreiberRA.Step.pushFailure
-                { heap := heap, head := head }
-                thread nodeId value expected stale
-            next notStale =>
-              contradiction
+            cases accepted
+            subst actual
+            exact TreiberRA.Step.pushFailure
+              { heap := heap, head := head }
+              thread nodeId value expected
           next actualDiffers =>
             contradiction
       | popSuccess thread nodeId value next =>
@@ -143,15 +167,11 @@ theorem applyAction?_sound [DecidableEq α]
           simp only [applyAction?] at accepted
           split at accepted
           next actualMatches =>
-            split at accepted
-            next stale =>
-              cases accepted
-              subst actual
-              exact TreiberRA.Step.popFailure
-                { heap := heap, head := head }
-                thread expected stale
-            next notStale =>
-              contradiction
+            cases accepted
+            subst actual
+            exact TreiberRA.Step.popFailure
+              { heap := heap, head := head }
+              thread expected
           next actualDiffers =>
             contradiction
       | popEmpty thread =>
@@ -173,12 +193,12 @@ theorem applyAction?_complete [DecidableEq α]
   cases transition with
   | pushSuccess state thread nodeId value fresh =>
       simp [applyAction?, fresh]
-  | pushFailure state thread nodeId value expected stale =>
-      simp [applyAction?, stale]
+  | pushFailure state thread nodeId value expected =>
+      simp [applyAction?]
   | popSuccess heap thread nodeId node lookup =>
       simp [applyAction?, lookup]
-  | popFailure state thread expected stale =>
-      simp [applyAction?, stale]
+  | popFailure state thread expected =>
+      simp [applyAction?]
   | popEmpty heap thread =>
       simp [applyAction?]
 

@@ -38,8 +38,7 @@ theorems.
   schedule and proving that it covers every event exactly once and respects
   both constituent orders
 - `TreiberRC11.ReplayInvariant`, stating fresh and unique node allocation,
-  immutable pop publication, an empty initial head, and genuinely stale failed
-  compare-exchanges
+  immutable pop publication, and an empty initial head
 - `replay?_eq_some_advanceUncheckedList`, deriving successful executable
   replay from a respecting order and those explicit invariants
 - `linearizable_of_replayInvariant`, constructing the schedule and final state
@@ -50,6 +49,13 @@ theorems.
   event-typing rules
 - `GraphTyping.toReplayInvariant` and `linearizable_of_graphTyping`, deriving
   the replay obligations and end-to-end result from that typed interface
+- `GeneratedEvents`, an inductive local event-and-allocator certificate whose
+  successful-push rule extends the allocator table only at a fresh unused node
+  identifier and whose weak-CAS failures may be spurious
+- `GeneratedCandidate.toGraphTyping` and
+  `linearizable_of_generatedCandidate`, proving that an emitted list connected
+  to the graph carrier by a permutation automatically satisfies the
+  allocator-table interface and enters the existing end-to-end theorem
 
 ## Exactly What Is Proved?
 
@@ -80,7 +86,9 @@ The remaining source-level boundary is:
 ```text
 C11 Treiber source / complete RC11 semantics
                     ↓ not yet proved
-core-consistent graph + OrderAcyclic + GraphTyping
+per-thread invocation/retry control-flow generation
+                    ↓ not yet proved
+core-consistent graph + OrderAcyclic + GeneratedCandidate
 ```
 
 The current theorems establish the linearization-point core, not yet the full
@@ -93,7 +101,9 @@ The RC11-style and replay layers now prove:
 ```text
 core-consistent finite graph
  + acyclic transitive closure of (po ∪ eco)
- + local allocator-table GraphTyping
+ + locally generated Treiber candidate
+                    ↓ proved
+       allocator-table GraphTyping
                     ↓ proved
        explicit Treiber ReplayInvariant
                     ↓ proved
@@ -114,8 +124,13 @@ and reads-before to show that every event observes the current head. The
 remaining heap obligations are visible in `ReplayInvariant`; they are not
 hidden inside a replay-success assumption. `GraphTyping` derives those
 obligations from a functional allocator table: successful pushes record fresh
-immutable nodes, pops name their recorded publisher, and failed
-compare-exchanges carry stale expected values.
+immutable nodes and pops name their recorded publisher. Failed weak
+compare-exchanges record the current head but may be spurious, matching the C
+implementation's use of `atomic_compare_exchange_weak_explicit`.
+`GeneratedEvents` builds the table incrementally, and `GeneratedCandidate`
+uses an explicit permutation proof instead of identifying emission chronology
+with the graph carrier's arbitrary enumeration. This is a local typing
+certificate, not yet a generator for `po`, `rf`, `mo`, or `eco`.
 
 ## Model References
 
@@ -177,12 +192,11 @@ implementation. The Lean proof boundary described above remains unchanged.
 
 ## Next Precise Milestone
 
-Define a generative candidate-execution constructor for Treiber's invocation,
-retry, and compare-exchange control flow. The constructor should emit both the
-RC11 events and their allocator table, then prove `GraphTyping` by
-construction rather than asking clients to populate the table manually. A
-parallel model-level obligation is to justify `OrderAcyclic` from the intended
-RC11 assumptions, or to retain it visibly as part of the accepted graph
-interface. Until the source-to-graph and complete memory-model links are
-proved, the project does not claim that the C Treiber stack is fully verified
-under RC11.
+Add per-thread push and pop invocation state machines above `GeneratedEvents`.
+They must enforce retry control flow, including compare-exchange updating the
+expected head after failure, and emit the corresponding event sequence and
+program-order edges. In parallel, formalize whether the current
+`CoreConsistent` conditions already imply `OrderAcyclic`; the relational audit
+suggests they may. Until the source-to-graph and complete memory-model links
+are proved, the project does not claim that the C Treiber stack is fully
+verified under RC11.
