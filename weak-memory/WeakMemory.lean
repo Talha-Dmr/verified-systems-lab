@@ -21,8 +21,13 @@ while `TreiberTyping` derives those obligations from a functional allocator
 table and local event rules. `TreiberGeneration` constructs the table and a
 chronological emitted-event list together, then connects that list to the
 graph carrier by permutation. `TreiberControlFlow` constrains per-thread
-invocations and weak-CAS retries while retaining operation identity. It does
-not yet generate graph relations or a complete C source execution. We
+invocations and weak-CAS retries while retaining operation identity.
+`TreiberEventGraph` and `TreiberInterleaving` generate the represented atomic
+carrier and exact program order and certify local source shape.
+`TreiberControlledCandidate` joins that carrier to allocator/event generation,
+and `TreiberGeneratedConsistency` reconstructs core consistency from the
+eleven remaining relation fields plus coherence. Standalone initial loads,
+non-atomic node accesses, and `rf`/`mo` construction are still missing. We
 deliberately do not claim a complete C11 semantics.
 -/
 
@@ -158,8 +163,8 @@ namespace Treiber
 The abstract atomic commits of Treiber's algorithm.
 
 `popValue v` records a successful CAS that removed `v`; `popEmpty` records a
-load that observed an empty head. Failed CAS attempts are deliberately absent:
-they are internal steps and do not linearize a stack operation.
+load or failed pop CAS that observed an empty head. Failures that observe a
+nonempty head are internal retry steps and do not linearize a stack operation.
 -/
 inductive Commit (α : Type) where
   | push : α → Commit α

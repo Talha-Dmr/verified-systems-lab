@@ -1,4 +1,4 @@
-import WeakMemory.TreiberControlFlow
+import WeakMemory.TreiberGeneratedConsistency
 
 open WeakMemory
 
@@ -22,3 +22,6 @@ def main : IO Unit := do
   IO.println "Lean theorem checked: generated RC11-style Treiber candidates are linearizable."
   IO.println "Lean theorem checked: per-thread Treiber retries preserve operation and thread identity."
   IO.println "Lean theorem checked: a failed pop CAS observing null completes as an empty pop."
+  IO.println "Lean theorem checked: controlled atomic events have fresh IDs and exact same-thread program order."
+  IO.println "Lean theorem checked: controlled interleavings enforce unique operations and node reservations."
+  IO.println "Lean theorem checked: eleven remaining relation fields plus coherence reconstruct core consistency."

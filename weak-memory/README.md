@@ -64,6 +64,22 @@ theorems.
 - Control-flow theorems proving that failures update the expected pointer,
   weak compare-exchange may fail spuriously, every projected action belongs to
   its thread, and a failed pop CAS observing null completes immediately
+- `EventGraph.Skeleton`, projecting atomic control-flow labels to one
+  duplicate-free event carrier with a unique initializer, injective IDs, and
+  exact same-thread program order
+- `Interleaving.SourceSkeleton`, requiring every thread projection to be a
+  locally valid execution with globally unique operation IDs and fresh,
+  distinct push-node reservations
+- `ControlledCandidate`, indexing `GeneratedEvents` by exactly the source
+  skeleton's carrier and requiring the graph's program order to equal the
+  generated relation
+- `CarrierProgramOrderWellFormed`, deriving the seven carrier, initializer,
+  and program-order fields of `WellFormed` from the controlled candidate
+- `RemainingConsistency`, containing only the eleven still-supplied
+  reads-from, modification-order, RMW, and initial-order fields plus coherence
+- `linearizable_of_remainingConsistency`, reconstructing `WellFormed`,
+  no-thin-air, scheduling acyclicity, and `CoreConsistent` before applying the
+  existing replay and linearizability chain
 
 ## Exactly What Is Proved?
 
@@ -96,9 +112,9 @@ The remaining source-level boundary is:
 ```text
 C11 Treiber source / complete RC11 semantics
                     ↓ not yet proved
-global interleaving and po/rf/mo graph construction
+standalone load/non-atomic events and rf/mo construction
                     ↓ not yet proved
-per-thread ControlFlow + core-consistent GeneratedCandidate
+ControlledCandidate + RemainingConsistency
 ```
 
 The current theorems establish the linearization-point core, not yet the full
@@ -109,15 +125,17 @@ source directly.
 The RC11-style and replay layers now prove:
 
 ```text
-core-consistent finite graph ──→ OrderAcyclic ──→ respecting schedule
-             +                                      +
-locally generated candidate ──→ GraphTyping ──→ ReplayInvariant
-                                                    ↓
-                                      successful executable replay
-                                                    ↓
-                                      certified operational schedule
-                                                    ↓
-                                      legal sequential stack history
+ControlledCandidate ──→ carrier/initializer/program-order WellFormed fields
+         │
+         └────────────→ GeneratedCandidate ──→ GraphTyping ──→ ReplayInvariant
+
+RemainingConsistency ──→ remaining WellFormed fields + coherence
+                                      ↓
+             CoreConsistent + derived no-thin-air and OrderAcyclic
+                                      ↓
+                         respecting replay schedule
+                                      ↓
+                         legal sequential stack history
 ```
 
 Executable replay is not treated as an oracle: its acceptance is proved
@@ -141,7 +159,13 @@ certificate, not yet a generator for `po`, `rf`, `mo`, or `eco`.
 retains operation identifiers. Its invocation labels record initial load
 observations because the current operational action type does not yet contain
 a standalone load event; connecting those observations and the non-atomic node
-reads to a complete C11 graph remains future work.
+reads to a complete C11 graph remains future work. `EventGraph`,
+`Interleaving`, and `ControlledCandidate` generate the represented atomic
+carrier and its exact program order while retaining the erased source metadata.
+`RemainingConsistency` still accepts eleven `rf`/`mo`/RMW relation properties
+and coherence; it does not claim those relations came from the C program.
+Happens-before acyclicity and no-thin-air are now derived rather than repeated
+as certificate fields.
 
 ## Model References
 
@@ -203,11 +227,11 @@ implementation. The Lean proof boundary described above remains unchanged.
 
 ## Next Precise Milestone
 
-Connect `ControlFlow.Execution` to `GeneratedEvents` with fresh event
-identifiers, globally unique operation/node reservations, and program-order
-edges induced by each thread's atomic-label order. Then construct reads-from
-and modification order rather than accepting a completed graph. The following
-source bridge must also represent the initial atomic loads and justify
-visibility of the non-atomic node fields before dereference. Until those and
-the complete memory-model links are proved, the project does not claim that
-the C Treiber stack is fully verified under RC11.
+Extend the event model with the standalone initial head loads and the
+non-atomic node-field accesses used by the C control flow. In particular, a
+nonempty pop must acquire publication before dereferencing `observed->next`;
+the later successful CAS cannot justify an earlier dereference. Then construct
+reads-from and modification order and discharge the eleven
+`RemainingConsistency` relation fields instead of accepting them. Until those
+and the complete source/memory-model links are proved, the project does not
+claim that the C Treiber stack is fully verified under RC11.
