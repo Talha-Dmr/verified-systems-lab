@@ -8,7 +8,7 @@ theorems.
 
 ## Current Contents
 
-- Treiber `push` and `pop` implemented with C11 atomics
+- Treiber `push`, `pop`, and `is_empty` implemented with C11 atomics
 - A native stress test using four threads and 80,000 distinct nodes
 - Two small bounded C harnesses for GenMC
 - Memory-order and execution-graph vocabulary in Lean
@@ -60,7 +60,10 @@ theorems.
   to the graph carrier by a permutation automatically satisfies the
   allocator-table interface and enters the existing end-to-end theorem
 - `ControlFlow.LocalState`, `Label`, `LocalStep`, and `Execution`, retaining
-  operation identity across source-shaped push/pop invocations and retry loops
+  operation identity across source-shaped push/pop/is-empty invocations and
+  retry loops
+- Explicit relaxed push loads and acquire pop/is-empty loads in the
+  operational, graph, replay, generation, and source-control-flow layers
 - Control-flow theorems proving that failures update the expected pointer,
   weak compare-exchange may fail spuriously, every projected action belongs to
   its thread, and a failed pop CAS observing null completes immediately
@@ -112,7 +115,7 @@ The remaining source-level boundary is:
 ```text
 C11 Treiber source / complete RC11 semantics
                     ↓ not yet proved
-standalone load/non-atomic events and rf/mo construction
+non-atomic node-field events and rf/mo construction
                     ↓ not yet proved
 ControlledCandidate + RemainingConsistency
 ```
@@ -156,12 +159,14 @@ uses an explicit permutation proof instead of identifying emission chronology
 with the graph carrier's arbitrary enumeration. This is a local typing
 certificate, not yet a generator for `po`, `rf`, `mo`, or `eco`.
 `TreiberControlFlow` now constrains each thread to the source retry shape and
-retains operation identifiers. Its invocation labels record initial load
-observations because the current operational action type does not yet contain
-a standalone load event; connecting those observations and the non-atomic node
-reads to a complete C11 graph remains future work. `EventGraph`,
-`Interleaving`, and `ControlledCandidate` generate the represented atomic
-carrier and its exact program order while retaining the erased source metadata.
+retains operation identifiers. The source's relaxed push load and acquire
+pop/is-empty loads are explicit graph events. An initially empty pop commits at
+its acquire load, while a failed pop CAS observing null commits at that failed
+CAS because the source loop returns immediately. `EventGraph`, `Interleaving`,
+and `ControlledCandidate` generate the represented atomic carrier and its
+exact program order while retaining the erased source metadata. Non-atomic
+`node->next` initialization and dereference, including their publication
+happens-before argument, remain outside that carrier.
 `RemainingConsistency` still accepts eleven `rf`/`mo`/RMW relation properties
 and coherence; it does not claim those relations came from the C program.
 Happens-before acyclicity and no-thin-air are now derived rather than repeated
@@ -227,11 +232,11 @@ implementation. The Lean proof boundary described above remains unchanged.
 
 ## Next Precise Milestone
 
-Extend the event model with the standalone initial head loads and the
-non-atomic node-field accesses used by the C control flow. In particular, a
-nonempty pop must acquire publication before dereferencing `observed->next`;
-the later successful CAS cannot justify an earlier dereference. Then construct
-reads-from and modification order and discharge the eleven
+Extend the source model with the non-atomic node-field accesses used by the C
+control flow. In particular, a nonempty pop must acquire publication before
+dereferencing `observed->next`; the later successful CAS cannot justify an
+earlier dereference. Then construct reads-from and modification order and
+discharge the eleven
 `RemainingConsistency` relation fields instead of accepting them. Until those
 and the complete source/memory-model links are proved, the project does not
 claim that the C Treiber stack is fully verified under RC11.

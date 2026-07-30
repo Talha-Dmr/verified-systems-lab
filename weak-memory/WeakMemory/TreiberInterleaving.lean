@@ -40,7 +40,8 @@ def invocationOperation? :
     EventGraph.OwnedLabel α →
       Option ControlFlow.OperationId
   | ⟨_, .invokePush operation .., _⟩ => some operation
-  | ⟨_, .invokePop operation .., _⟩ => some operation
+  | ⟨_, .invokePop operation, _⟩ => some operation
+  | ⟨_, .invokeIsEmpty operation, _⟩ => some operation
   | ⟨_, .atomic .., _⟩ => none
 
 /-- Invocation operation identifiers in global skeleton order. -/
@@ -54,7 +55,8 @@ def pushReservation? :
     EventGraph.OwnedLabel α →
       Option TreiberRA.NodeId
   | ⟨_, .invokePush _ reserved .., _⟩ => some reserved
-  | ⟨_, .invokePop .., _⟩ => none
+  | ⟨_, .invokePop _, _⟩ => none
+  | ⟨_, .invokeIsEmpty _, _⟩ => none
   | ⟨_, .atomic .., _⟩ => none
 
 /-- Push-reserved node identifiers in global skeleton order. -/

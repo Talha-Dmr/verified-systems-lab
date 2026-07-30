@@ -67,7 +67,23 @@ private theorem event_read_or_write (event : Event α) :
       | initial =>
           exact Or.inr ⟨none, rfl⟩
       | algorithm action =>
-          cases action <;> exact Or.inl ⟨_, rfl⟩
+          cases action with
+          | pushLoad thread observed =>
+              exact Or.inl ⟨observed, rfl⟩
+          | popLoad thread observed =>
+              exact Or.inl ⟨observed, rfl⟩
+          | isEmptyLoad thread observed =>
+              exact Or.inl ⟨observed, rfl⟩
+          | pushSuccess thread nodeId value expected =>
+              exact Or.inl ⟨expected, rfl⟩
+          | pushFailure thread nodeId value expected actual =>
+              exact Or.inl ⟨actual, rfl⟩
+          | popSuccess thread nodeId value next =>
+              exact Or.inl ⟨some nodeId, rfl⟩
+          | popFailure thread expected actual =>
+              exact Or.inl ⟨actual, rfl⟩
+          | popEmpty thread =>
+              exact Or.inl ⟨none, rfl⟩
 
 private theorem read_write_isRMW
     {event : Event α}
@@ -81,9 +97,23 @@ private theorem read_write_isRMW
           rcases reads with ⟨value, reads⟩
           simp [Event.readValue] at reads
       | algorithm action =>
-          cases action <;>
-            simp [Event.IsRMW, Event.IsWrite, Event.writtenValue]
-              at writes ⊢
+          cases action with
+          | pushLoad =>
+              simp [Event.IsWrite, Event.writtenValue] at writes
+          | popLoad =>
+              simp [Event.IsWrite, Event.writtenValue] at writes
+          | isEmptyLoad =>
+              simp [Event.IsWrite, Event.writtenValue] at writes
+          | pushSuccess =>
+              trivial
+          | pushFailure =>
+              simp [Event.IsWrite, Event.writtenValue] at writes
+          | popSuccess =>
+              trivial
+          | popFailure =>
+              simp [Event.IsWrite, Event.writtenValue] at writes
+          | popEmpty =>
+              simp [Event.IsWrite, Event.writtenValue] at writes
 
 private theorem readsFrom_source_writes
     {graph : Graph α}

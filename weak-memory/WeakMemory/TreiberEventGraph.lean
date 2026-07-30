@@ -27,6 +27,7 @@ def LabelOwnedBy
     ControlFlow.Label α → Prop
   | .invokePush .. => True
   | .invokePop .. => True
+  | .invokeIsEmpty .. => True
   | .atomic _ action =>
       ControlFlow.actionThread action = thread
 
@@ -52,6 +53,8 @@ def ofLocalStep
     | invokePush =>
         exact True.intro
     | invokePop =>
+        exact True.intro
+    | invokeIsEmpty =>
         exact True.intro
     | atomic operation action =>
         exact step.atomicActionThread_eq
@@ -88,6 +91,8 @@ def atomicEventsFrom :
           atomicEventsFrom next rest
       | .invokePop .. =>
           atomicEventsFrom next rest
+      | .invokeIsEmpty .. =>
+          atomicEventsFrom next rest
       | .atomic _ action =>
           Event.mk next (.algorithm action) ::
             atomicEventsFrom (next + 1) rest
@@ -105,9 +110,11 @@ theorem atomicEventsFrom_id_lowerBound
   | cons owned rest inductionHypothesis =>
       rcases owned with ⟨thread, label, ownership⟩
       cases label with
-      | invokePush operation reserved value observed =>
+      | invokePush operation reserved value =>
           exact inductionHypothesis (next := next) member
-      | invokePop operation observed =>
+      | invokePop operation =>
+          exact inductionHypothesis (next := next) member
+      | invokeIsEmpty operation =>
           exact inductionHypothesis (next := next) member
       | atomic operation action =>
           simp only [atomicEventsFrom, List.mem_cons] at member
@@ -131,9 +138,11 @@ theorem atomicEventsFrom_pairwise_id_lt
   | cons owned rest inductionHypothesis =>
       rcases owned with ⟨thread, label, ownership⟩
       cases label with
-      | invokePush operation reserved value observed =>
+      | invokePush operation reserved value =>
           exact inductionHypothesis next
-      | invokePop operation observed =>
+      | invokePop operation =>
+          exact inductionHypothesis next
+      | invokeIsEmpty operation =>
           exact inductionHypothesis next
       | atomic operation action =>
           apply List.Pairwise.cons
@@ -154,9 +163,11 @@ theorem atomicEventsFrom_nodup
   | cons owned rest inductionHypothesis =>
       rcases owned with ⟨thread, label, ownership⟩
       cases label with
-      | invokePush operation reserved value observed =>
+      | invokePush operation reserved value =>
           exact inductionHypothesis next
-      | invokePop operation observed =>
+      | invokePop operation =>
+          exact inductionHypothesis next
+      | invokeIsEmpty operation =>
           exact inductionHypothesis next
       | atomic operation action =>
           apply List.nodup_cons.mpr
@@ -191,11 +202,15 @@ theorem atomicEventsFrom_uniqueIds
   | cons owned rest inductionHypothesis =>
       rcases owned with ⟨thread, label, ownership⟩
       cases label with
-      | invokePush operation reserved value observed =>
+      | invokePush operation reserved value =>
           exact inductionHypothesis
             (next := next)
             leftMember rightMember sameId
-      | invokePop operation observed =>
+      | invokePop operation =>
+          exact inductionHypothesis
+            (next := next)
+            leftMember rightMember sameId
+      | invokeIsEmpty operation =>
           exact inductionHypothesis
             (next := next)
             leftMember rightMember sameId
@@ -243,9 +258,11 @@ theorem atomicEventsFrom_not_initial
   | cons owned rest inductionHypothesis =>
       rcases owned with ⟨thread, label, ownership⟩
       cases label with
-      | invokePush operation reserved value observed =>
+      | invokePush operation reserved value =>
           exact inductionHypothesis (next := next) member
-      | invokePop operation observed =>
+      | invokePop operation =>
+          exact inductionHypothesis (next := next) member
+      | invokeIsEmpty operation =>
           exact inductionHypothesis (next := next) member
       | atomic operation action =>
           simp only [atomicEventsFrom, List.mem_cons] at member

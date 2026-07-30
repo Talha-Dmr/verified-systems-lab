@@ -125,11 +125,13 @@ namespace StackSpec
 inductive Operation (α : Type) where
   | push : α → Operation α
   | pop : Operation α
+  | isEmpty : Operation α
   deriving Repr, DecidableEq
 
 inductive Response (α : Type) where
   | pushed
   | popped : Option α → Response α
+  | checkedEmpty : Bool → Response α
   deriving Repr, DecidableEq
 
 structure CompletedOperation (α : Type) where
@@ -142,6 +144,9 @@ def step : List α → Operation α → Response α × List α
   | stack, .push value => (.pushed, value :: stack)
   | [], .pop => (.popped none, [])
   | value :: rest, .pop => (.popped (some value), rest)
+  | [], .isEmpty => (.checkedEmpty true, [])
+  | value :: rest, .isEmpty =>
+      (.checkedEmpty false, value :: rest)
 
 /-- A history is legal when every response agrees with the sequential spec. -/
 inductive Legal :
@@ -163,13 +168,15 @@ namespace Treiber
 The abstract atomic commits of Treiber's algorithm.
 
 `popValue v` records a successful CAS that removed `v`; `popEmpty` records a
-load or failed pop CAS that observed an empty head. Failures that observe a
-nonempty head are internal retry steps and do not linearize a stack operation.
+load or failed pop CAS that observed an empty head; `isEmpty b` records the
+result of the read-only query. Failures that observe a nonempty head are
+internal retry steps and do not linearize a stack operation.
 -/
 inductive Commit (α : Type) where
   | push : α → Commit α
   | popValue : α → Commit α
   | popEmpty : Commit α
+  | isEmpty : Bool → Commit α
   deriving Repr, DecidableEq
 
 namespace Commit
@@ -181,6 +188,8 @@ def completed : Commit α → StackSpec.CompletedOperation α
       { operation := .pop, response := .popped (some value) }
   | .popEmpty =>
       { operation := .pop, response := .popped none }
+  | .isEmpty empty =>
+      { operation := .isEmpty, response := .checkedEmpty empty }
 
 end Commit
 
@@ -192,6 +201,10 @@ inductive CommitStep : List α → Commit α → List α → Prop where
       CommitStep (value :: rest) (.popValue value) rest
   | popEmpty :
       CommitStep ([] : List α) .popEmpty []
+  | isEmptyTrue :
+      CommitStep ([] : List α) (.isEmpty true) []
+  | isEmptyFalse (value : α) (rest : List α) :
+      CommitStep (value :: rest) (.isEmpty false) (value :: rest)
 
 theorem commitStep_matchesSpec {before after : List α} {commit : Commit α}
     (step : CommitStep before commit after) :

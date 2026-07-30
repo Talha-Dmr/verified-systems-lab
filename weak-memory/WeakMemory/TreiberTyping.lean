@@ -37,6 +37,12 @@ def TypedBy
       True
   | .algorithm action =>
       match action with
+      | .pushLoad .. =>
+          True
+      | .popLoad .. =>
+          True
+      | .isEmptyLoad .. =>
+          True
       | .pushSuccess _ nodeId value expected =>
           initial.heap nodeId = none ∧
             allocator nodeId =
@@ -107,6 +113,12 @@ theorem allocationRecorded
           simp [Event.allocation?] at allocation
       | algorithm action =>
           cases action with
+          | pushLoad =>
+              simp [Event.allocation?] at allocation
+          | popLoad =>
+              simp [Event.allocation?] at allocation
+          | isEmptyLoad =>
+              simp [Event.allocation?] at allocation
           | pushSuccess thread allocated value expected =>
               simp only [Event.allocation?, Option.some.injEq,
                 Prod.mk.injEq] at allocation

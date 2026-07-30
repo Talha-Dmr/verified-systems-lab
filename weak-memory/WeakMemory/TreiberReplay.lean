@@ -32,14 +32,22 @@ from explicit allocation and publication invariants.
 /--
 Check one Treiber action against the current operational state.
 
-The checker validates successful-CAS expectations, fresh push allocation,
-failed weak-CAS observations (including spurious failures), published node
-contents, and empty-stack reads.
+The checker validates standalone load observations, successful-CAS
+expectations, fresh push allocation, failed weak-CAS observations (including
+spurious failures), published node contents, and empty-stack reads. Standalone
+loads leave the concrete state unchanged; their abstract commit behavior is
+defined by `TreiberRA.Action.commit?`.
 -/
 def applyAction? [DecidableEq α]
     (state : TreiberRA.State α)
     (action : TreiberRA.Action α) : Option (TreiberRA.State α) :=
   match action with
+  | .pushLoad _ observed =>
+      if observed = state.head then some state else none
+  | .popLoad _ observed =>
+      if observed = state.head then some state else none
+  | .isEmptyLoad _ observed =>
+      if observed = state.head then some state else none
   | .pushSuccess _ nodeId value expected =>
       if expected = state.head then
         match state.heap nodeId with
@@ -115,6 +123,36 @@ theorem applyAction?_sound [DecidableEq α]
   cases state with
   | mk heap head =>
       cases action with
+      | pushLoad thread observed =>
+          simp only [applyAction?] at accepted
+          split at accepted
+          next observedMatches =>
+            cases accepted
+            subst observed
+            exact TreiberRA.Step.pushLoad
+              { heap := heap, head := head } thread
+          next observedDiffers =>
+            contradiction
+      | popLoad thread observed =>
+          simp only [applyAction?] at accepted
+          split at accepted
+          next observedMatches =>
+            cases accepted
+            subst observed
+            exact TreiberRA.Step.popLoad
+              { heap := heap, head := head } thread
+          next observedDiffers =>
+            contradiction
+      | isEmptyLoad thread observed =>
+          simp only [applyAction?] at accepted
+          split at accepted
+          next observedMatches =>
+            cases accepted
+            subst observed
+            exact TreiberRA.Step.isEmptyLoad
+              { heap := heap, head := head } thread
+          next observedDiffers =>
+            contradiction
       | pushSuccess thread nodeId value expected =>
           simp only [applyAction?] at accepted
           split at accepted
@@ -193,6 +231,12 @@ theorem applyAction?_complete [DecidableEq α]
     (transition : TreiberRA.Step state action final) :
     applyAction? state action = some final := by
   cases transition with
+  | pushLoad state thread =>
+      simp [applyAction?]
+  | popLoad state thread =>
+      simp [applyAction?]
+  | isEmptyLoad state thread =>
+      simp [applyAction?]
   | pushSuccess state thread nodeId value fresh =>
       simp [applyAction?, fresh]
   | pushFailure state thread nodeId value expected =>

@@ -10,10 +10,9 @@ This module models the invocation and retry control flow visible in
 modification-order, or extended-coherence edges.
 
 Every invocation receives an operation identifier that remains attached to
-its local state and emitted labels. Initial loads are represented by
-invocation labels because the current `TreiberRA.Action` type has no general
-load action. An initially empty pop subsequently emits `popEmpty`, representing
-that acquiring observation.
+its local state and emitted labels. Initial head loads are explicit atomic
+actions: push uses a relaxed load, while pop and `isEmpty` use acquire loads.
+An initially empty pop completes at its `popLoad none` event.
 
 A failed weak compare-exchange always updates the local expected value to the
 observed actual value. Equal values are permitted, representing spurious
@@ -22,7 +21,7 @@ returns immediately; it does not execute another load or emit a later
 `popEmpty` action.
 -/
 
-/-- Identity of one source-level push or pop invocation. -/
+/-- Identity of one source-level push, pop, or `isEmpty` invocation. -/
 abbrev OperationId := Nat
 
 /--
@@ -32,38 +31,46 @@ The local state of one thread.
 local reservation only; uniqueness across threads remains an allocator-table
 obligation in `TreiberGeneration`.
 
-For pop, `observed = none` is reachable only immediately after the invocation's
-initial load. A failed CAS that observes null completes the invocation directly
-instead of entering that state.
+The loading states separate source invocation from the initial atomic load.
+An active pop stores a non-null pointer because an empty load, or a failed CAS
+that observes null, completes the invocation immediately.
 -/
 inductive LocalState (α : Type) where
   | idle
+  | pushLoading
+      (operation : OperationId)
+      (reserved : TreiberRA.NodeId)
+      (value : α)
   | pushing
       (operation : OperationId)
       (reserved : TreiberRA.NodeId)
       (value : α)
       (expected : Option TreiberRA.NodeId)
+  | popLoading
+      (operation : OperationId)
   | popping
       (operation : OperationId)
-      (observed : Option TreiberRA.NodeId)
+      (expected : TreiberRA.NodeId)
+  | checkingEmpty
+      (operation : OperationId)
   deriving Repr, DecidableEq
 
 /--
 Observable labels of the local control-flow machine.
 
-Invocation labels preserve source-level operation identity and initial
-observations. Atomic labels retain that identity while carrying exactly the
-existing operational action.
+Invocation labels preserve source-level operation identity. Atomic labels
+retain that identity while carrying exactly the existing operational action,
+including the source function's initial head load.
 -/
 inductive Label (α : Type) where
   | invokePush
       (operation : OperationId)
       (reserved : TreiberRA.NodeId)
       (value : α)
-      (observed : Option TreiberRA.NodeId)
   | invokePop
       (operation : OperationId)
-      (observed : Option TreiberRA.NodeId)
+  | invokeIsEmpty
+      (operation : OperationId)
   | atomic
       (operation : OperationId)
       (action : TreiberRA.Action α)
@@ -74,13 +81,15 @@ namespace Label
 /-- The invocation owning a control-flow label. -/
 def operation : Label α → OperationId
   | .invokePush operation .. => operation
-  | .invokePop operation .. => operation
+  | .invokePop operation => operation
+  | .invokeIsEmpty operation => operation
   | .atomic operation _ => operation
 
 /-- Project an atomic label to its operational action. -/
 def action? : Label α → Option (TreiberRA.Action α)
   | .invokePush .. => none
   | .invokePop .. => none
+  | .invokeIsEmpty .. => none
   | .atomic _ action => some action
 
 end Label
@@ -107,24 +116,51 @@ inductive LocalStep (thread : Nat) :
   | beginPush
       (operation : OperationId)
       (reserved : TreiberRA.NodeId)
+      (value : α) :
+      LocalStep thread
+        .idle
+        (.invokePush operation reserved value)
+        (.pushLoading operation reserved value)
+  | pushLoad
+      (operation : OperationId)
+      (reserved : TreiberRA.NodeId)
       (value : α)
       (observed : Option TreiberRA.NodeId) :
       LocalStep thread
-        .idle
-        (.invokePush operation reserved value observed)
+        (.pushLoading operation reserved value)
+        (.atomic operation (.pushLoad thread observed))
         (.pushing operation reserved value observed)
   | beginPop
+      (operation : OperationId) :
+      LocalStep thread
+        .idle
+        (.invokePop operation)
+        (.popLoading operation)
+  | popLoadEmpty
+      (operation : OperationId) :
+      LocalStep thread
+        (.popLoading operation)
+        (.atomic operation (.popLoad thread none))
+        .idle
+  | popLoadNonempty
+      (operation : OperationId)
+      (observed : TreiberRA.NodeId) :
+      LocalStep thread
+        (.popLoading operation)
+        (.atomic operation (.popLoad thread (some observed)))
+        (.popping operation observed)
+  | beginIsEmpty
+      (operation : OperationId) :
+      LocalStep thread
+        .idle
+        (.invokeIsEmpty operation)
+        (.checkingEmpty operation)
+  | isEmptyLoad
       (operation : OperationId)
       (observed : Option TreiberRA.NodeId) :
       LocalStep thread
-        .idle
-        (.invokePop operation observed)
-        (.popping operation observed)
-  | popEmpty
-      (operation : OperationId) :
-      LocalStep thread
-        (.popping operation none)
-        (.atomic operation (.popEmpty thread))
+        (.checkingEmpty operation)
+        (.atomic operation (.isEmptyLoad thread observed))
         .idle
   | pushFailure
       (operation : OperationId)
@@ -150,15 +186,15 @@ inductive LocalStep (thread : Nat) :
       (operation : OperationId)
       (expected actual : TreiberRA.NodeId) :
       LocalStep thread
-        (.popping operation (some expected))
+        (.popping operation expected)
         (.atomic operation
           (.popFailure thread (some expected) (some actual)))
-        (.popping operation (some actual))
+        (.popping operation actual)
   | popFailureEmpty
       (operation : OperationId)
       (expected : TreiberRA.NodeId) :
       LocalStep thread
-        (.popping operation (some expected))
+        (.popping operation expected)
         (.atomic operation
           (.popFailure thread (some expected) none))
         .idle
@@ -168,13 +204,16 @@ inductive LocalStep (thread : Nat) :
       (value : α)
       (next : Option TreiberRA.NodeId) :
       LocalStep thread
-        (.popping operation (some expected))
+        (.popping operation expected)
         (.atomic operation
           (.popSuccess thread expected value next))
         .idle
 
 /-- Extract the owning thread from an operational Treiber action. -/
 def actionThread : TreiberRA.Action α → Nat
+  | .pushLoad thread .. => thread
+  | .popLoad thread .. => thread
+  | .isEmptyLoad thread .. => thread
   | .pushSuccess thread .. => thread
   | .pushFailure thread .. => thread
   | .popSuccess thread .. => thread
@@ -192,25 +231,91 @@ theorem LocalStep.atomicActionThread_eq
     actionThread action = thread := by
   cases step <;> rfl
 
-/-- Idle threads can only begin a push or a pop invocation. -/
+/-- Idle threads can only begin one of the three public operations. -/
 theorem LocalStep.fromIdle
     {thread : Nat}
     {label : Label α}
     {after : LocalState α}
     (step : LocalStep thread .idle label after) :
-    (∃ operation reserved value observed,
-      label =
-          .invokePush operation reserved value observed ∧
-        after =
-          .pushing operation reserved value observed) ∨
-    ∃ operation observed,
-      label = .invokePop operation observed ∧
-        after = .popping operation observed := by
+    (∃ operation reserved value,
+      label = .invokePush operation reserved value ∧
+        after = .pushLoading operation reserved value) ∨
+    (∃ operation,
+      label = .invokePop operation ∧
+        after = .popLoading operation) ∨
+    ∃ operation,
+      label = .invokeIsEmpty operation ∧
+        after = .checkingEmpty operation := by
   cases step with
   | beginPush =>
-      exact Or.inl ⟨_, _, _, _, rfl, rfl⟩
+      exact Or.inl ⟨_, _, _, rfl, rfl⟩
   | beginPop =>
-      exact Or.inr ⟨_, _, rfl, rfl⟩
+      exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
+  | beginIsEmpty =>
+      exact Or.inr (Or.inr ⟨_, rfl, rfl⟩)
+
+/-- A pending push performs exactly its source-level relaxed head load. -/
+theorem LocalStep.fromPushLoading
+    {thread : Nat}
+    {operation : OperationId}
+    {reserved : TreiberRA.NodeId}
+    {value : α}
+    {label : Label α}
+    {after : LocalState α}
+    (step :
+      LocalStep thread
+        (.pushLoading operation reserved value)
+        label
+        after) :
+    ∃ observed,
+      label = .atomic operation (.pushLoad thread observed) ∧
+        after = .pushing operation reserved value observed := by
+  cases step with
+  | pushLoad =>
+      exact ⟨_, rfl, rfl⟩
+
+/--
+A pending pop performs exactly its acquire head load. Null completes the
+operation; a non-null pointer enters the compare-exchange loop.
+-/
+theorem LocalStep.fromPopLoading
+    {thread : Nat}
+    {operation : OperationId}
+    {label : Label α}
+    {after : LocalState α}
+    (step :
+      LocalStep thread
+        (.popLoading operation)
+        label
+        after) :
+    (label = .atomic operation (.popLoad thread none) ∧
+      after = .idle) ∨
+    ∃ observed,
+      label = .atomic operation (.popLoad thread (some observed)) ∧
+        after = .popping operation observed := by
+  cases step with
+  | popLoadEmpty =>
+      exact Or.inl ⟨rfl, rfl⟩
+  | popLoadNonempty =>
+      exact Or.inr ⟨_, rfl, rfl⟩
+
+/-- An `isEmpty` invocation completes at its acquire head load. -/
+theorem LocalStep.fromCheckingEmpty
+    {thread : Nat}
+    {operation : OperationId}
+    {label : Label α}
+    {after : LocalState α}
+    (step :
+      LocalStep thread
+        (.checkingEmpty operation)
+        label
+        after) :
+    ∃ observed,
+      label = .atomic operation (.isEmptyLoad thread observed) ∧
+        after = .idle := by
+  cases step with
+  | isEmptyLoad =>
+      exact ⟨_, rfl, rfl⟩
 
 /--
 A push retry preserves its operation, reserved node, and value and replaces
@@ -247,25 +352,6 @@ theorem LocalStep.fromPushing
       exact Or.inl ⟨rfl, rfl⟩
 
 /--
-An initially empty pop completes through its load observation and never enters
-the compare-exchange loop.
--/
-theorem LocalStep.fromEmptyPop
-    {thread : Nat}
-    {operation : OperationId}
-    {label : Label α}
-    {after : LocalState α}
-    (step :
-      LocalStep thread
-        (.popping operation none)
-        label
-        after) :
-    label = .atomic operation (.popEmpty thread) ∧
-      after = .idle := by
-  cases step
-  exact ⟨rfl, rfl⟩
-
-/--
 An active nonempty pop either succeeds, retries with an observed non-null
 pointer, or completes empty when its failed compare-exchange observes null.
 -/
@@ -277,7 +363,7 @@ theorem LocalStep.fromNonemptyPop
     {after : LocalState α}
     (step :
       LocalStep thread
-        (.popping operation (some expected))
+        (.popping operation expected)
         label
         after) :
     (∃ value next,
@@ -287,11 +373,10 @@ theorem LocalStep.fromNonemptyPop
         after = .idle) ∨
     (∃ actual,
       label =
-          .atomic operation
+        .atomic operation
             (.popFailure
               thread (some expected) (some actual)) ∧
-        after =
-          .popping operation (some actual)) ∨
+        after = .popping operation actual) ∨
     (label =
         .atomic operation
           (.popFailure thread (some expected) none) ∧
@@ -325,11 +410,11 @@ theorem popSpuriousFailure
     (operation : OperationId)
     (expected : TreiberRA.NodeId) :
     LocalStep thread
-      (.popping operation (some expected) : LocalState α)
+      (.popping operation expected : LocalState α)
       (.atomic operation
         (.popFailure
           thread (some expected) (some expected)))
-      (.popping operation (some expected)) :=
+      (.popping operation expected) :=
   .popFailureRetry operation expected expected
 
 /--
@@ -341,7 +426,7 @@ theorem failedPopObservingEmpty_completes
     (operation : OperationId)
     (expected : TreiberRA.NodeId) :
     LocalStep thread
-      (.popping operation (some expected) : LocalState α)
+      (.popping operation expected : LocalState α)
       (.atomic operation
         (.popFailure thread (some expected) none))
       .idle :=
@@ -353,6 +438,14 @@ theorem failedPopObservingEmpty_commitsPopEmpty
     TreiberRA.Action.commit?
       (.popFailure thread (some expected) none :
         TreiberRA.Action α) =
+      some .popEmpty :=
+  rfl
+
+/-- An initially null pop load is itself the empty-pop commit. -/
+theorem emptyPopLoad_commitsPopEmpty
+    (thread : Nat) :
+    TreiberRA.Action.commit?
+      (.popLoad thread none : TreiberRA.Action α) =
       some .popEmpty :=
   rfl
 
@@ -410,12 +503,17 @@ theorem exists_atomic_of_mem_projectedActions
       simp [projectedActions] at member
   | cons label rest inductionHypothesis =>
       cases label with
-      | invokePush operation reserved value observed =>
+      | invokePush operation reserved value =>
           obtain ⟨owner, ownerMember⟩ :=
             inductionHypothesis (by
               simpa [projectedActions, Label.action?] using member)
           exact ⟨owner, by simp [ownerMember]⟩
-      | invokePop operation observed =>
+      | invokePop operation =>
+          obtain ⟨owner, ownerMember⟩ :=
+            inductionHypothesis (by
+              simpa [projectedActions, Label.action?] using member)
+          exact ⟨owner, by simp [ownerMember]⟩
+      | invokeIsEmpty operation =>
           obtain ⟨owner, ownerMember⟩ :=
             inductionHypothesis (by
               simpa [projectedActions, Label.action?] using member)

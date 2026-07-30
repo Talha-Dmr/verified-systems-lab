@@ -96,6 +96,12 @@ theorem mono
           trivial
       | algorithm action =>
           cases action with
+          | pushLoad =>
+              trivial
+          | popLoad =>
+              trivial
+          | isEmptyLoad =>
+              trivial
           | pushSuccess thread nodeId value expected =>
               exact ⟨typed.1, extension typed.2⟩
           | pushFailure =>
@@ -129,6 +135,39 @@ inductive GeneratedEvents
       (id : EventId) :
       GeneratedEvents graph initial allocator
         (events ++ [Event.mk id .initial])
+  | pushLoad
+      {allocator events}
+      (generated :
+        GeneratedEvents graph initial allocator events)
+      (id thread : Nat)
+      (observed : Option TreiberRA.NodeId) :
+      GeneratedEvents graph initial allocator
+        (events ++ [
+          Event.mk id
+            (.algorithm (.pushLoad thread observed))
+        ])
+  | popLoad
+      {allocator events}
+      (generated :
+        GeneratedEvents graph initial allocator events)
+      (id thread : Nat)
+      (observed : Option TreiberRA.NodeId) :
+      GeneratedEvents graph initial allocator
+        (events ++ [
+          Event.mk id
+            (.algorithm (.popLoad thread observed))
+        ])
+  | isEmptyLoad
+      {allocator events}
+      (generated :
+        GeneratedEvents graph initial allocator events)
+      (id thread : Nat)
+      (observed : Option TreiberRA.NodeId) :
+      GeneratedEvents graph initial allocator
+        (events ++ [
+          Event.mk id
+            (.algorithm (.isEmptyLoad thread observed))
+        ])
   | pushSuccess
       {allocator events}
       (generated :
@@ -246,6 +285,51 @@ private theorem GeneratedEvents.generationInvariant
       · intro event member
         simp at member
   | initializer generated id inductionHypothesis =>
+      refine {
+        allocatorSound := ?_
+        eventTyped := ?_
+      }
+      · intro nodeId event node recorded
+        have sound :=
+          inductionHypothesis.allocatorSound recorded
+        exact ⟨by simp [sound.1], sound.2⟩
+      · intro event member
+        simp only [List.mem_append, List.mem_singleton] at member
+        rcases member with oldMember | newEvent
+        · exact inductionHypothesis.eventTyped event oldMember
+        · subst event
+          trivial
+  | pushLoad generated id thread observed inductionHypothesis =>
+      refine {
+        allocatorSound := ?_
+        eventTyped := ?_
+      }
+      · intro nodeId event node recorded
+        have sound :=
+          inductionHypothesis.allocatorSound recorded
+        exact ⟨by simp [sound.1], sound.2⟩
+      · intro event member
+        simp only [List.mem_append, List.mem_singleton] at member
+        rcases member with oldMember | newEvent
+        · exact inductionHypothesis.eventTyped event oldMember
+        · subst event
+          trivial
+  | popLoad generated id thread observed inductionHypothesis =>
+      refine {
+        allocatorSound := ?_
+        eventTyped := ?_
+      }
+      · intro nodeId event node recorded
+        have sound :=
+          inductionHypothesis.allocatorSound recorded
+        exact ⟨by simp [sound.1], sound.2⟩
+      · intro event member
+        simp only [List.mem_append, List.mem_singleton] at member
+        rcases member with oldMember | newEvent
+        · exact inductionHypothesis.eventTyped event oldMember
+        · subst event
+          trivial
+  | isEmptyLoad generated id thread observed inductionHypothesis =>
       refine {
         allocatorSound := ?_
         eventTyped := ?_

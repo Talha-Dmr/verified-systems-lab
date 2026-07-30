@@ -76,6 +76,9 @@ def advanceUnchecked
   | .initial => state
   | .algorithm action =>
       match action with
+      | .pushLoad .. => state
+      | .popLoad .. => state
+      | .isEmptyLoad .. => state
       | .pushSuccess _ nodeId value expected =>
           {
             heap := state.heap.insert nodeId
@@ -440,6 +443,12 @@ private theorem advanceUnchecked_head_of_not_write
           exact (doesNotWrite ⟨none, rfl⟩).elim
       | algorithm action =>
           cases action with
+          | pushLoad =>
+              rfl
+          | popLoad =>
+              rfl
+          | isEmptyLoad =>
+              rfl
           | pushSuccess thread nodeId value expected =>
               exact (doesNotWrite ⟨some nodeId, rfl⟩).elim
           | pushFailure =>
@@ -586,6 +595,12 @@ private theorem advanceUnchecked_heap_lookup_of_no_allocation
           rfl
       | algorithm action =>
           cases action with
+          | pushLoad =>
+              rfl
+          | popLoad =>
+              rfl
+          | isEmptyLoad =>
+              rfl
           | pushSuccess thread allocated value expected =>
               by_cases same : nodeId = allocated
               · subst allocated
@@ -657,6 +672,12 @@ private theorem advanceUnchecked_heap_of_allocation
           simp [Event.allocation?] at allocation
       | algorithm action =>
           cases action with
+          | pushLoad =>
+              simp [Event.allocation?] at allocation
+          | popLoad =>
+              simp [Event.allocation?] at allocation
+          | isEmptyLoad =>
+              simp [Event.allocation?] at allocation
           | pushSuccess thread allocated value expected =>
               simp only [Event.allocation?, Option.some.injEq,
                 Prod.mk.injEq] at allocation
@@ -849,6 +870,24 @@ private theorem scheduled_algorithm_enabled
       wellFormed respects invariant scheduleShape
       readsFrom sourceWritesValue
   cases action with
+  | pushLoad thread observed =>
+      simp only [target, Event.readValue, Option.some.injEq] at targetReadsValue
+      have headEquals :
+          (advanceUncheckedList initial processed).head = observed :=
+        headMatches.trans targetReadsValue.symm
+      simp [applyAction?, advanceUnchecked, headEquals]
+  | popLoad thread observed =>
+      simp only [target, Event.readValue, Option.some.injEq] at targetReadsValue
+      have headEquals :
+          (advanceUncheckedList initial processed).head = observed :=
+        headMatches.trans targetReadsValue.symm
+      simp [applyAction?, advanceUnchecked, headEquals]
+  | isEmptyLoad thread observed =>
+      simp only [target, Event.readValue, Option.some.injEq] at targetReadsValue
+      have headEquals :
+          (advanceUncheckedList initial processed).head = observed :=
+        headMatches.trans targetReadsValue.symm
+      simp [applyAction?, advanceUnchecked, headEquals]
   | pushSuccess thread nodeId value expected =>
       simp only [target, Event.readValue, Option.some.injEq] at targetReadsValue
       have headEquals :

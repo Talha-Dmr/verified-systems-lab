@@ -102,6 +102,15 @@ C implementation uses weak compare-exchange, these values may be equal when a
 failure is spurious.
 -/
 inductive Action (α : Type) where
+  | pushLoad
+      (thread : Nat)
+      (observed : Option NodeId)
+  | popLoad
+      (thread : Nat)
+      (observed : Option NodeId)
+  | isEmptyLoad
+      (thread : Nat)
+      (observed : Option NodeId)
   | pushSuccess
       (thread : Nat) (nodeId : NodeId) (value : α)
       (expected : Option NodeId)
@@ -121,6 +130,9 @@ namespace Action
 
 /-- Memory orders used by the C implementation in `c/treiber.c`. -/
 def order : Action α → MemoryOrder
+  | .pushLoad .. => .relaxed
+  | .popLoad .. => .acquire
+  | .isEmptyLoad .. => .acquire
   | .pushSuccess .. => .release
   | .pushFailure .. => .relaxed
   | .popSuccess .. => .acquire
@@ -129,6 +141,11 @@ def order : Action α → MemoryOrder
 
 /-- Only linearization-point actions produce abstract commits. -/
 def commit? : Action α → Option (Treiber.Commit α)
+  | .pushLoad .. => none
+  | .popLoad _ none => some .popEmpty
+  | .popLoad _ (some _) => none
+  | .isEmptyLoad _ none => some (.isEmpty true)
+  | .isEmptyLoad _ (some _) => some (.isEmpty false)
   | .pushSuccess _ _ value _ => some (.push value)
   | .pushFailure .. => none
   | .popSuccess _ _ value _ => some (.popValue value)
@@ -167,6 +184,24 @@ linearization point: the C loop returns without issuing another atomic read.
 @[simp] theorem popEmpty_hasAcquire (thread : Nat) :
     (order (.popEmpty thread : Action α)).hasAcquire = true := rfl
 
+@[simp] theorem pushLoad_isRelaxed
+    (thread : Nat)
+    (observed : Option NodeId) :
+    order (.pushLoad thread observed : Action α) = .relaxed :=
+  rfl
+
+@[simp] theorem popLoad_hasAcquire
+    (thread : Nat)
+    (observed : Option NodeId) :
+    (order (.popLoad thread observed : Action α)).hasAcquire = true :=
+  rfl
+
+@[simp] theorem isEmptyLoad_hasAcquire
+    (thread : Nat)
+    (observed : Option NodeId) :
+    (order (.isEmptyLoad thread observed : Action α)).hasAcquire = true :=
+  rfl
+
 end Action
 
 /--
@@ -177,6 +212,24 @@ only use the node currently at `head`; failed weak-CAS steps record the current
 head and do not change shared state, including on spurious failure.
 -/
 inductive Step : State α → Action α → State α → Prop where
+  | pushLoad
+      (state : State α)
+      (thread : Nat) :
+      Step state
+        (.pushLoad thread state.head)
+        state
+  | popLoad
+      (state : State α)
+      (thread : Nat) :
+      Step state
+        (.popLoad thread state.head)
+        state
+  | isEmptyLoad
+      (state : State α)
+      (thread : Nat) :
+      Step state
+        (.isEmptyLoad thread state.head)
+        state
   | pushSuccess
       (state : State α)
       (thread : Nat)
@@ -246,6 +299,33 @@ theorem step_refines {beforeState afterState : State α}
       Represents afterState.heap afterState.head afterValues ∧
       ProjectedStep beforeValues action afterValues := by
   cases transition with
+  | pushLoad thread =>
+      exact ⟨beforeValues, representation, rfl⟩
+  | popLoad thread =>
+      cases beforeState with
+      | mk heap head =>
+          cases head with
+          | none =>
+              cases representation
+              exact ⟨[], Represents.empty,
+                Treiber.CommitStep.popEmpty⟩
+          | some nodeId =>
+              exact ⟨beforeValues, representation, rfl⟩
+  | isEmptyLoad thread =>
+      cases beforeState with
+      | mk heap head =>
+          cases head with
+          | none =>
+              cases representation
+              exact ⟨[], Represents.empty,
+                Treiber.CommitStep.isEmptyTrue⟩
+          | some nodeId =>
+              cases representation with
+              | @node representedId entry rest lookup tail =>
+                  exact ⟨entry.value :: rest,
+                    Represents.node lookup tail,
+                    Treiber.CommitStep.isEmptyFalse
+                      entry.value rest⟩
   | pushSuccess state thread nodeId value fresh =>
       let node : Node α := { value := value, next := beforeState.head }
       have heapExtension :

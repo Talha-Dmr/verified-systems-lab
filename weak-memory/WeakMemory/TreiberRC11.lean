@@ -58,6 +58,9 @@ def thread? : Event α → Option Nat
   | ⟨_, .initial⟩ => none
   | ⟨_, .algorithm action⟩ =>
       match action with
+      | .pushLoad thread .. => some thread
+      | .popLoad thread .. => some thread
+      | .isEmptyLoad thread .. => some thread
       | .pushSuccess thread .. => some thread
       | .pushFailure thread .. => some thread
       | .popSuccess thread .. => some thread
@@ -74,6 +77,9 @@ def readValue : Event α → Option (Option TreiberRA.NodeId)
   | ⟨_, .initial⟩ => none
   | ⟨_, .algorithm action⟩ =>
       match action with
+      | .pushLoad _ observed => some observed
+      | .popLoad _ observed => some observed
+      | .isEmptyLoad _ observed => some observed
       | .pushSuccess _ _ _ expected => some expected
       | .pushFailure _ _ _ _ actual => some actual
       | .popSuccess _ nodeId _ _ => some (some nodeId)
@@ -87,6 +93,7 @@ def writtenValue : Event α → Option (Option TreiberRA.NodeId)
       match action with
       | .pushSuccess _ nodeId _ _ => some (some nodeId)
       | .popSuccess _ _ _ next => some next
+      | .pushLoad .. | .popLoad .. | .isEmptyLoad ..
       | .pushFailure .. | .popFailure .. | .popEmpty .. => none
 
 def order : Event α → MemoryOrder
@@ -101,6 +108,9 @@ def IsWrite (event : Event α) : Prop :=
 
 /-- Successful compare-exchanges are the RMW events in this fragment. -/
 def IsRMW : Event α → Prop
+  | ⟨_, .algorithm (.pushLoad ..)⟩ => False
+  | ⟨_, .algorithm (.popLoad ..)⟩ => False
+  | ⟨_, .algorithm (.isEmptyLoad ..)⟩ => False
   | ⟨_, .algorithm (.pushSuccess ..)⟩ => True
   | ⟨_, .algorithm (.popSuccess ..)⟩ => True
   | _ => False
