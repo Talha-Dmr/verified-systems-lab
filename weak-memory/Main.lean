@@ -2,6 +2,8 @@ import WeakMemory.TreiberNodeAccessDerivation
 import WeakMemory.TreiberHistory
 import WeakMemory.TreiberMethodTrace
 import WeakMemory.TreiberScheduledHistory
+import WeakMemory.TreiberVerifiedModelProvenance
+import WeakMemory.TreiberSupportedModelSemantics
 
 open WeakMemory
 
@@ -33,3 +35,12 @@ def main : IO Unit := do
   IO.println "Lean theorem checked: finite identified histories have a formal Herlihy-Wing linearizability predicate."
   IO.println "Lean theorem checked: source responses remain distinct from their atomic linearization points."
   IO.println "Lean theorem checked: graph schedules recover source operation identities and ordinary commit histories."
+  IO.println "Lean theorem checked: source histories are well formed and source commits form their Herlihy-Wing completion."
+  IO.println "Lean theorem checked: every respecting schedule preserves each client thread's operation order."
+  IO.println "Lean theorem checked: same-thread real time is derived; cross-thread client order has an exact finite checker."
+  IO.println "Lean theorem checked: client-compatible schedules construct classical Herlihy-Wing linearizations."
+  IO.println "Lean theorem checked: relation ranks are derived from checked finite schedule positions."
+  IO.println "Lean theorem checked: raw source, RF/MO, relation schedules, publication paths, and next reads are executable checks."
+  IO.println "Lean theorem checked: accepted models retain exact proof-relevant provenance back to every raw input field."
+  IO.println "Lean theorem checked: every normalized proof-carrying model round-trips through the complete raw validator."
+  IO.println "Lean theorem checked: every accepted pinned Treiber model execution is node-safe and Herlihy-Wing linearizable."

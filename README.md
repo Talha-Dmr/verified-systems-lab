@@ -8,9 +8,9 @@ This repository contains formal verification work centered on
 - [`verified-compiler`](verified-compiler/README.md): A verified compiler from
   a small expression language to a stack machine.
 - [`weak-memory`](weak-memory/README.md): C11 Treiber stack experiments and
-  Lean proofs connecting an RC11-style execution graph, a reclamation-free
-  release-acquire operational model, an executable replay validator, and a
-  sequential stack specification.
+  Lean proofs connecting a hash-pinned C source descriptor, executable finite
+  RC11-model validators, a reclamation-free release-acquire operational model,
+  and classical Herlihy–Wing linearizability.
 - [`references/msc2020`](references/msc2020/README.md): A local archive of the
   MSC2020 classification.
 

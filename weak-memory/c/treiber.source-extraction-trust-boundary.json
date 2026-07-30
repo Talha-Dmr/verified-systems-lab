@@ -1,0 +1,273 @@
+{
+  "extractor": {
+    "ast_arguments": [
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pedantic-errors",
+      "-fsyntax-only",
+      "-Xclang",
+      "-ast-dump=json",
+      "c/treiber.c"
+    ],
+    "ast_format": "Clang JSON AST",
+    "clang_required_major": 18,
+    "clang_version": "18.1.3",
+    "tool": "tools/extract_treiber_source_trust_boundary.py"
+  },
+  "initialization": {
+    "event": {
+      "kind": "atomic_init",
+      "object": "stack->head",
+      "source": {
+        "column": 5,
+        "line": 7,
+        "offset": 88
+      },
+      "value": "null"
+    },
+    "function": "treiber_init",
+    "parameters": [
+      {
+        "name": "stack",
+        "type": "TreiberStack *"
+      }
+    ],
+    "signature": "void (TreiberStack *)"
+  },
+  "operations": [
+    {
+      "control_flow": {
+        "loop": {
+          "body_reexecuted_after_failure": true,
+          "kind": "do_while",
+          "retries_on": [
+            "weak_spurious_failure",
+            "head_value_mismatch"
+          ],
+          "terminates_on": "head_compare_exchange_success"
+        },
+        "return": {
+          "after": "head_compare_exchange_success",
+          "kind": "implicit_void"
+        }
+      },
+      "events": [
+        {
+          "id": "head_load",
+          "kind": "atomic_load",
+          "memory_order": "relaxed",
+          "object": "stack->head",
+          "result": "observed",
+          "source": {
+            "column": 9,
+            "line": 13,
+            "offset": 220
+          }
+        },
+        {
+          "execution": "once_per_loop_attempt",
+          "id": "next_write",
+          "kind": "non_atomic_write",
+          "object": "node->next",
+          "sequenced_before": "head_compare_exchange",
+          "source": {
+            "column": 9,
+            "line": 16,
+            "offset": 296
+          },
+          "value": "observed"
+        },
+        {
+          "desired": "node",
+          "expected": {
+            "expression": "&observed",
+            "failure_update": {
+              "semantic_basis": "C11 compare-exchange writes the current atomic-object value through the expected operand on failure",
+              "target": "observed",
+              "value": "stack->head"
+            }
+          },
+          "failure_memory_order": "relaxed",
+          "id": "head_compare_exchange",
+          "kind": "atomic_compare_exchange",
+          "loop_role": "negated_guard_retry_on_failure",
+          "object": "stack->head",
+          "source": {
+            "column": 15,
+            "line": 17,
+            "offset": 333
+          },
+          "strength": "weak",
+          "success_memory_order": "release"
+        }
+      ],
+      "name": "treiber_push",
+      "parameters": [
+        {
+          "name": "stack",
+          "type": "TreiberStack *"
+        },
+        {
+          "name": "node",
+          "type": "TreiberNode *"
+        }
+      ],
+      "signature": "void (TreiberStack *, TreiberNode *)"
+    },
+    {
+      "control_flow": {
+        "loop": {
+          "condition": "observed != null",
+          "failure_path": "compare_exchange failure updates observed and reaches the next loop test",
+          "kind": "while",
+          "retries_on": [
+            "weak_spurious_failure",
+            "head_value_mismatch"
+          ]
+        },
+        "returns": [
+          {
+            "condition": "head_compare_exchange_success",
+            "source": {
+              "column": 13,
+              "line": 39,
+              "offset": 932
+            },
+            "value": "observed"
+          },
+          {
+            "condition": "observed == null",
+            "source": {
+              "column": 5,
+              "line": 43,
+              "offset": 970
+            },
+            "value": "null"
+          }
+        ]
+      },
+      "events": [
+        {
+          "id": "head_load",
+          "kind": "atomic_load",
+          "memory_order": "acquire",
+          "object": "stack->head",
+          "result": "observed",
+          "source": {
+            "column": 9,
+            "line": 28,
+            "offset": 576
+          }
+        },
+        {
+          "execution": "once_per_non_null_loop_attempt",
+          "id": "next_read",
+          "kind": "non_atomic_read",
+          "object": "observed->next",
+          "result": "next",
+          "sequenced_before": "head_compare_exchange",
+          "source": {
+            "column": 29,
+            "line": 31,
+            "offset": 694
+          }
+        },
+        {
+          "desired": "next",
+          "expected": {
+            "expression": "&observed",
+            "failure_update": {
+              "semantic_basis": "C11 compare-exchange writes the current atomic-object value through the expected operand on failure",
+              "target": "observed",
+              "value": "stack->head"
+            }
+          },
+          "failure_memory_order": "acquire",
+          "id": "head_compare_exchange",
+          "kind": "atomic_compare_exchange",
+          "loop_role": "success_returns; failure_updates_observed_then_retests_loop",
+          "object": "stack->head",
+          "source": {
+            "column": 13,
+            "line": 33,
+            "offset": 723
+          },
+          "strength": "weak",
+          "success_memory_order": "acquire"
+        }
+      ],
+      "name": "treiber_pop",
+      "parameters": [
+        {
+          "name": "stack",
+          "type": "TreiberStack *"
+        }
+      ],
+      "signature": "TreiberNode *(TreiberStack *)"
+    },
+    {
+      "control_flow": {
+        "return": {
+          "expression": "head_snapshot == null",
+          "source": {
+            "column": 5,
+            "line": 48,
+            "offset": 1041
+          }
+        }
+      },
+      "events": [
+        {
+          "id": "head_load",
+          "kind": "atomic_load",
+          "memory_order": "acquire",
+          "object": "stack->head",
+          "result": "head_snapshot",
+          "source": {
+            "column": 12,
+            "line": 48,
+            "offset": 1048
+          }
+        }
+      ],
+      "name": "treiber_is_empty",
+      "parameters": [
+        {
+          "name": "stack",
+          "type": "const TreiberStack *"
+        }
+      ],
+      "signature": "_Bool (const TreiberStack *)"
+    }
+  ],
+  "schema": "treiber-source-extraction-trust-boundary/v1",
+  "scope": {
+    "atomic_object": "stack->head",
+    "node_lifetime_contract": "nodes are never reclaimed or reused",
+    "node_link": "TreiberNode.next",
+    "public_operations": [
+      "treiber_push",
+      "treiber_pop",
+      "treiber_is_empty"
+    ]
+  },
+  "sources": [
+    {
+      "path": "c/treiber.c",
+      "role": "implementation",
+      "sha256": "7a0ef93f9510ae71873d930f7e06a8bb36416a6b33587a814fe779c3b5e56d13"
+    },
+    {
+      "path": "c/treiber.h",
+      "role": "interface-and-lifetime-contract",
+      "sha256": "0f32a0ca76a95891308662143e609c6da03eab49c7254b8ce058fd464ff2d882"
+    }
+  ],
+  "trust_boundary": {
+    "claim": "This descriptor is a deterministic check of a narrow Clang 18 AST shape; it is not a proved C semantics frontend.",
+    "classification": "explicitly-trusted-source-extraction",
+    "consumer_obligation": "Any formal source-to-model theorem must either trust this descriptor or independently validate its facts."
+  }
+}

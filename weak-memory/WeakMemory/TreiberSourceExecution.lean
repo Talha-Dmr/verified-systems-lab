@@ -9,7 +9,7 @@ namespace WeakMemory.TreiberRC11
 This module removes the arbitrary graph and manual
 `RemainingConsistency` boundary from the main construction path.
 
-A `SourceAtomicExecution` contains:
+A generic `SourceAtomicExecution` contains:
 
 * one locally valid source skeleton;
 * the actual finite semantic choices for atomic reads-from and modification
@@ -19,9 +19,12 @@ A `SourceAtomicExecution` contains:
 
 Its graph, carrier, program order, reads-from, and modification order are all
 definitions. The eleven remaining well-formedness fields and coherence are
-theorems. A later C-semantics translation or executable validator must produce
-the relation data and rank witness; they are not inferred from source syntax,
-because RC11 executions genuinely choose `rf` and `mo`.
+theorems. The checked pipeline in `TreiberVerifiedModel` validates finite
+relation data and a primitive-edge schedule, then derives this common rank
+from schedule positions. A future C-semantics connection must still show that
+actual executions produce the raw relation, schedule, publication, and
+immutable-field observations accepted by that pipeline. `rf` and `mo` remain
+semantic execution choices rather than facts inferable from source syntax.
 -/
 
 /--

@@ -33,12 +33,14 @@ while the canonical graph derives the exact observer, publisher origin,
 release sequence, and mixed source/atomic happens-before chain.
 `TreiberRelations` and `TreiberRelationOrder` construct `rf`, `mo`, all eleven
 relation fields, and coherence from finite execution data plus a common rank.
-`TreiberSourceExecution` installs that canonical graph beneath the existing
-linearizability chain. Source responses are now distinct occurrences, and
-canonical graph schedules recover the source operation identity of every
-commit. Proving the remaining Herlihy--Wing completion and real-time fields,
-and translating the C source into the finite semantic inputs, are still
-missing. We deliberately do not claim a complete C11 semantics.
+The generic `TreiberSourceExecution` package stores that rank; the executable
+checked path derives it from positions in a validated relation schedule.
+Source responses are distinct occurrences, graph schedules recover operation
+identity, source completion and per-thread equivalence are derived, and an
+exact finite checker handles cross-thread client real-time edges encoded by
+the supplied trace. The remaining boundary is a formal connection from
+executions of the pinned C source to accepted finite validator inputs. We
+deliberately do not claim a complete C11 semantics.
 -/
 
 inductive MemoryOrder where
@@ -240,8 +242,8 @@ def completedHistory (commits : List (Commit α)) :
 The first linearizability lemma: successful Treiber commits implement the
 sequential stack specification.
 
-The future bridge theorem will extract these commits from every execution graph
-allowed by the release-acquire model.
+Later operational, RC11-style, and history bridges consume this base lemma
+after extracting the corresponding commits.
 -/
 theorem commitTrace_linearizable {initial final : List α}
     {commits : List (Commit α)}

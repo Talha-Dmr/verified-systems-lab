@@ -107,12 +107,12 @@ theorems.
   `rb` to derive extended-coherence order, synchronization order,
   happens-before order, and coherence
 - `SourceAtomicExecution`, whose carrier, program order, reads-from,
-  modification order, remaining relation fields, coherence, no-thin-air,
-  scheduling acyclicity, and replay schedule are all constructed rather than
-  supplied as an arbitrary graph certificate
+  modification order, remaining relation fields, coherence, and no-thin-air
+  are constructed around finite relation data and a generic common-rank field
+- `ScheduledRelationModelExecution`, whose checked respecting schedule derives
+  that common rank from event positions and supplies the replay schedule
 - `HerlihyWing.History`, `Completion`, `Equivalent`, `RealTimePrecedes`, and
-  `Linearizable`, providing an identity-preserving finite-history definition;
-  completion and real-time composition remain unfinished
+  `Linearizable`, providing an identity-preserving finite-history definition
 - Explicit source response labels separated from their atomic linearization
   points by a `returning` local state, including prefixes that commit before
   returning
@@ -125,6 +125,37 @@ theorems.
   IDs without changing the atomic graph event type
 - Source/schedule commit permutation and identity-erasure theorems connecting
   scheduled operations to the anonymous commit history already proved legal
+- `SourceSkeleton.historyWellFormed` and `sourceCompletion`, deriving all
+  structural history and finite-completion obligations from source control
+  flow rather than accepting them as history premises
+- `SourceAtomicExecution.scheduleEquivalent`, proving that every respecting
+  graph schedule has the same completed operations and the same order for
+  each client thread as the source completion
+- `sameThreadRealTimeCompatible`, deriving same-thread real-time preservation;
+  the external cross-thread condition has an exact finite Boolean checker
+- `TreiberHistoryBridge`, constructing the complete classical Herlihy--Wing
+  witness on every checked client-compatible schedule
+- `RelationScheduleCheck` and `RespectsGraph.toRC11OrderWitness`, checking a
+  finite primitive-edge schedule and deriving the common RC11 rank from event
+  positions instead of accepting numeric ranks
+- Executable raw-data validators for local control flow, global source
+  interleavings, RF/MO data, event-ID schedules, extended-coherence paths,
+  allocator/event generation, immutable `next` reads, and client real time
+- `RawTreiberModelExecution.verified_of_supported`, proving node-access safety
+  and Herlihy--Wing linearizability for every finite raw execution accepted by
+  the pinned program-specific validator
+- `RawValidationProvenance`, retaining exact source-label certification,
+  relation data, schedule IDs, publication input, and final Boolean checks for
+  each accepted raw value
+- `NormalizedSupportedModelExecution.toRaw_supported`, proving the converse
+  model-to-validator direction: canonical proof-carrying model executions
+  serialize to raw inputs accepted by the complete executable pipeline
+- Executable two-thread examples showing that an overlapping empty pop is
+  accepted while the same schedule is rejected when a completed push precedes
+  the other thread's invocation
+- A deterministic Clang 18 AST extraction boundary that hash-pins
+  `c/treiber.c` and `c/treiber.h`, generates both JSON and Lean descriptors,
+  and checks their exact agreement with the formal control-flow descriptor
 
 ## Exactly What Is Proved?
 
@@ -152,20 +183,27 @@ CAS attempts do not change shared state. A failed pop CAS that observes null
 is nevertheless the empty-pop linearization point because the C loop returns
 without another atomic operation.
 
-The remaining source-level boundary is:
+The checked source/model boundary is now:
 
 ```text
-C11 Treiber source / complete RC11 semantics
-                    ↓ not yet proved
-finite rf/mo choices + rank + immutable next-read values
-                    ↓ proved
-SourceAtomicExecution + derived NodeAccessCertificate
+hash-pinned treiber.c ──trusted Clang-AST extractor──→ generated Lean descriptor
+                                                          ↓ kernel-checked equality
+externally supplied raw source/RF/MO/schedule/publication inputs
+                              ────────────────────────→ executable Lean validators
+                                                          ↓
+                                  ValidatedTreiberModelExecution
+                                      │                 │
+                                      ├──→ node safety  └──→ HW linearizability
 ```
 
-The current theorems establish the linearization-point core and a generic
-Herlihy–Wing invocation/response definition, but not yet the theorem connecting
-the two. The stress test is not a proof, and the project does not claim to
-verify the complete C11 semantics or the C source directly.
+The Lean theorem now connects source invocations/responses in an accepted raw
+input to its checked linearization-point schedule. The source extractor is an
+explicit trust boundary: the project still does not claim a proved semantics
+for arbitrary C, a proof of Clang, or completeness for the full C11 standard.
+For every finite raw input the validator accepts, the theorem proves the
+result; it is not proved that every execution of the C program produces such
+an input. The native stress test and bounded GenMC runs remain validation
+evidence, not substitutes for the Lean theorem.
 
 The RC11-style and replay layers now prove:
 
@@ -173,7 +211,8 @@ The RC11-style and replay layers now prove:
 source skeleton + finite rf/mo data ──→ canonical Graph
                     │
                     ├──→ eleven remaining WellFormed fields
-                    └──→ rank witness ──→ coherence
+                    └──→ checked relation schedule
+                                  └──→ position rank ──→ coherence
                                       ↓
                            SourceAtomicExecution
                                       ↓
@@ -203,8 +242,9 @@ spurious, matching the C implementation's use of
 `atomic_compare_exchange_weak_explicit`.
 `GeneratedEvents` builds the table incrementally, and `GeneratedCandidate`
 uses an explicit permutation proof instead of identifying emission chronology
-with the graph carrier's arbitrary enumeration. This is a local typing
-certificate, not yet a generator for `po`, `rf`, `mo`, or `eco`.
+with the graph carrier's arbitrary enumeration. `GeneratedCandidate` itself
+is only a local typing certificate; the top-level validator separately checks
+source-derived `po`, raw `rf`/`mo`, and a primitive-edge relation schedule.
 `TreiberControlFlow` now constrains each thread to the source retry shape and
 retains operation identifiers. The source's relaxed push load and acquire
 pop/is-empty loads are explicit graph events. An initially empty pop commits at
@@ -220,29 +260,47 @@ source edges with a release-sequence/reads-from witness. The canonical
 execution now derives that certificate: allocator uniqueness identifies the
 original release push; decreasing common rank rules out fabricated pointers
 when a pop re-exposes an older node; and adjacency in the concrete
-modification order constructs the complete RMW release sequence. Only the
-source-semantics fact that a non-atomic immutable-field read returns its
-allocator-recorded value remains an explicit input at this layer.
+modification order constructs the complete RMW release sequence. At the raw
+validator boundary, `NextReadCheck` now compares every finite `readNext` label
+to the generated allocator table and constructs the immutable-value
+certificate.
 `RemainingConsistency` remains as a reusable interface, but the canonical
 `SourceAtomicExecution` path no longer asks a caller to assemble its eleven
 fields or coherence: `AtomicRelationData` and `RC11OrderWitness` derive them.
-The write order and read-source function are genuine semantic choices of an
-RC11 execution, not values inferable from source syntax. A future C/RC11
-translation or executable validator must produce and validate those choices.
-Happens-before acyclicity and no-thin-air are derived rather than repeated as
-certificate fields.
+The write order and read-source function remain genuine semantic choices of an
+RC11 execution, not values inferable from source syntax. They are supplied as
+finite raw data and checked for exact write/read coverage, value agreement,
+and RMW adjacency. A checked primitive-edge schedule constructs their common
+rank. Happens-before acyclicity and no-thin-air are derived rather than
+repeated as certificate fields.
 
 `TreiberHistory` defines classical Herlihy--Wing completion, per-thread
 equivalence, real-time preservation, and sequential legality with operation
 identity retained. Control flow now emits explicit responses after a distinct
 atomic commit, and exact event-ID lookup reconstructs the matching operation
-identity in any respecting graph schedule. The remaining bridge must derive
-history well-formedness, the completion choice, and per-thread equivalence.
-Moreover, RC11 consistency alone does not turn cross-thread wall-clock order
-into C11 happens-before. The eventual classical Herlihy--Wing theorem must
-therefore state and discharge a client real-time compatibility condition; the
-all-RC11-executions result will separately use the appropriate HB/causal
-formulation.
+identity in any respecting graph schedule. Source well-formedness, completion,
+per-thread equivalence, and same-thread real time are now derived. RC11
+consistency alone still does not turn cross-thread wall-clock order into C11
+happens-before; the validator therefore checks compatibility with exactly the
+cross-thread response-before-invocation edges encoded by the supplied trace
+before constructing the classical Herlihy--Wing witness. Fidelity of that
+trace to physical execution time remains part of the external semantics
+boundary. This condition is intentionally not mislabeled as an RC11 axiom.
+
+## Source-Extraction Trust Boundary
+
+`tools/extract_treiber_source_trust_boundary.py` checks the exact Clang 18 AST
+shape used by the model and generates:
+
+- `c/treiber.source-extraction-trust-boundary.json`;
+- `WeakMemory/TreiberExtractedProgram.lean`.
+
+`TreiberProgramRefinement` proves the generated descriptor agrees component by
+component with the Lean memory orders and control-flow transitions. The
+extractor check separately byte-compares artifacts and source hashes. Together
+these narrow and record the trusted surface, but do not prove Clang correct or
+prove a general C11 operational-semantics refinement. See
+`tools/README-source-extraction-trust-boundary.md` for the exact claim.
 
 ## Model References
 
@@ -275,10 +333,13 @@ From the repository root:
 
 The script:
 
-1. Builds the C code with warnings treated as errors.
-2. Runs the sequential and multithreaded tests.
-3. Builds the Lean project so the kernel checks all theorems.
-4. Runs both bounded weak-memory harnesses explicitly under RC11 with GenMC.
+1. Re-extracts the Clang AST facts and byte-checks the committed JSON and Lean
+   descriptors, including both source hashes.
+2. Builds the C code with warnings treated as errors.
+3. Runs the sequential and multithreaded tests.
+4. Builds the Lean project so the kernel checks all theorems and the executable
+   single- and cross-thread raw-model examples.
+5. Runs both bounded weak-memory harnesses explicitly under RC11 with GenMC.
 
 Install the pinned local GenMC toolchain once:
 
@@ -304,10 +365,11 @@ implementation. The Lean proof boundary described above remains unchanged.
 
 ## Next Precise Milestone
 
-Derive `TreiberHistory` well-formedness and completion from the indexed method
-trace, prove that every respecting schedule preserves each thread's commit
-order, and state the exact cross-thread real-time compatibility boundary.
-Then provide the C/RC11 translation or validator that produces
-`AtomicRelationData`, `RC11OrderWitness`, and immutable field-read values for
-exactly the supported executions. Until those links are proved, the project
-does not claim that the C Treiber stack is fully verified under RC11.
+Formalize the remaining execution-frontend theorem: every execution of the
+hash-pinned reclamation-free C program under the explicitly selected
+C11/RC11 semantics must translate to finite raw source, relation, schedule,
+publication, next-read, and client-order data accepted by `validate?`.
+Validator soundness is now proved, but validator acceptance is not yet proved
+complete for executions of the C program. Until that connection is formalized
+or isolated behind a precisely specified trusted translator, the project does
+not claim full C-source verification under RC11.
