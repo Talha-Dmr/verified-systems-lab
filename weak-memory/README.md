@@ -90,6 +90,16 @@ theorems.
 - `SourceHappensBefore`, `VisibleNextWrite`, and `NodeAccessCertificate`,
   combining source sequenced-before with graph synchronizes-with so every
   modeled `readNext` can be linked to its exact pre-publication `writeNext`
+- `NextReadValueCertificate`, retaining only the source-semantics fact that an
+  immutable `node->next` read agrees with the allocator record
+- Exact inverse projection from every non-initial canonical graph event to its
+  occurrence-identified atomic source label, without collapsing equal retries
+- Publisher-origin and concrete release-sequence proofs showing that a node
+  re-exposed by intervening pop RMWs still originates at its unique release
+  push
+- `SourceAtomicExecution.toNodeAccessCertificate`, deriving every publication
+  and source happens-before witness from canonical RF/MO data plus immutable
+  field-value agreement
 - `AtomicRelationData`, constructing canonical reads-from and modification
   order from a finite write order and one selected source ID per read, then
   deriving all eleven `RemainingWellFormedRelations` fields
@@ -135,9 +145,9 @@ The remaining source-level boundary is:
 ```text
 C11 Treiber source / complete RC11 semantics
                     ↓ not yet proved
-finite rf/mo choices + rank + node-publication witnesses
-                    ↓ not yet proved
-SourceAtomicExecution + NodeAccessCertificate
+finite rf/mo choices + rank + immutable next-read values
+                    ↓ proved
+SourceAtomicExecution + derived NodeAccessCertificate
 ```
 
 The current theorems establish the linearization-point core and a generic
@@ -194,8 +204,13 @@ exact program order while retaining the erased source metadata. Non-atomic
 are now retained as occurrence-identified source labels. The local machine
 proves which acquire load or failed CAS authorizes each dereference and which
 field write precedes each release push. `NodeAccessCertificate` joins those
-source edges with a release-sequence/reads-from witness. Constructing that
-certificate from the RF/MO execution data remains open.
+source edges with a release-sequence/reads-from witness. The canonical
+execution now derives that certificate: allocator uniqueness identifies the
+original release push; decreasing common rank rules out fabricated pointers
+when a pop re-exposes an older node; and adjacency in the concrete
+modification order constructs the complete RMW release sequence. Only the
+source-semantics fact that a non-atomic immutable-field read returns its
+allocator-recorded value remains an explicit input at this layer.
 `RemainingConsistency` remains as a reusable interface, but the canonical
 `SourceAtomicExecution` path no longer asks a caller to assemble its eleven
 fields or coherence: `AtomicRelationData` and `RC11OrderWitness` derive them.
@@ -275,12 +290,10 @@ implementation. The Lean proof boundary described above remains unchanged.
 
 ## Next Precise Milestone
 
-Connect each source `readNext` occurrence to a
-`NodeAccessCertificate` witness derived from the constructed RF/MO data; a
-later successful pop CAS cannot justify its earlier dereference. Then add
-explicit source response labels, preserve operation IDs through numbered
+Add explicit source response labels, preserve operation IDs through numbered
 atomic events, and connect graph commits to `TreiberHistory` completion and
-real-time order. Finally, provide the C/RC11 translation or validator that
-produces `AtomicRelationData` and `RC11OrderWitness` for exactly the supported
-executions. Until those links are proved, the project does not claim that the
-C Treiber stack is fully verified under RC11.
+real-time order. Then provide the C/RC11 translation or validator that
+produces `AtomicRelationData`, `RC11OrderWitness`, and immutable field-read
+values for exactly the supported executions. Until those links are proved,
+the project does not claim that the C Treiber stack is fully verified under
+RC11.

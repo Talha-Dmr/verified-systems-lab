@@ -123,8 +123,9 @@ end SourceAtomicExecution
 The canonical atomic execution paired with its source-level non-atomic
 publication certificate.
 
-The node-access certificate is kept visible because deriving its
-release-sequence witnesses from the relation data is the next proof boundary.
+This remains a reusable interface for independently certified candidates.
+`TreiberNodeAccessDerivation` constructs it canonically from immutable-field
+value agreement and the relation data.
 -/
 structure CSourceExecution
     (initial : TreiberRA.State α) where

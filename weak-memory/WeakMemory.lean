@@ -28,13 +28,16 @@ carrier and exact program order and certify local source shape.
 and `TreiberGeneratedConsistency` reconstructs core consistency from the
 eleven remaining relation fields plus coherence. Standalone head loads are now
 explicit atomic events, while non-atomic `node->next` accesses are explicit
-source occurrences with a separate release-sequence publication certificate.
+source occurrences. Their immutable values remain a source-semantics input,
+while the canonical graph derives the exact observer, publisher origin,
+release sequence, and mixed source/atomic happens-before chain.
 `TreiberRelations` and `TreiberRelationOrder` construct `rf`, `mo`, all eleven
 relation fields, and coherence from finite execution data plus a common rank.
 `TreiberSourceExecution` installs that canonical graph beneath the existing
-linearizability chain. Deriving node-publication certificates and connecting
-the source trace to identified Herlihy--Wing responses are still missing. We
-deliberately do not claim a complete C11 semantics.
+linearizability chain. Connecting the source trace to identified
+Herlihy--Wing responses and translating the C source into the finite semantic
+inputs are still missing. We deliberately do not claim a complete C11
+semantics.
 -/
 
 inductive MemoryOrder where
