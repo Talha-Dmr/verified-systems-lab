@@ -21,6 +21,8 @@ cd "$project_dir"
 lake build
 lake build WeakMemory.TreiberVerifiedModelExample
 lake build WeakMemory.TreiberVerifiedModelClientOrderExamples
+lake build WeakMemory.TreiberC11V1Frontend
+lake build WeakMemory.TreiberC11V1Examples
 lake exe weakMemoryDemo
 
 echo "GenMC bounded RC11 checks"

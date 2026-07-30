@@ -6,17 +6,17 @@ namespace WeakMemory.TreiberRC11
 /-!
 # Contract for an external execution frontend
 
-This module states the remaining source/execution frontend obligation without
+This module states an abstract source/execution frontend obligation without
 choosing or postulating a language semantics.  An external semantics supplies
 its own execution type, allowed-execution predicate, pinned program identity,
 and client-visible history.  A pure frontend only translates one such
 execution into the finite raw data consumed by the checked Treiber validator.
 
-`FrontendContract` is deliberately explicit about the unproved boundary.  It
-requires every allowed external execution to produce an exact successful
-`validate?` result, and requires the externally observed history to equal the
-history reconstructed from that result.  Validator acceptance alone is not
-called a C or C11 semantics.
+`FrontendContract` is deliberately explicit about the boundary each
+instantiation must prove.  It requires every allowed external execution to
+produce an exact successful `validate?` result, and requires the externally
+observed history to equal the history reconstructed from that result.
+Validator acceptance alone is not called a C or C11 semantics.
 -/
 
 /--

@@ -38,9 +38,13 @@ checked path derives it from positions in a validated relation schedule.
 Source responses are distinct occurrences, graph schedules recover operation
 identity, source completion and per-thread equivalence are derived, and an
 exact finite checker handles cross-thread client real-time edges encoded by
-the supplied trace. The remaining boundary is a formal connection from
-executions of the pinned C source to accepted finite validator inputs. We
-deliberately do not claim a complete C11 semantics.
+the supplied trace. `TreiberC11V1` now instantiates that frontend with an
+independently defined finite source/RC11 semantics, derives the internal
+schedule and generated replay certificates, and proves Herlihy--Wing
+linearizability for every declaratively admitted execution. The remaining
+boundary is a proved refinement from a fuller ISO C semantics to that
+hand-defined, hash-pinned model; we deliberately do not claim such a
+refinement or a complete C11 semantics.
 -/
 
 inductive MemoryOrder where

@@ -5,6 +5,8 @@ import WeakMemory.TreiberScheduledHistory
 import WeakMemory.TreiberVerifiedModelProvenance
 import WeakMemory.TreiberSupportedModelSemantics
 import WeakMemory.TreiberExecutionFrontend
+import WeakMemory.TreiberC11V1Frontend
+import WeakMemory.TreiberC11V1Examples
 
 open WeakMemory
 
@@ -46,3 +48,7 @@ def main : IO Unit := do
   IO.println "Lean theorem checked: every normalized proof-carrying model round-trips through the complete raw validator."
   IO.println "Lean theorem checked: every accepted pinned Treiber model execution is node-safe and Herlihy-Wing linearizable."
   IO.println "Lean theorem checked: an exact external frontend contract transfers provenance, safety, and linearizability."
+  IO.println "Lean theorem checked: direct RC11 consistency and generated graph typing certify replay of the same graph."
+  IO.println "Lean theorem checked: finite declarative client constraints construct the internal schedule topologically."
+  IO.println "Lean theorem checked: every admitted TreiberC11V1 execution receives the full replay, safety, provenance, and linearizability bundle."
+  IO.println "Lean theorem checked: a concrete nonempty single-push declarative execution is linearizable."

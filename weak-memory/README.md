@@ -152,14 +152,39 @@ theorems.
   model-to-validator direction: canonical proof-carrying model executions
   serialize to raw inputs accepted by the complete executable pipeline
 - `ExternalExecutionSemantics`, `PureExecutionFrontend`, and
-  `FrontendContract`, isolating the remaining non-circular program/execution
-  frontend obligation as pinned program identity, exact validator acceptance,
-  and exact client-history fidelity
+  `FrontendContract`, specifying a non-circular program/execution boundary as
+  pinned program identity, exact validator acceptance, and exact
+  client-history fidelity
 - `verified_of_external_allowed`, transferring raw-input provenance,
   descriptor agreement, modeled node-access safety, and Herlihy--Wing
   linearizability to every external execution covered by an explicit
-  frontend contract, without introducing an axiom or pretending that such a
-  C frontend has already been constructed
+  frontend contract; the `TreiberC11V1` frontend now instantiates that
+  contract for its independently defined declarative semantics
+- `TreiberC11V1.DeclarativeExecution`, the public finite execution semantics,
+  combining an explicit source run, an independently defined `RC11.Valid`
+  candidate, the source/client lifetime and value contract, and acyclicity of
+  program-order, extended-coherence, and committed client-real-time edges
+- `DerivedOrder.existsClientCompatibleOrder`, constructing the internal
+  client-compatible schedule by finite topological sorting instead of asking
+  a declarative execution to supply a schedule or numeric rank
+- `relationData_coreConsistent_of_rc11` and
+  `relationData_orderAcyclic_of_rc11`, directly translating independent RC11
+  no-thin-air and coherence into the target `CoreConsistent` and
+  `OrderAcyclic` obligations
+- `GenerationFrontend.generationResult`, deriving allocator-backed generated
+  events, publication origins, and the immutable-`next` certificate used by
+  the normalized validator frontend
+- `projectedGraphTyping` and `existsCertifiedReplay_of_rc11`, combining
+  generated `GraphTyping` with directly derived RC11 `CoreConsistent` to
+  construct a certified replay for the exact same projected graph
+- `FullDeclarativeGuarantees` and
+  `everyDeclarativeExecution_fullyVerified`, the canonical final bundle of
+  direct RC11 consistency, graph typing, certified replay, the derived client
+  schedule, validator provenance, node safety, and Herlihy--Wing
+  linearizability for every declaratively admitted execution
+- `DeclarativeExecution.singlePush`, a concrete nonempty execution with a
+  successful release-CAS commit, plus `singlePush_linearizable` as a
+  nontrivial instance of the public theorem
 - Executable two-thread examples showing that an overlapping empty pop is
   accepted while the same schedule is rejected when a completed push precedes
   the other thread's invocation
@@ -206,13 +231,101 @@ externally supplied raw source/RF/MO/schedule/publication inputs
                                       ├──→ node safety  └──→ HW linearizability
 ```
 
-The Lean theorem now connects source invocations/responses in an accepted raw
-input to its checked linearization-point schedule. The source extractor is an
-explicit trust boundary: the project still does not claim a proved semantics
-for arbitrary C, a proof of Clang, or completeness for the full C11 standard.
-For every finite raw input the validator accepts, the theorem proves the
-result; it is not proved that every execution of the C program produces such
-an input. The native stress test and bounded GenMC runs remain validation
+The new public, schedule-free theorem adds this path:
+
+```text
+finite explicit TreiberC11V1 source execution
+        + independent RC11 candidate and RC11.Valid
+        + ClientContract
+        + ClientOrderAcyclic
+                         │
+                         ├── RC11 no-thin-air/coherence
+                         │       └──→ CoreConsistent + OrderAcyclic
+                         ├── source generation ──→ GraphTyping
+                         │       └──→ CoreConsistent + GraphTyping
+                         │              (exact same projected graph)
+                         │                    └──→ some certified replay schedule
+                         ├── augmented PO/ECO/real-time topological construction
+                         │       └──→ client-compatible schedule ──→ HW
+                         └── immutable next values
+                                 └──→ normalized checked model
+                                             ├──→ validator provenance
+                                             ├──→ node safety
+                                             └──→ HW linearizability
+```
+
+`DeclarativeExecution` is the public semantic domain. It contains no selected
+event schedule and no accepted-validator result. Its four components are the
+explicit source/candidate execution, independent `RC11.Valid`,
+`ClientContract`, and `ClientOrderAcyclic`. The last condition says that the
+union of independent program order, extended coherence, and atomic commit
+edges induced by client real time is acyclic. A finite topological proof
+constructs the client-compatible schedule used by the normalized
+Herlihy--Wing path. Separately, the relation projection uses
+`RC11.Valid.noThinAir` and `RC11.Valid.coherence` directly to derive target
+`CoreConsistent` and `OrderAcyclic`; those results are not obtained from the
+selected client schedule.
+
+The source and generation frontends then derive exact source/event/history
+projections, unique node publishers, allocator-backed generated events,
+publication witnesses, and immutable-`next` read certificates. The normalized
+model is proved accepted by the existing executable validator.
+`projectedGraphTyping` applies the generated typing proof to the exact graph
+whose `CoreConsistent` proof was derived directly from `RC11.Valid`.
+`existsCertifiedReplay_of_rc11` combines those certificates to construct some
+accepted operational replay and certified schedule for that same graph.
+
+That RC11-only certified replay schedule and the augmented
+program-order/extended-coherence/real-time client schedule are two separately
+constructed witnesses and need not be definitionally equal. The latter is the
+one carrying the real-time certificate used by the Herlihy--Wing bridge.
+`clientScheduleReplay_of_rc11` additionally proves that this exact augmented
+schedule replays successfully, using direct RC11-derived `WellFormed`,
+generated `GraphTyping`, and its graph-order certificate; the separate
+existential `CertifiedSchedule` retains the full `CoreConsistent` certificate,
+including no-thin-air.
+
+`FullDeclarativeGuarantees` is the canonical final result package. It contains
+the direct `CoreConsistent` and `OrderAcyclic` results, generated
+`GraphTyping`, certified replay, topologically derived client-compatible
+schedule and its exact successful-replay equality, validator-backed
+allowed-execution guarantees, and direct Herlihy--Wing theorem.
+`everyDeclarativeExecution_fullyVerified` constructs that complete bundle for
+every admitted `DeclarativeExecution`; in particular, the certified-replay
+dependency path does not bypass independent RC11 no-thin-air or coherence.
+The older `everyDeclarativeExecution_linearizable` theorem remains a
+convenient direct projection to the history result.
+
+`DeclarativeExecution.singlePush` provides a concrete nonempty source
+execution containing a successful push commit, and `singlePush_linearizable`
+instantiates the public result for that witness.
+
+The quantified model is deliberately narrower than full C11:
+
+- executions are finite prefixes;
+- the modeled algorithm has one atomic `head` and uses only the required
+  non-SC RC11 fragment;
+- memory reclamation, freeing, and node reuse are excluded;
+- invocation identifiers and pushed nodes are unique;
+- source payloads agree with the candidate payload function;
+- non-atomic `node->next` reads obey the immutable field-value contract; and
+- the client/environment satisfies augmented-order acyclicity, including
+  committed real-time edges.
+
+The final client condition is necessary because C11/RC11 atomic relations do
+not, by themselves, encode arbitrary cross-thread response-before-invocation
+order observed by an external client. Such real-time order must come from a
+client/environment model; requiring the augmented order to be acyclic states
+exactly the compatibility needed for a Herlihy--Wing schedule without
+mislabeling wall-clock order as an RC11 axiom.
+
+The source extractor remains an explicit trust boundary. It hash-pins the
+implementation and checks the expected Clang AST descriptor, but the
+`TreiberC11V1` source semantics is hand-defined and versioned rather than
+derived by a proved ISO C semantics or a proof of Clang. Thus the theorem
+covers every finite `DeclarativeExecution` admitted by that explicit model,
+not every execution of arbitrary C or every execution permitted by the full
+C11 standard. The native stress test and bounded GenMC runs remain validation
 evidence, not substitutes for the Lean theorem.
 
 The RC11-style and replay layers now prove:
@@ -286,16 +399,17 @@ repeated as certificate fields.
 
 `TreiberHistory` defines classical Herlihy--Wing completion, per-thread
 equivalence, real-time preservation, and sequential legality with operation
-identity retained. Control flow now emits explicit responses after a distinct
+identity retained. Control flow emits explicit responses after a distinct
 atomic commit, and exact event-ID lookup reconstructs the matching operation
-identity in any respecting graph schedule. Source well-formedness, completion,
-per-thread equivalence, and same-thread real time are now derived. RC11
+identity in the derived graph schedule. Source well-formedness, completion,
+per-thread equivalence, and same-thread real time are derived. RC11
 consistency alone still does not turn cross-thread wall-clock order into C11
-happens-before; the validator therefore checks compatibility with exactly the
-cross-thread response-before-invocation edges encoded by the supplied trace
-before constructing the classical Herlihy--Wing witness. Fidelity of that
-trace to physical execution time remains part of the external semantics
-boundary. This condition is intentionally not mislabeled as an RC11 axiom.
+happens-before. In the public semantics, the trace supplies those
+response-before-invocation facts and `ClientOrderAcyclic` requires their
+committed event edges to be compatible with program order and extended
+coherence. The internal client-compatible schedule is then constructed
+topologically. Fidelity of the hand-defined trace to a physical C execution
+remains part of the source-semantics trust boundary, not an RC11 axiom.
 
 ## Source-Extraction Trust Boundary
 
@@ -347,8 +461,9 @@ The script:
    descriptors, including both source hashes.
 2. Builds the C code with warnings treated as errors.
 3. Runs the sequential and multithreaded tests.
-4. Builds the Lean project so the kernel checks all theorems and the executable
-   single- and cross-thread raw-model examples.
+4. Builds the Lean project so the kernel checks all theorems, the final
+   `TreiberC11V1` frontend, its concrete single-push witness, and the
+   executable single- and cross-thread raw-model examples.
 5. Runs two bounded weak-memory safety harnesses explicitly under RC11 with
    GenMC.
 6. Runs GenMC's Relinche checker against the exact `treiber.c` implementation
@@ -386,16 +501,12 @@ audit and exact limitations.
 
 ## Next Precise Milestone
 
-Formalize the remaining execution-frontend theorem: every execution of the
-hash-pinned reclamation-free C program under the explicitly selected
-C11/RC11 semantics must translate to finite raw source, relation, schedule,
-publication, next-read, and client-order data accepted by `validate?`.
-Validator soundness is now proved, but validator acceptance is not yet proved
-complete for executions of the C program. `TreiberExecutionFrontend` now
-states this missing completeness and history-fidelity boundary as a
-conditional, axiom-free contract and proves the guarantees that follow from
-it. The next proof must instantiate that contract with an independently
-defined, versioned Treiber C11/RC11 execution semantics; defining the external
-`allowed` predicate as validator acceptance would be circular. Until that
-instantiation is proved, the project does not claim full C-source verification
-under RC11.
+Replace the hand-defined, hash-pinned source boundary with a proved refinement
+from a substantially fuller ISO C execution semantics. That proof should
+derive `TreiberC11V1` source traces, non-atomic field behavior, and the
+independent RC11 candidate from executions of the parsed C program, while
+making compiler and library assumptions explicit. It should then show that
+the resulting client/environment model establishes the current declarative
+admissibility conditions. Until such a refinement is proved, the project
+claims verification of the explicit versioned `TreiberC11V1` semantics, not a
+general proof of Clang or full C-source verification under all of ISO C11.
