@@ -35,6 +35,20 @@ def labelsForThread
       else
         labelsForThread thread rest
 
+/-- Thread projection distributes over concatenation. -/
+theorem labelsForThread_append
+    (thread : Nat)
+    (first second : List (EventGraph.OwnedLabel α)) :
+    labelsForThread thread (first ++ second) =
+      labelsForThread thread first ++
+        labelsForThread thread second := by
+  induction first with
+  | nil =>
+      rfl
+  | cons owned rest inductionHypothesis =>
+      simp only [List.cons_append, labelsForThread]
+      split <;> simp [inductionHypothesis]
+
 /-- Extract the operation identifier of an invocation label. -/
 def invocationOperation? :
     EventGraph.OwnedLabel α →
@@ -42,6 +56,8 @@ def invocationOperation? :
   | ⟨_, .invokePush operation .., _⟩ => some operation
   | ⟨_, .invokePop operation, _⟩ => some operation
   | ⟨_, .invokeIsEmpty operation, _⟩ => some operation
+  | ⟨_, .writeNext .., _⟩ => none
+  | ⟨_, .readNext .., _⟩ => none
   | ⟨_, .atomic .., _⟩ => none
 
 /-- Invocation operation identifiers in global skeleton order. -/
@@ -57,6 +73,8 @@ def pushReservation? :
   | ⟨_, .invokePush _ reserved .., _⟩ => some reserved
   | ⟨_, .invokePop _, _⟩ => none
   | ⟨_, .invokeIsEmpty _, _⟩ => none
+  | ⟨_, .writeNext .., _⟩ => none
+  | ⟨_, .readNext .., _⟩ => none
   | ⟨_, .atomic .., _⟩ => none
 
 /-- Push-reserved node identifiers in global skeleton order. -/
@@ -293,6 +311,202 @@ theorem reservationFresh
   apply certificate.reservationsFresh
   exact List.mem_filterMap.mpr
     ⟨owned, member, reservation⟩
+
+/--
+Every selected source-level `readNext` occurrence has an earlier owned atomic
+event in the same thread and operation that supplied its non-null node.
+
+The local observer is immediately previous after thread projection. Other
+threads may have labels between the observer and field read in the global
+skeleton, so this theorem exposes global prefix membership rather than global
+adjacency.
+-/
+theorem readNext_hasObserver
+    {initial : TreiberRA.State α}
+    {skeleton : EventGraph.Skeleton α}
+    (certificate : SourceSkeleton initial skeleton)
+    {leading trailing : List (EventGraph.OwnedLabel α)}
+    {fieldRead : EventGraph.OwnedLabel α}
+    {thread : Nat}
+    {operation : ControlFlow.OperationId}
+    {node : TreiberRA.NodeId}
+    {next : Option TreiberRA.NodeId}
+    (labelsShape :
+      skeleton.labels =
+        leading ++ fieldRead :: trailing)
+    (readThread : fieldRead.thread = thread)
+    (readLabel :
+      fieldRead.label =
+        .readNext operation node next) :
+    ∃ observer action,
+      observer ∈ leading ∧
+        observer.thread = thread ∧
+        observer.label = .atomic operation action ∧
+        ControlFlow.AuthorizesReadNext thread node action := by
+  obtain ⟨final, execution⟩ :=
+    certificate.exists_execution thread
+  have projectedShape :
+      labelsForThread thread skeleton.labels =
+        labelsForThread thread leading ++
+          .readNext operation node next ::
+            labelsForThread thread trailing := by
+    rw [labelsShape, labelsForThread_append]
+    simp [labelsForThread, readThread, readLabel]
+  obtain ⟨earlier, action, leadingShape, authorized⟩ :=
+    execution.readNext_hasObserver projectedShape
+  have atomicMember :
+      ControlFlow.Label.atomic operation action ∈
+        labelsForThread thread leading := by
+    rw [leadingShape]
+    simp
+  obtain ⟨observer, observerMember, observerThread,
+      observerLabel⟩ :=
+    exists_owned_of_mem_labelsForThread atomicMember
+  exact ⟨observer, action, observerMember,
+    observerThread, observerLabel, authorized⟩
+
+/--
+Every selected successful push has an earlier source `writeNext` occurrence
+in the same thread and operation, carrying exactly the pointer installed in
+the allocator record at publication.
+-/
+theorem pushSuccess_hasNextWrite
+    {initial : TreiberRA.State α}
+    {skeleton : EventGraph.Skeleton α}
+    (certificate : SourceSkeleton initial skeleton)
+    {leading trailing : List (EventGraph.OwnedLabel α)}
+    {publisher : EventGraph.OwnedLabel α}
+    {thread : Nat}
+    {operation : ControlFlow.OperationId}
+    {reserved : TreiberRA.NodeId}
+    {value : α}
+    {expected : Option TreiberRA.NodeId}
+    (labelsShape :
+      skeleton.labels =
+        leading ++ publisher :: trailing)
+    (publisherThread : publisher.thread = thread)
+    (publisherLabel :
+      publisher.label =
+        .atomic operation
+          (.pushSuccess thread reserved value expected)) :
+    ∃ fieldWrite,
+      fieldWrite ∈ leading ∧
+        fieldWrite.thread = thread ∧
+        fieldWrite.label =
+          .writeNext operation reserved expected := by
+  obtain ⟨final, execution⟩ :=
+    certificate.exists_execution thread
+  have projectedShape :
+      labelsForThread thread skeleton.labels =
+        labelsForThread thread leading ++
+          .atomic operation
+            (.pushSuccess thread reserved value expected) ::
+            labelsForThread thread trailing := by
+    rw [labelsShape, labelsForThread_append]
+    simp [labelsForThread, publisherThread, publisherLabel]
+  obtain ⟨earlier, leadingShape⟩ :=
+    execution.pushSuccess_hasNextWrite projectedShape
+  have writeMember :
+      ControlFlow.Label.writeNext operation reserved expected ∈
+        labelsForThread thread leading := by
+    rw [leadingShape]
+    simp
+  obtain ⟨fieldWrite, fieldWriteMember, fieldWriteThread,
+      fieldWriteLabel⟩ :=
+    exists_owned_of_mem_labelsForThread writeMember
+  exact ⟨fieldWrite, fieldWriteMember,
+    fieldWriteThread, fieldWriteLabel⟩
+
+/--
+Occurrence-level form of `readNext_hasObserver`, preserving the identity of
+equal repeated retry labels.
+-/
+theorem readNextOccurrence_hasObserver
+    {initial : TreiberRA.State α}
+    {skeleton : EventGraph.Skeleton α}
+    (certificate : SourceSkeleton initial skeleton)
+    (fieldRead : EventGraph.SourceOccurrence skeleton)
+    {thread : Nat}
+    {operation : ControlFlow.OperationId}
+    {node : TreiberRA.NodeId}
+    {next : Option TreiberRA.NodeId}
+    (readThread :
+      fieldRead.selected.thread = thread)
+    (readLabel :
+      fieldRead.selected.label =
+        .readNext operation node next) :
+    ∃ observer : EventGraph.SourceOccurrence skeleton,
+      observer.SequencedBefore fieldRead ∧
+        ∃ action,
+          observer.selected.label =
+              .atomic operation action ∧
+            ControlFlow.AuthorizesReadNext
+              thread node action := by
+  obtain ⟨observerOwned, action, observerMember,
+      observerThread, observerLabel, authorized⟩ :=
+    certificate.readNext_hasObserver
+      fieldRead.labelsShape readThread readLabel
+  obtain ⟨before, after, leadingShape⟩ :=
+    List.append_of_mem observerMember
+  let observer : EventGraph.SourceOccurrence skeleton := {
+    leading := before
+    selected := observerOwned
+    trailing :=
+      after ++ fieldRead.selected :: fieldRead.trailing
+    labelsShape := by
+      rw [fieldRead.labelsShape, leadingShape]
+      simp [List.append_assoc]
+  }
+  refine ⟨observer, ?_, action, observerLabel, authorized⟩
+  constructor
+  · exact observerThread.trans readThread.symm
+  · simp [observer, EventGraph.SourceOccurrence.index,
+      leadingShape]
+
+/--
+Occurrence-level form of `pushSuccess_hasNextWrite`, preserving the exact
+pre-publication write paired with a release CAS.
+-/
+theorem pushSuccessOccurrence_hasNextWrite
+    {initial : TreiberRA.State α}
+    {skeleton : EventGraph.Skeleton α}
+    (certificate : SourceSkeleton initial skeleton)
+    (publisher : EventGraph.SourceOccurrence skeleton)
+    {thread : Nat}
+    {operation : ControlFlow.OperationId}
+    {reserved : TreiberRA.NodeId}
+    {value : α}
+    {expected : Option TreiberRA.NodeId}
+    (publisherThread :
+      publisher.selected.thread = thread)
+    (publisherLabel :
+      publisher.selected.label =
+        .atomic operation
+          (.pushSuccess thread reserved value expected)) :
+    ∃ fieldWrite : EventGraph.SourceOccurrence skeleton,
+      fieldWrite.SequencedBefore publisher ∧
+        fieldWrite.selected.label =
+          .writeNext operation reserved expected := by
+  obtain ⟨fieldWriteOwned, fieldWriteMember,
+      fieldWriteThread, fieldWriteLabel⟩ :=
+    certificate.pushSuccess_hasNextWrite
+      publisher.labelsShape publisherThread publisherLabel
+  obtain ⟨before, after, leadingShape⟩ :=
+    List.append_of_mem fieldWriteMember
+  let fieldWrite : EventGraph.SourceOccurrence skeleton := {
+    leading := before
+    selected := fieldWriteOwned
+    trailing :=
+      after ++ publisher.selected :: publisher.trailing
+    labelsShape := by
+      rw [publisher.labelsShape, leadingShape]
+      simp [List.append_assoc]
+  }
+  refine ⟨fieldWrite, ?_, fieldWriteLabel⟩
+  constructor
+  · exact fieldWriteThread.trans publisherThread.symm
+  · simp [fieldWrite, EventGraph.SourceOccurrence.index,
+      leadingShape]
 
 end SourceSkeleton
 

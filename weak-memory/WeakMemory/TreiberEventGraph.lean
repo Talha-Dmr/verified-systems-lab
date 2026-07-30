@@ -28,6 +28,8 @@ def LabelOwnedBy
   | .invokePush .. => True
   | .invokePop .. => True
   | .invokeIsEmpty .. => True
+  | .writeNext .. => True
+  | .readNext .. => True
   | .atomic _ action =>
       ControlFlow.actionThread action = thread
 
@@ -55,6 +57,10 @@ def ofLocalStep
     | invokePop =>
         exact True.intro
     | invokeIsEmpty =>
+        exact True.intro
+    | writeNext =>
+        exact True.intro
+    | readNext =>
         exact True.intro
     | atomic operation action =>
         exact step.atomicActionThread_eq
@@ -93,9 +99,63 @@ def atomicEventsFrom :
           atomicEventsFrom next rest
       | .invokeIsEmpty .. =>
           atomicEventsFrom next rest
+      | .writeNext .. =>
+          atomicEventsFrom next rest
+      | .readNext .. =>
+          atomicEventsFrom next rest
       | .atomic _ action =>
           Event.mk next (.algorithm action) ::
             atomicEventsFrom (next + 1) rest
+
+/-- Number of atomic-head labels in a source-label fragment. -/
+def atomicLabelCount :
+    List (OwnedLabel α) → Nat
+  | [] => 0
+  | owned :: rest =>
+      match owned.label with
+      | .atomic .. => 1 + atomicLabelCount rest
+      | _ => atomicLabelCount rest
+
+/--
+Numbering a concatenation first numbers its prefix, then resumes after exactly
+the number of atomic labels consumed by that prefix.
+-/
+theorem atomicEventsFrom_append
+    (next : EventId)
+    (first second : List (OwnedLabel α)) :
+    atomicEventsFrom next (first ++ second) =
+      atomicEventsFrom next first ++
+        atomicEventsFrom
+          (next + atomicLabelCount first) second := by
+  induction first generalizing next with
+  | nil =>
+      simp [atomicEventsFrom, atomicLabelCount]
+  | cons owned rest inductionHypothesis =>
+      rcases owned with ⟨thread, label, ownership⟩
+      cases label <;>
+        simp [atomicEventsFrom, atomicLabelCount,
+          inductionHypothesis, Nat.add_assoc]
+
+/--
+The atomic label at a selected source occurrence becomes the event whose ID
+is the starting ID plus the number of preceding atomic labels.
+-/
+theorem atomicEventAt_mem
+    {next : EventId}
+    {labels leading trailing : List (OwnedLabel α)}
+    {selected : OwnedLabel α}
+    {operation : ControlFlow.OperationId}
+    {action : TreiberRA.Action α}
+    (labelsShape :
+      labels = leading ++ selected :: trailing)
+    (labelShape :
+      selected.label = .atomic operation action) :
+    Event.mk
+        (next + atomicLabelCount leading)
+        (.algorithm action) ∈
+      atomicEventsFrom next labels := by
+  rw [labelsShape, atomicEventsFrom_append]
+  simp [atomicEventsFrom, labelShape]
 
 /-- Every numbered atomic event has an identifier at least `next`. -/
 theorem atomicEventsFrom_id_lowerBound
@@ -115,6 +175,10 @@ theorem atomicEventsFrom_id_lowerBound
       | invokePop operation =>
           exact inductionHypothesis (next := next) member
       | invokeIsEmpty operation =>
+          exact inductionHypothesis (next := next) member
+      | writeNext operation node value =>
+          exact inductionHypothesis (next := next) member
+      | readNext operation node value =>
           exact inductionHypothesis (next := next) member
       | atomic operation action =>
           simp only [atomicEventsFrom, List.mem_cons] at member
@@ -144,6 +208,10 @@ theorem atomicEventsFrom_pairwise_id_lt
           exact inductionHypothesis next
       | invokeIsEmpty operation =>
           exact inductionHypothesis next
+      | writeNext operation node value =>
+          exact inductionHypothesis next
+      | readNext operation node value =>
+          exact inductionHypothesis next
       | atomic operation action =>
           apply List.Pairwise.cons
           · intro later laterMember
@@ -168,6 +236,10 @@ theorem atomicEventsFrom_nodup
       | invokePop operation =>
           exact inductionHypothesis next
       | invokeIsEmpty operation =>
+          exact inductionHypothesis next
+      | writeNext operation node value =>
+          exact inductionHypothesis next
+      | readNext operation node value =>
           exact inductionHypothesis next
       | atomic operation action =>
           apply List.nodup_cons.mpr
@@ -211,6 +283,14 @@ theorem atomicEventsFrom_uniqueIds
             (next := next)
             leftMember rightMember sameId
       | invokeIsEmpty operation =>
+          exact inductionHypothesis
+            (next := next)
+            leftMember rightMember sameId
+      | writeNext operation node value =>
+          exact inductionHypothesis
+            (next := next)
+            leftMember rightMember sameId
+      | readNext operation node value =>
           exact inductionHypothesis
             (next := next)
             leftMember rightMember sameId
@@ -264,6 +344,10 @@ theorem atomicEventsFrom_not_initial
           exact inductionHypothesis (next := next) member
       | invokeIsEmpty operation =>
           exact inductionHypothesis (next := next) member
+      | writeNext operation node value =>
+          exact inductionHypothesis (next := next) member
+      | readNext operation node value =>
+          exact inductionHypothesis (next := next) member
       | atomic operation action =>
           simp only [atomicEventsFrom, List.mem_cons] at member
           rcases member with isHead | inRest
@@ -276,16 +360,104 @@ theorem atomicEventsFrom_not_initial
 structure Skeleton (α : Type) where
   labels : List (OwnedLabel α)
 
+/--
+One selected occurrence in a source skeleton.
+
+The prefix and suffix distinguish repeated equal retry labels. Its numerical
+position is the length of `leading`; no decidable equality on payloads is
+required.
+-/
+structure SourceOccurrence
+    (skeleton : Skeleton α) where
+  leading :
+    List (OwnedLabel α)
+  selected :
+    OwnedLabel α
+  trailing :
+    List (OwnedLabel α)
+  labelsShape :
+    skeleton.labels = leading ++ selected :: trailing
+
+namespace SourceOccurrence
+
+/-- Zero-based source position of an occurrence. -/
+def index
+    {skeleton : Skeleton α}
+    (occurrence : SourceOccurrence skeleton) :
+    Nat :=
+  occurrence.leading.length
+
+/-- Source sequenced-before: same owning thread and increasing position. -/
+def SequencedBefore
+    {skeleton : Skeleton α}
+    (first second : SourceOccurrence skeleton) : Prop :=
+  first.selected.thread = second.selected.thread ∧
+    first.index < second.index
+
+end SourceOccurrence
+
 namespace Skeleton
 
 /-- The unique logical initializer, using the reserved identifier zero. -/
 def initialEvent : Event α :=
   Event.mk 0 .initial
 
+/-- Event generated at an atomic source occurrence after a selected prefix. -/
+def atomicEventAt
+    (leading : List (OwnedLabel α))
+    (action : TreiberRA.Action α) :
+    Event α :=
+  Event.mk
+    (1 + atomicLabelCount leading)
+    (.algorithm action)
+
+/-- Project an occurrence to its numbered atomic event when it is atomic. -/
+def atomicEventAtOccurrence
+    (skeleton : Skeleton α)
+    (occurrence : SourceOccurrence skeleton) :
+    Option (Event α) :=
+  match occurrence.selected.label with
+  | .atomic _ action =>
+      some (atomicEventAt occurrence.leading action)
+  | _ =>
+      none
+
 /-- Initializer followed by freshly numbered atomic events. -/
 def events (skeleton : Skeleton α) : List (Event α) :=
   initialEvent ::
     atomicEventsFrom 1 skeleton.labels
+
+/-- A selected atomic source occurrence belongs to the generated carrier. -/
+theorem atomicEventAt_mem
+    (skeleton : Skeleton α)
+    {leading trailing : List (OwnedLabel α)}
+    {selected : OwnedLabel α}
+    {operation : ControlFlow.OperationId}
+    {action : TreiberRA.Action α}
+    (labelsShape :
+      skeleton.labels = leading ++ selected :: trailing)
+    (labelShape :
+      selected.label = .atomic operation action) :
+    atomicEventAt leading action ∈ skeleton.events := by
+  apply List.mem_cons_of_mem
+  exact EventGraph.atomicEventAt_mem
+    labelsShape labelShape
+
+/-- Atomic projection of a source occurrence belongs to the skeleton carrier. -/
+theorem atomicEventAtOccurrence_mem
+    (skeleton : Skeleton α)
+    (occurrence : SourceOccurrence skeleton)
+    {event : Event α}
+    (projects :
+      skeleton.atomicEventAtOccurrence occurrence = some event) :
+    event ∈ skeleton.events := by
+  unfold atomicEventAtOccurrence at projects
+  split at projects
+  next operation action labelShape =>
+    cases projects
+    exact skeleton.atomicEventAt_mem
+      occurrence.labelsShape labelShape
+  all_goals contradiction
 
 /--
 Program order is same-thread order induced by increasing fresh identifiers.

@@ -14,6 +14,11 @@ its local state and emitted labels. Initial head loads are explicit atomic
 actions: push uses a relaxed load, while pop and `isEmpty` use acquire loads.
 An initially empty pop completes at its `popLoad none` event.
 
+A push writes `node->next` before every compare-exchange attempt. A nonempty
+pop reads `observed->next` before every compare-exchange attempt. These
+non-atomic field accesses are explicit source labels but are erased from the
+single-location atomic-head graph.
+
 A failed weak compare-exchange always updates the local expected value to the
 observed actual value. Equal values are permitted, representing spurious
 failure. If a failed pop compare-exchange observes `none`, the source function
@@ -32,8 +37,10 @@ local reservation only; uniqueness across threads remains an allocator-table
 obligation in `TreiberGeneration`.
 
 The loading states separate source invocation from the initial atomic load.
-An active pop stores a non-null pointer because an empty load, or a failed CAS
-that observes null, completes the invocation immediately.
+The field-access states ensure that every compare-exchange is preceded by the
+corresponding source-level `node->next` write or read. An active pop stores a
+non-null pointer because an empty load, or a failed CAS that observes null,
+completes the invocation immediately.
 -/
 inductive LocalState (α : Type) where
   | idle
@@ -41,6 +48,11 @@ inductive LocalState (α : Type) where
       (operation : OperationId)
       (reserved : TreiberRA.NodeId)
       (value : α)
+  | pushWriting
+      (operation : OperationId)
+      (reserved : TreiberRA.NodeId)
+      (value : α)
+      (expected : Option TreiberRA.NodeId)
   | pushing
       (operation : OperationId)
       (reserved : TreiberRA.NodeId)
@@ -48,9 +60,13 @@ inductive LocalState (α : Type) where
       (expected : Option TreiberRA.NodeId)
   | popLoading
       (operation : OperationId)
+  | popReading
+      (operation : OperationId)
+      (observed : TreiberRA.NodeId)
   | popping
       (operation : OperationId)
       (expected : TreiberRA.NodeId)
+      (next : Option TreiberRA.NodeId)
   | checkingEmpty
       (operation : OperationId)
   deriving Repr, DecidableEq
@@ -60,7 +76,8 @@ Observable labels of the local control-flow machine.
 
 Invocation labels preserve source-level operation identity. Atomic labels
 retain that identity while carrying exactly the existing operational action,
-including the source function's initial head load.
+including the source function's initial head load. `writeNext` and `readNext`
+retain the non-atomic node-field accesses needed for the publication proof.
 -/
 inductive Label (α : Type) where
   | invokePush
@@ -71,6 +88,14 @@ inductive Label (α : Type) where
       (operation : OperationId)
   | invokeIsEmpty
       (operation : OperationId)
+  | writeNext
+      (operation : OperationId)
+      (node : TreiberRA.NodeId)
+      (next : Option TreiberRA.NodeId)
+  | readNext
+      (operation : OperationId)
+      (node : TreiberRA.NodeId)
+      (next : Option TreiberRA.NodeId)
   | atomic
       (operation : OperationId)
       (action : TreiberRA.Action α)
@@ -83,6 +108,8 @@ def operation : Label α → OperationId
   | .invokePush operation .. => operation
   | .invokePop operation => operation
   | .invokeIsEmpty operation => operation
+  | .writeNext operation .. => operation
+  | .readNext operation .. => operation
   | .atomic operation _ => operation
 
 /-- Project an atomic label to its operational action. -/
@@ -90,11 +117,13 @@ def action? : Label α → Option (TreiberRA.Action α)
   | .invokePush .. => none
   | .invokePop .. => none
   | .invokeIsEmpty .. => none
+  | .writeNext .. => none
+  | .readNext .. => none
   | .atomic _ action => some action
 
 end Label
 
-/-- Erase invocation labels and operation identifiers from a local trace. -/
+/-- Project a source trace to its atomic-head operational actions. -/
 def projectedActions : List (Label α) → List (TreiberRA.Action α)
   | [] => []
   | label :: rest =>
@@ -129,7 +158,16 @@ inductive LocalStep (thread : Nat) :
       LocalStep thread
         (.pushLoading operation reserved value)
         (.atomic operation (.pushLoad thread observed))
-        (.pushing operation reserved value observed)
+        (.pushWriting operation reserved value observed)
+  | writeNext
+      (operation : OperationId)
+      (reserved : TreiberRA.NodeId)
+      (value : α)
+      (expected : Option TreiberRA.NodeId) :
+      LocalStep thread
+        (.pushWriting operation reserved value expected)
+        (.writeNext operation reserved expected)
+        (.pushing operation reserved value expected)
   | beginPop
       (operation : OperationId) :
       LocalStep thread
@@ -148,7 +186,15 @@ inductive LocalStep (thread : Nat) :
       LocalStep thread
         (.popLoading operation)
         (.atomic operation (.popLoad thread (some observed)))
-        (.popping operation observed)
+        (.popReading operation observed)
+  | readNext
+      (operation : OperationId)
+      (observed : TreiberRA.NodeId)
+      (next : Option TreiberRA.NodeId) :
+      LocalStep thread
+        (.popReading operation observed)
+        (.readNext operation observed next)
+        (.popping operation observed next)
   | beginIsEmpty
       (operation : OperationId) :
       LocalStep thread
@@ -171,7 +217,7 @@ inductive LocalStep (thread : Nat) :
         (.pushing operation reserved value expected)
         (.atomic operation
           (.pushFailure thread reserved value expected actual))
-        (.pushing operation reserved value actual)
+        (.pushWriting operation reserved value actual)
   | pushSuccess
       (operation : OperationId)
       (reserved : TreiberRA.NodeId)
@@ -184,17 +230,19 @@ inductive LocalStep (thread : Nat) :
         .idle
   | popFailureRetry
       (operation : OperationId)
-      (expected actual : TreiberRA.NodeId) :
+      (expected actual : TreiberRA.NodeId)
+      (next : Option TreiberRA.NodeId) :
       LocalStep thread
-        (.popping operation expected)
+        (.popping operation expected next)
         (.atomic operation
           (.popFailure thread (some expected) (some actual)))
-        (.popping operation actual)
+        (.popReading operation actual)
   | popFailureEmpty
       (operation : OperationId)
-      (expected : TreiberRA.NodeId) :
+      (expected : TreiberRA.NodeId)
+      (next : Option TreiberRA.NodeId) :
       LocalStep thread
-        (.popping operation expected)
+        (.popping operation expected next)
         (.atomic operation
           (.popFailure thread (some expected) none))
         .idle
@@ -204,7 +252,7 @@ inductive LocalStep (thread : Nat) :
       (value : α)
       (next : Option TreiberRA.NodeId) :
       LocalStep thread
-        (.popping operation expected)
+        (.popping operation expected next)
         (.atomic operation
           (.popSuccess thread expected value next))
         .idle
@@ -269,10 +317,29 @@ theorem LocalStep.fromPushLoading
         after) :
     ∃ observed,
       label = .atomic operation (.pushLoad thread observed) ∧
-        after = .pushing operation reserved value observed := by
+        after = .pushWriting operation reserved value observed := by
   cases step with
   | pushLoad =>
       exact ⟨_, rfl, rfl⟩
+
+/-- Every push attempt writes its desired node's `next` field before its CAS. -/
+theorem LocalStep.fromPushWriting
+    {thread : Nat}
+    {operation : OperationId}
+    {reserved : TreiberRA.NodeId}
+    {value : α}
+    {expected : Option TreiberRA.NodeId}
+    {label : Label α}
+    {after : LocalState α}
+    (step :
+      LocalStep thread
+        (.pushWriting operation reserved value expected)
+        label
+        after) :
+    label = .writeNext operation reserved expected ∧
+      after = .pushing operation reserved value expected := by
+  cases step
+  exact ⟨rfl, rfl⟩
 
 /--
 A pending pop performs exactly its acquire head load. Null completes the
@@ -292,12 +359,31 @@ theorem LocalStep.fromPopLoading
       after = .idle) ∨
     ∃ observed,
       label = .atomic operation (.popLoad thread (some observed)) ∧
-        after = .popping operation observed := by
+        after = .popReading operation observed := by
   cases step with
   | popLoadEmpty =>
       exact Or.inl ⟨rfl, rfl⟩
   | popLoadNonempty =>
       exact Or.inr ⟨_, rfl, rfl⟩
+
+/-- Every non-null pop observation is followed by a matching `next` read. -/
+theorem LocalStep.fromPopReading
+    {thread : Nat}
+    {operation : OperationId}
+    {observed : TreiberRA.NodeId}
+    {label : Label α}
+    {after : LocalState α}
+    (step :
+      LocalStep thread
+        (.popReading operation observed)
+        label
+        after) :
+    ∃ next,
+      label = .readNext operation observed next ∧
+        after = .popping operation observed next := by
+  cases step with
+  | readNext =>
+      exact ⟨_, rfl, rfl⟩
 
 /-- An `isEmpty` invocation completes at its acquire head load. -/
 theorem LocalStep.fromCheckingEmpty
@@ -344,7 +430,7 @@ theorem LocalStep.fromPushing
             (.pushFailure
               thread reserved value expected actual) ∧
         after =
-          .pushing operation reserved value actual := by
+          .pushWriting operation reserved value actual := by
   cases step with
   | pushFailure =>
       exact Or.inr ⟨_, rfl, rfl⟩
@@ -359,14 +445,15 @@ theorem LocalStep.fromNonemptyPop
     {thread : Nat}
     {operation : OperationId}
     {expected : TreiberRA.NodeId}
+    {next : Option TreiberRA.NodeId}
     {label : Label α}
     {after : LocalState α}
     (step :
       LocalStep thread
-        (.popping operation expected)
+        (.popping operation expected next)
         label
         after) :
-    (∃ value next,
+    (∃ value,
       label =
           .atomic operation
             (.popSuccess thread expected value next) ∧
@@ -376,7 +463,7 @@ theorem LocalStep.fromNonemptyPop
         .atomic operation
             (.popFailure
               thread (some expected) (some actual)) ∧
-        after = .popping operation actual) ∨
+        after = .popReading operation actual) ∨
     (label =
         .atomic operation
           (.popFailure thread (some expected) none) ∧
@@ -387,7 +474,7 @@ theorem LocalStep.fromNonemptyPop
   | popFailureEmpty =>
       exact Or.inr (Or.inr ⟨rfl, rfl⟩)
   | popSuccess =>
-      exact Or.inl ⟨_, _, rfl, rfl⟩
+      exact Or.inl ⟨_, rfl, rfl⟩
 
 /-- A weak push compare-exchange may fail spuriously without changing expected. -/
 theorem pushSpuriousFailure
@@ -401,21 +488,22 @@ theorem pushSpuriousFailure
       (.atomic operation
         (.pushFailure
           thread reserved value expected expected))
-      (.pushing operation reserved value expected) :=
+      (.pushWriting operation reserved value expected) :=
   .pushFailure operation reserved value expected expected
 
 /-- A weak pop compare-exchange may fail spuriously and retry the same node. -/
 theorem popSpuriousFailure
     (thread : Nat)
     (operation : OperationId)
-    (expected : TreiberRA.NodeId) :
+    (expected : TreiberRA.NodeId)
+    (next : Option TreiberRA.NodeId) :
     LocalStep thread
-      (.popping operation expected : LocalState α)
+      (.popping operation expected next : LocalState α)
       (.atomic operation
         (.popFailure
           thread (some expected) (some expected)))
-      (.popping operation expected) :=
-  .popFailureRetry operation expected expected
+      (.popReading operation expected) :=
+  .popFailureRetry operation expected expected next
 
 /--
 A pop CAS failure that observes null completes immediately and emits only that
@@ -424,13 +512,14 @@ failed CAS observation.
 theorem failedPopObservingEmpty_completes
     (thread : Nat)
     (operation : OperationId)
-    (expected : TreiberRA.NodeId) :
+    (expected : TreiberRA.NodeId)
+    (next : Option TreiberRA.NodeId) :
     LocalStep thread
-      (.popping operation expected : LocalState α)
+      (.popping operation expected next : LocalState α)
       (.atomic operation
         (.popFailure thread (some expected) none))
       .idle :=
-  .popFailureEmpty operation expected
+  .popFailureEmpty operation expected next
 
 /-- The completing failed-pop action linearizes as an empty pop. -/
 theorem failedPopObservingEmpty_commitsPopEmpty
@@ -469,6 +558,210 @@ inductive Execution (thread : Nat) :
       (first : LocalStep thread initial label middle)
       (later : Execution thread middle rest final) :
       Execution thread initial (label :: rest) final
+
+/--
+The acquire atomic observation that authorizes the following non-atomic
+`node->next` read in one pop iteration.
+-/
+inductive AuthorizesReadNext
+    (thread : Nat)
+    (node : TreiberRA.NodeId) :
+    TreiberRA.Action α → Prop where
+  | popLoad :
+      AuthorizesReadNext thread node
+        (.popLoad thread (some node))
+  | popFailure (expected : TreiberRA.NodeId) :
+      AuthorizesReadNext thread node
+        (.popFailure thread (some expected) (some node))
+
+/--
+At a selected `readNext` occurrence, either the execution prefix itself starts
+in the matching read-ready state, or its immediately preceding label is the
+acquire load/failed-CAS observation that supplied the non-null node.
+
+The first alternative is useful for suffixes. For executions starting in
+`idle`, it is impossible and every field read therefore has a concrete atomic
+predecessor.
+-/
+theorem Execution.readNext_predecessor
+    {thread : Nat}
+    {initial final : LocalState α}
+    {labels leading suffix : List (Label α)}
+    {operation : OperationId}
+    {node : TreiberRA.NodeId}
+    {next : Option TreiberRA.NodeId}
+    (execution : Execution thread initial labels final)
+    (shape :
+      labels =
+        leading ++ .readNext operation node next :: suffix) :
+    (leading = [] ∧
+      initial = .popReading operation node) ∨
+    ∃ earlier action,
+      leading = earlier ++ [.atomic operation action] ∧
+        AuthorizesReadNext thread node action := by
+  induction execution generalizing leading with
+  | nil state =>
+      simp at shape
+  | @cons initial middle final label rest first later
+      inductionHypothesis =>
+      cases leading with
+      | nil =>
+          simp only [List.nil_append] at shape
+          have labelShape :
+              label = .readNext operation node next :=
+            (List.cons.inj shape).1
+          subst label
+          cases first
+          exact Or.inl ⟨rfl, rfl⟩
+      | cons prefixHead prefixTail =>
+          simp only [List.cons_append] at shape
+          have labelsMatch := List.cons.inj shape
+          have restShape :
+              rest =
+                prefixTail ++
+                  .readNext operation node next :: suffix :=
+            labelsMatch.2
+          rcases inductionHypothesis restShape with startsReady | prior
+          · rcases startsReady with
+              ⟨prefixTailEmpty, middleReady⟩
+            subst prefixTail
+            subst middle
+            have labelShape : label = prefixHead :=
+              labelsMatch.1
+            subst prefixHead
+            cases first with
+            | popLoadNonempty =>
+                exact Or.inr
+                  ⟨[], _, by simp,
+                    AuthorizesReadNext.popLoad⟩
+            | popFailureRetry operation expected actual next =>
+                exact Or.inr
+                  ⟨[],
+                    .popFailure thread (some expected) (some node),
+                    by simp,
+                    AuthorizesReadNext.popFailure expected⟩
+          · rcases prior with
+              ⟨earlier, action, prefixTailShape, authorized⟩
+            exact Or.inr
+              ⟨prefixHead :: earlier, action,
+                by simp [prefixTailShape],
+                authorized⟩
+
+/--
+Every selected `readNext` occurrence in an invocation trace starting from
+`idle` is immediately preceded by its acquire observer.
+-/
+theorem Execution.readNext_hasObserver
+    {thread : Nat}
+    {final : LocalState α}
+    {labels leading suffix : List (Label α)}
+    {operation : OperationId}
+    {node : TreiberRA.NodeId}
+    {next : Option TreiberRA.NodeId}
+    (execution : Execution thread .idle labels final)
+    (shape :
+      labels =
+        leading ++ .readNext operation node next :: suffix) :
+    ∃ earlier action,
+      leading = earlier ++ [.atomic operation action] ∧
+        AuthorizesReadNext thread node action := by
+  rcases execution.readNext_predecessor shape with
+    startsReady | observer
+  · cases startsReady.2
+  · exact observer
+
+/--
+At a selected successful-push occurrence, either the execution prefix starts
+in the matching CAS-ready state, or the immediately preceding source label is
+the exact `node->next` write used by that release CAS.
+-/
+theorem Execution.pushSuccess_predecessor
+    {thread : Nat}
+    {initial final : LocalState α}
+    {labels leading suffix : List (Label α)}
+    {operation : OperationId}
+    {reserved : TreiberRA.NodeId}
+    {value : α}
+    {expected : Option TreiberRA.NodeId}
+    (execution : Execution thread initial labels final)
+    (shape :
+      labels =
+        leading ++
+          .atomic operation
+            (.pushSuccess thread reserved value expected) ::
+          suffix) :
+    (leading = [] ∧
+      initial =
+        .pushing operation reserved value expected) ∨
+    ∃ earlier,
+      leading =
+        earlier ++ [.writeNext operation reserved expected] := by
+  induction execution generalizing leading with
+  | nil state =>
+      simp at shape
+  | @cons initial middle final label rest first later
+      inductionHypothesis =>
+      cases leading with
+      | nil =>
+          simp only [List.nil_append] at shape
+          have labelShape :
+              label =
+                .atomic operation
+                  (.pushSuccess
+                    thread reserved value expected) :=
+            (List.cons.inj shape).1
+          subst label
+          cases first
+          exact Or.inl ⟨rfl, rfl⟩
+      | cons leadingHead leadingTail =>
+          simp only [List.cons_append] at shape
+          have labelsMatch := List.cons.inj shape
+          have restShape :
+              rest =
+                leadingTail ++
+                  .atomic operation
+                    (.pushSuccess
+                      thread reserved value expected) ::
+                    suffix :=
+            labelsMatch.2
+          rcases inductionHypothesis restShape with startsReady | prior
+          · rcases startsReady with
+              ⟨leadingTailEmpty, middleReady⟩
+            subst leadingTail
+            subst middle
+            have labelShape : label = leadingHead :=
+              labelsMatch.1
+            subst leadingHead
+            cases first
+            exact Or.inr ⟨[], by simp⟩
+          · rcases prior with ⟨earlier, leadingTailShape⟩
+            exact Or.inr
+              ⟨leadingHead :: earlier,
+                by simp [leadingTailShape]⟩
+
+/-- Every successful push in an idle-started trace has its source field write. -/
+theorem Execution.pushSuccess_hasNextWrite
+    {thread : Nat}
+    {final : LocalState α}
+    {labels leading suffix : List (Label α)}
+    {operation : OperationId}
+    {reserved : TreiberRA.NodeId}
+    {value : α}
+    {expected : Option TreiberRA.NodeId}
+    (execution : Execution thread .idle labels final)
+    (shape :
+      labels =
+        leading ++
+          .atomic operation
+            (.pushSuccess thread reserved value expected) ::
+          suffix) :
+    ∃ earlier,
+      leading =
+        earlier ++ [.writeNext operation reserved expected] := by
+  rcases execution.pushSuccess_predecessor shape with
+    startsReady | fieldWrite
+  · cases startsReady.2
+  · exact fieldWrite
 
 /-- Every atomic label in a local execution is tagged with its thread. -/
 theorem Execution.atomicLabelsHaveThread
@@ -514,6 +807,16 @@ theorem exists_atomic_of_mem_projectedActions
               simpa [projectedActions, Label.action?] using member)
           exact ⟨owner, by simp [ownerMember]⟩
       | invokeIsEmpty operation =>
+          obtain ⟨owner, ownerMember⟩ :=
+            inductionHypothesis (by
+              simpa [projectedActions, Label.action?] using member)
+          exact ⟨owner, by simp [ownerMember]⟩
+      | writeNext operation node next =>
+          obtain ⟨owner, ownerMember⟩ :=
+            inductionHypothesis (by
+              simpa [projectedActions, Label.action?] using member)
+          exact ⟨owner, by simp [ownerMember]⟩
+      | readNext operation node next =>
           obtain ⟨owner, ownerMember⟩ :=
             inductionHypothesis (by
               simpa [projectedActions, Label.action?] using member)

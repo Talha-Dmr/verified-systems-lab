@@ -26,8 +26,10 @@ invocations and weak-CAS retries while retaining operation identity.
 carrier and exact program order and certify local source shape.
 `TreiberControlledCandidate` joins that carrier to allocator/event generation,
 and `TreiberGeneratedConsistency` reconstructs core consistency from the
-eleven remaining relation fields plus coherence. Standalone initial loads,
-non-atomic node accesses, and `rf`/`mo` construction are still missing. We
+eleven remaining relation fields plus coherence. Standalone head loads are now
+explicit atomic events, while non-atomic `node->next` accesses are explicit
+source occurrences with a separate release-sequence publication certificate.
+Constructing that certificate together with `rf`/`mo` is still missing. We
 deliberately do not claim a complete C11 semantics.
 -/
 

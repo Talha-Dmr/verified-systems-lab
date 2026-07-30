@@ -64,6 +64,8 @@ theorems.
   retry loops
 - Explicit relaxed push loads and acquire pop/is-empty loads in the
   operational, graph, replay, generation, and source-control-flow layers
+- Explicit source-only `writeNext` and `readNext` occurrences, with local
+  states forcing each field access to occur before its matching CAS
 - Control-flow theorems proving that failures update the expected pointer,
   weak compare-exchange may fail spuriously, every projected action belongs to
   its thread, and a failed pop CAS observing null completes immediately
@@ -83,6 +85,11 @@ theorems.
 - `linearizable_of_remainingConsistency`, reconstructing `WellFormed`,
   no-thin-air, scheduling acyclicity, and `CoreConsistent` before applying the
   existing replay and linearizability chain
+- `PublishedObservation`, expressing the exact release-sequence plus
+  reads-from witness that makes a non-null pop observation acquire a node
+- `SourceHappensBefore`, `VisibleNextWrite`, and `NodeAccessCertificate`,
+  combining source sequenced-before with graph synchronizes-with so every
+  modeled `readNext` can be linked to its exact pre-publication `writeNext`
 
 ## Exactly What Is Proved?
 
@@ -165,8 +172,12 @@ its acquire load, while a failed pop CAS observing null commits at that failed
 CAS because the source loop returns immediately. `EventGraph`, `Interleaving`,
 and `ControlledCandidate` generate the represented atomic carrier and its
 exact program order while retaining the erased source metadata. Non-atomic
-`node->next` initialization and dereference, including their publication
-happens-before argument, remain outside that carrier.
+`node->next` initialization and dereference remain outside that carrier but
+are now retained as occurrence-identified source labels. The local machine
+proves which acquire load or failed CAS authorizes each dereference and which
+field write precedes each release push. `NodeAccessCertificate` joins those
+source edges with a release-sequence/reads-from witness. Constructing that
+certificate from the eventual RF/MO execution data remains open.
 `RemainingConsistency` still accepts eleven `rf`/`mo`/RMW relation properties
 and coherence; it does not claim those relations came from the C program.
 Happens-before acyclicity and no-thin-air are now derived rather than repeated
@@ -232,11 +243,10 @@ implementation. The Lean proof boundary described above remains unchanged.
 
 ## Next Precise Milestone
 
-Extend the source model with the non-atomic node-field accesses used by the C
-control flow. In particular, a nonempty pop must acquire publication before
-dereferencing `observed->next`; the later successful CAS cannot justify an
-earlier dereference. Then construct reads-from and modification order and
-discharge the eleven
-`RemainingConsistency` relation fields instead of accepting them. Until those
-and the complete source/memory-model links are proved, the project does not
-claim that the C Treiber stack is fully verified under RC11.
+Construct reads-from and modification order from explicit finite execution
+data and discharge the eleven `RemainingConsistency` relation fields instead
+of accepting them. The same construction must produce each
+`NodeAccessCertificate` release-sequence witness; a later successful pop CAS
+cannot justify its earlier dereference. Until those and the complete
+source/memory-model links are proved, the project does not claim that the C
+Treiber stack is fully verified under RC11.
