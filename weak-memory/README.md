@@ -6,10 +6,81 @@ write a working stack, but to express the connection between its execution
 model, sequential specification, and linearization points as explicit
 theorems.
 
+The completed Treiber safety development is research infrastructure, not a
+claim that relaxed-memory Treiber linearizability was previously unresolved.
+The literature-backed open-problem candidates, evidence levels, novelty risks,
+and exact theorem targets are recorded in
+[`research/open-problem-audit.md`](research/open-problem-audit.md). Rank 1 is
+now implemented for the repository's explicit, reclamation-free
+`TreiberC11V1` model. This is a theorem milestone, not by itself a priority or
+novelty claim. The primary-source search was refreshed through 2026-07-30 and
+must still be independently reviewed and repeated at submission time.
+The exact theorem surface, trust base, assumption use, excluded claims, and
+artifact gates are collected in
+[`research/publication-boundary.md`](research/publication-boundary.md).
+The latest local and MSI evidence is recorded in
+[`research/verification-report-2026-07-31.md`](research/verification-report-2026-07-31.md).
+
 ## Current Contents
 
 - Treiber `push`, `pop`, and `is_empty` implemented with C11 atomics
 - A native stress test using four threads and 80,000 distinct nodes
+- A generic Nat-indexed infinite-run semantics with weak thread fairness,
+  prefix-finite `mo`/`fr` memory fairness, and generation-aware weak-CAS
+  justice kept as three independent predicates
+- A run-derived one-location weak-CAS graph and a machine-checked all-spurious
+  execution proving that thread fairness plus memory fairness does not imply
+  primitive progress
+- `InfiniteSpurious.execution`, a full coherent `TreiberC11V1`/RC11
+  all-spurious execution: one pending push makes compare-equal weak-CAS
+  attempts forever, every raw prefix is declaratively valid, thread and
+  memory fairness hold, but primitive justice and system response progress
+  both fail
+- A reusable single-site, system-wide `WeakCAS.ProgressRule` theorem deriving
+  method response progress from independently dischargeable
+  response-free-suffix obligations and non-circular primitive weak-CAS
+  justice
+- A concrete one-location CAS-loop theorem discharging the scheduling and
+  retry obligations from weak thread fairness
+- A second Treiber-independent client of the generic rule: a minimal
+  weak-CAS increment loop with mismatch refresh, spurious failure, successful
+  increments, a success-rich witness, and its own all-spurious independence
+  execution
+- A coherent infinite RC11 carrier whose global RF/MO objects restrict
+  exactly to an existing finite `DeclarativeExecution` at every source prefix
+- Position-indexed prefix-finite `mo`/`fr`, a finite maximal-write
+  construction, and a proof that memory fairness eventually exposes the
+  stable modification-order tail
+- Exact source-control proofs that fair active calls reach retry boundaries,
+  failed CAS observations refresh `expected`, and every commit is eventually
+  followed by its method response
+- A formal Treiber `progressRuleInterface` instantiation consumed by the
+  reusable weak-CAS progress theorem
+- `InfiniteRC11Execution.linearizableLockFree_of_fairness`, combining
+  weak thread fairness, memory fairness, and primitive weak-CAS justice to
+  obtain system response progress from every active state while every finite
+  prefix receives `FullDeclarativeGuarantees`
+- `InfiniteRC11Execution.linearizableLockFree_of_fromReadFairness`, exposing
+  the stronger exact dependency: the current Treiber progress proof consumes
+  prefix-finite `fr`, while the conventional paired prefix-finite `mo`/`fr`
+  theorem remains as a standard memory-fairness corollary
+- `InfiniteRC11Execution.linearizableLongRun_of_fairness`, adding recurring
+  pending push/pop demand to derive infinitely many responses; a single
+  forever-stuck call satisfies the demand premise, so it does not presuppose
+  fresh invocations or responses
+- `InfiniteWitness.execution`, a concrete one-thread infinite RC11 execution
+  that repeatedly pushes fresh nodes with genuine successful weak CAS,
+  projects every raw source prefix to a fully valid declarative execution, and
+  jointly satisfies recurring demand, thread fairness, prefix-finite `mo`/`fr`,
+  and primitive weak-CAS justice
+- `InfiniteWitness.execution_linearizableLongRun`, applying the final theorem
+  to that concrete carrier; the witness establishes consistency and
+  non-vacuity of the assumption bundle, while the integrated
+  `InfiniteSpurious` carrier establishes the need for primitive justice
+- `WeakCASTreiberResult`, a compact public theorem surface collecting the
+  negative separation, second generic client, exact `fr`-fair theorem,
+  conventional memory-fair corollary, and a single existential
+  joint-satisfiability theorem
 - Two bounded safety harnesses and one bounded Relinche linearizability
   harness for GenMC
 - Memory-order and execution-graph vocabulary in Lean
@@ -462,8 +533,10 @@ The script:
 2. Builds the C code with warnings treated as errors.
 3. Runs the sequential and multithreaded tests.
 4. Builds the Lean project so the kernel checks all theorems, the final
-   `TreiberC11V1` frontend, its concrete single-push witness, and the
-   executable single- and cross-thread raw-model examples.
+   `TreiberC11V1` frontend, its concrete single-push, success-rich infinite,
+   and all-spurious infinite witnesses, the Treiber-independent weak-CAS
+   counter client, and the executable single- and cross-thread raw-model
+   examples.
 5. Runs two bounded weak-memory safety harnesses explicitly under RC11 with
    GenMC.
 6. Runs GenMC's Relinche checker against the exact `treiber.c` implementation
@@ -499,7 +572,7 @@ strong-CAS-like subset of the executions admitted by the current Lean model
 and by C11. See `tools/README-genmc-validation-boundary.md` for the source
 audit and exact limitations.
 
-## Next Precise Milestone
+## Existing Source-Refinement Milestone
 
 Replace the hand-defined, hash-pinned source boundary with a proved refinement
 from a substantially fuller ISO C execution semantics. That proof should
@@ -510,3 +583,7 @@ the resulting client/environment model establishes the current declarative
 admissibility conditions. Until such a refinement is proved, the project
 claims verification of the explicit versioned `TreiberC11V1` semantics, not a
 general proof of Clang or full C-source verification under all of ISO C11.
+
+This remains a valid engineering and semantics milestone, but it is not
+automatically the next research target. See the open-problem audit for the
+ranked alternatives.

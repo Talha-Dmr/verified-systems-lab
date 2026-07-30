@@ -23,6 +23,7 @@ lake build WeakMemory.TreiberVerifiedModelExample
 lake build WeakMemory.TreiberVerifiedModelClientOrderExamples
 lake build WeakMemory.TreiberC11V1Frontend
 lake build WeakMemory.TreiberC11V1Examples
+lake build WeakMemory.WeakCASTreiberResult
 lake exe weakMemoryDemo
 
 echo "GenMC bounded RC11 checks"

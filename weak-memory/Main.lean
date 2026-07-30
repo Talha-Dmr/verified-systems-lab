@@ -7,6 +7,10 @@ import WeakMemory.TreiberSupportedModelSemantics
 import WeakMemory.TreiberExecutionFrontend
 import WeakMemory.TreiberC11V1Frontend
 import WeakMemory.TreiberC11V1Examples
+import WeakMemory.InfiniteExecutionPrefix
+import WeakMemory.TreiberC11V1FairLockFreedom
+import WeakMemory.WeakCASTreiberResult
+import WeakMemory.WeakCASProgress
 
 open WeakMemory
 
@@ -52,3 +56,12 @@ def main : IO Unit := do
   IO.println "Lean theorem checked: finite declarative client constraints construct the internal schedule topologically."
   IO.println "Lean theorem checked: every admitted TreiberC11V1 execution receives the full replay, safety, provenance, and linearizability bundle."
   IO.println "Lean theorem checked: a concrete nonempty single-push declarative execution is linearizable."
+  IO.println "Lean theorem checked: a coherent all-spurious Treiber/RC11 execution proves that thread and memory fairness do not imply weak-CAS progress."
+  IO.println "Lean theorem checked: weak thread fairness plus primitive weak-CAS justice yields reusable one-location CAS-loop progress."
+  IO.println "Lean theorem checked: one coherent infinite RC11 execution projects to fully verified finite declarative prefixes."
+  IO.println "Lean theorem checked: thread fairness, memory fairness, and weak-CAS justice imply Treiber system response progress."
+  IO.println "Lean theorem checked: the exact Treiber progress proof needs prefix-finite from-read, with full memory fairness as a corollary."
+  IO.println "Lean theorem checked: system response progress composes with finite-prefix linearizability into fair Treiber lock-freedom."
+  IO.println "Lean theorem checked: recurring pending reclamation-free push/pop demand then yields infinitely many responses."
+  IO.println "Lean theorem checked: one concrete infinite weak-CAS Treiber execution satisfies the complete fairness bundle and the linearizable long-run theorem."
+  IO.println "Lean theorem checked: the reusable primitive-justice rule also derives response progress for a Treiber-independent weak-CAS increment loop."
