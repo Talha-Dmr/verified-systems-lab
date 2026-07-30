@@ -1,5 +1,7 @@
 import WeakMemory.TreiberNodeAccessDerivation
 import WeakMemory.TreiberHistory
+import WeakMemory.TreiberMethodTrace
+import WeakMemory.TreiberScheduledHistory
 
 open WeakMemory
 
@@ -29,3 +31,5 @@ def main : IO Unit := do
   IO.println "Lean theorem checked: canonical rf/mo data derives source node-read publication safety."
   IO.println "Lean theorem checked: finite rf/mo data and a common rank construct core-consistent source graphs."
   IO.println "Lean theorem checked: finite identified histories have a formal Herlihy-Wing linearizability predicate."
+  IO.println "Lean theorem checked: source responses remain distinct from their atomic linearization points."
+  IO.println "Lean theorem checked: graph schedules recover source operation identities and ordinary commit histories."

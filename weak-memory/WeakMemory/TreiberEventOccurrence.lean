@@ -5,11 +5,11 @@ namespace WeakMemory.TreiberRC11
 /-!
 # Recovering source occurrences from canonical events
 
-`EventGraph.atomicEventsFrom` forgets invocation and non-atomic field-access
-labels while numbering atomic-head labels.  This module proves the inverse
-membership direction: every numbered event identifies an exact source-list
-occurrence, including the operation identifier and action stored in its atomic
-label.
+`EventGraph.atomicEventsFrom` forgets invocation, response, and non-atomic
+field-access labels while numbering atomic-head labels. This module proves the
+inverse membership direction: every numbered event identifies an exact
+source-list occurrence, including the operation identifier and action stored
+in its atomic label.
 
 The witness is an `EventGraph.SourceOccurrence`, not merely membership of an
 equal label.  Its prefix and suffix therefore keep repeated equal retry labels
@@ -96,6 +96,18 @@ theorem atomicEventsFrom_inverse
           refine ⟨
             { thread := thread
               label := .readNext operation node nextValue
+              owned := ownership } :: leading,
+            selected, trailing, sourceOperation, action,
+            ?_, labelShape, ?_⟩
+          · simp [labelsShape]
+          · simpa [atomicLabelCount] using eventShape
+      | respond operation response =>
+          obtain ⟨leading, selected, trailing, sourceOperation,
+              action, labelsShape, labelShape, eventShape⟩ :=
+            inductionHypothesis (next := next) member
+          refine ⟨
+            { thread := thread
+              label := .respond operation response
               owned := ownership } :: leading,
             selected, trailing, sourceOperation, action,
             ?_, labelShape, ?_⟩

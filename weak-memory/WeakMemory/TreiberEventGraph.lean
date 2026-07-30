@@ -6,9 +6,9 @@ namespace WeakMemory.TreiberRC11.EventGraph
 # Numbering control-flow labels into graph events
 
 This module gives a finite global carrier to per-thread control-flow labels.
-Invocation labels remain available as source-history metadata but do not
-become `TreiberRC11.Event` values. Atomic labels are numbered with fresh,
-strictly increasing identifiers and projected to `Event.algorithm`.
+Invocation and response labels remain available as source-history metadata
+but do not become `TreiberRC11.Event` values. Atomic labels are numbered with
+fresh, strictly increasing identifiers and projected to `Event.algorithm`.
 
 Identifier zero is reserved for one logical initializer. Atomic identifiers
 start at one. Program order relates graph members from the same thread when
@@ -30,6 +30,7 @@ def LabelOwnedBy
   | .invokeIsEmpty .. => True
   | .writeNext .. => True
   | .readNext .. => True
+  | .respond .. => True
   | .atomic _ action =>
       ControlFlow.actionThread action = thread
 
@@ -62,6 +63,8 @@ def ofLocalStep
         exact True.intro
     | readNext =>
         exact True.intro
+    | respond =>
+        exact True.intro
     | atomic operation action =>
         exact step.atomicActionThread_eq
 }
@@ -83,8 +86,9 @@ end OwnedLabel
 /--
 Number only atomic labels, starting at `next`.
 
-Invocation labels consume no graph identifier because they are not atomic-head
-events in the current RC11 graph layer.
+Source-only invocation, response, and node-field labels consume no graph
+identifier because they are not atomic-head events in the current RC11 graph
+layer.
 -/
 def atomicEventsFrom :
     EventId →
@@ -102,6 +106,8 @@ def atomicEventsFrom :
       | .writeNext .. =>
           atomicEventsFrom next rest
       | .readNext .. =>
+          atomicEventsFrom next rest
+      | .respond .. =>
           atomicEventsFrom next rest
       | .atomic _ action =>
           Event.mk next (.algorithm action) ::
@@ -180,6 +186,8 @@ theorem atomicEventsFrom_id_lowerBound
           exact inductionHypothesis (next := next) member
       | readNext operation node value =>
           exact inductionHypothesis (next := next) member
+      | respond operation response =>
+          exact inductionHypothesis (next := next) member
       | atomic operation action =>
           simp only [atomicEventsFrom, List.mem_cons] at member
           rcases member with isHead | inRest
@@ -212,6 +220,8 @@ theorem atomicEventsFrom_pairwise_id_lt
           exact inductionHypothesis next
       | readNext operation node value =>
           exact inductionHypothesis next
+      | respond operation response =>
+          exact inductionHypothesis next
       | atomic operation action =>
           apply List.Pairwise.cons
           · intro later laterMember
@@ -240,6 +250,8 @@ theorem atomicEventsFrom_nodup
       | writeNext operation node value =>
           exact inductionHypothesis next
       | readNext operation node value =>
+          exact inductionHypothesis next
+      | respond operation response =>
           exact inductionHypothesis next
       | atomic operation action =>
           apply List.nodup_cons.mpr
@@ -291,6 +303,10 @@ theorem atomicEventsFrom_uniqueIds
             (next := next)
             leftMember rightMember sameId
       | readNext operation node value =>
+          exact inductionHypothesis
+            (next := next)
+            leftMember rightMember sameId
+      | respond operation response =>
           exact inductionHypothesis
             (next := next)
             leftMember rightMember sameId
@@ -347,6 +363,8 @@ theorem atomicEventsFrom_not_initial
       | writeNext operation node value =>
           exact inductionHypothesis (next := next) member
       | readNext operation node value =>
+          exact inductionHypothesis (next := next) member
+      | respond operation response =>
           exact inductionHypothesis (next := next) member
       | atomic operation action =>
           simp only [atomicEventsFrom, List.mem_cons] at member

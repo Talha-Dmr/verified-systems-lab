@@ -12,7 +12,8 @@ modification-order, or extended-coherence edges.
 Every invocation receives an operation identifier that remains attached to
 its local state and emitted labels. Initial head loads are explicit atomic
 actions: push uses a relaxed load, while pop and `isEmpty` use acquire loads.
-An initially empty pop completes at its `popLoad none` event.
+An initially empty pop linearizes at its `popLoad none` event, then emits an
+explicit source response.
 
 A push writes `node->next` before every compare-exchange attempt. A nonempty
 pop reads `observed->next` before every compare-exchange attempt. These
@@ -22,8 +23,8 @@ single-location atomic-head graph.
 A failed weak compare-exchange always updates the local expected value to the
 observed actual value. Equal values are permitted, representing spurious
 failure. If a failed pop compare-exchange observes `none`, the source function
-returns immediately; it does not execute another load or emit a later
-`popEmpty` action.
+enters its response state immediately; it does not execute another load or
+emit a later `popEmpty` action.
 -/
 
 /-- Identity of one source-level push, pop, or `isEmpty` invocation. -/
@@ -40,7 +41,8 @@ The loading states separate source invocation from the initial atomic load.
 The field-access states ensure that every compare-exchange is preceded by the
 corresponding source-level `node->next` write or read. An active pop stores a
 non-null pointer because an empty load, or a failed CAS that observes null,
-completes the invocation immediately.
+linearizes the invocation immediately. `returning` retains that exact commit
+until the matching client-visible response is emitted.
 -/
 inductive LocalState (α : Type) where
   | idle
@@ -69,6 +71,9 @@ inductive LocalState (α : Type) where
       (next : Option TreiberRA.NodeId)
   | checkingEmpty
       (operation : OperationId)
+  | returning
+      (operation : OperationId)
+      (commit : Treiber.Commit α)
   deriving Repr, DecidableEq
 
 /--
@@ -78,6 +83,8 @@ Invocation labels preserve source-level operation identity. Atomic labels
 retain that identity while carrying exactly the existing operational action,
 including the source function's initial head load. `writeNext` and `readNext`
 retain the non-atomic node-field accesses needed for the publication proof.
+Response labels expose only the sequential-specification response; the
+linearization commit remains in the preceding `returning` state.
 -/
 inductive Label (α : Type) where
   | invokePush
@@ -99,6 +106,9 @@ inductive Label (α : Type) where
   | atomic
       (operation : OperationId)
       (action : TreiberRA.Action α)
+  | respond
+      (operation : OperationId)
+      (response : StackSpec.Response α)
   deriving Repr, DecidableEq
 
 namespace Label
@@ -111,6 +121,7 @@ def operation : Label α → OperationId
   | .writeNext operation .. => operation
   | .readNext operation .. => operation
   | .atomic operation _ => operation
+  | .respond operation _ => operation
 
 /-- Project an atomic label to its operational action. -/
 def action? : Label α → Option (TreiberRA.Action α)
@@ -120,6 +131,7 @@ def action? : Label α → Option (TreiberRA.Action α)
   | .writeNext .. => none
   | .readNext .. => none
   | .atomic _ action => some action
+  | .respond .. => none
 
 end Label
 
@@ -179,7 +191,7 @@ inductive LocalStep (thread : Nat) :
       LocalStep thread
         (.popLoading operation)
         (.atomic operation (.popLoad thread none))
-        .idle
+        (.returning operation .popEmpty)
   | popLoadNonempty
       (operation : OperationId)
       (observed : TreiberRA.NodeId) :
@@ -207,7 +219,10 @@ inductive LocalStep (thread : Nat) :
       LocalStep thread
         (.checkingEmpty operation)
         (.atomic operation (.isEmptyLoad thread observed))
-        .idle
+        (.returning operation
+          (match observed with
+          | none => .isEmpty true
+          | some _ => .isEmpty false))
   | pushFailure
       (operation : OperationId)
       (reserved : TreiberRA.NodeId)
@@ -227,7 +242,7 @@ inductive LocalStep (thread : Nat) :
         (.pushing operation reserved value expected)
         (.atomic operation
           (.pushSuccess thread reserved value expected))
-        .idle
+        (.returning operation (.push value))
   | popFailureRetry
       (operation : OperationId)
       (expected actual : TreiberRA.NodeId)
@@ -245,7 +260,7 @@ inductive LocalStep (thread : Nat) :
         (.popping operation expected next)
         (.atomic operation
           (.popFailure thread (some expected) none))
-        .idle
+        (.returning operation .popEmpty)
   | popSuccess
       (operation : OperationId)
       (expected : TreiberRA.NodeId)
@@ -255,6 +270,13 @@ inductive LocalStep (thread : Nat) :
         (.popping operation expected next)
         (.atomic operation
           (.popSuccess thread expected value next))
+        (.returning operation (.popValue value))
+  | respond
+      (operation : OperationId)
+      (commit : Treiber.Commit α) :
+      LocalStep thread
+        (.returning operation commit)
+        (.respond operation commit.completed.response)
         .idle
 
 /-- Extract the owning thread from an operational Treiber action. -/
@@ -356,7 +378,7 @@ theorem LocalStep.fromPopLoading
         label
         after) :
     (label = .atomic operation (.popLoad thread none) ∧
-      after = .idle) ∨
+      after = .returning operation .popEmpty) ∨
     ∃ observed,
       label = .atomic operation (.popLoad thread (some observed)) ∧
         after = .popReading operation observed := by
@@ -398,7 +420,11 @@ theorem LocalStep.fromCheckingEmpty
         after) :
     ∃ observed,
       label = .atomic operation (.isEmptyLoad thread observed) ∧
-        after = .idle := by
+        after =
+          .returning operation
+            (match observed with
+            | none => .isEmpty true
+            | some _ => .isEmpty false) := by
   cases step with
   | isEmptyLoad =>
       exact ⟨_, rfl, rfl⟩
@@ -423,7 +449,7 @@ theorem LocalStep.fromPushing
     (label =
         .atomic operation
           (.pushSuccess thread reserved value expected) ∧
-      after = .idle) ∨
+      after = .returning operation (.push value)) ∨
     ∃ actual,
       label =
           .atomic operation
@@ -457,7 +483,7 @@ theorem LocalStep.fromNonemptyPop
       label =
           .atomic operation
             (.popSuccess thread expected value next) ∧
-        after = .idle) ∨
+        after = .returning operation (.popValue value)) ∨
     (∃ actual,
       label =
         .atomic operation
@@ -467,7 +493,7 @@ theorem LocalStep.fromNonemptyPop
     (label =
         .atomic operation
           (.popFailure thread (some expected) none) ∧
-      after = .idle) := by
+      after = .returning operation .popEmpty) := by
   cases step with
   | popFailureRetry =>
       exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
@@ -475,6 +501,23 @@ theorem LocalStep.fromNonemptyPop
       exact Or.inr (Or.inr ⟨rfl, rfl⟩)
   | popSuccess =>
       exact Or.inl ⟨_, rfl, rfl⟩
+
+/-- A completed operation emits exactly its client-visible response. -/
+theorem LocalStep.fromReturning
+    {thread : Nat}
+    {operation : OperationId}
+    {commit : Treiber.Commit α}
+    {label : Label α}
+    {after : LocalState α}
+    (step :
+      LocalStep thread
+        (.returning operation commit)
+        label
+        after) :
+    label = .respond operation commit.completed.response ∧
+      after = .idle := by
+  cases step
+  exact ⟨rfl, rfl⟩
 
 /-- A weak push compare-exchange may fail spuriously without changing expected. -/
 theorem pushSpuriousFailure
@@ -507,7 +550,7 @@ theorem popSpuriousFailure
 
 /--
 A pop CAS failure that observes null completes immediately and emits only that
-failed CAS observation.
+failed CAS observation before its explicit response.
 -/
 theorem failedPopObservingEmpty_completes
     (thread : Nat)
@@ -518,7 +561,7 @@ theorem failedPopObservingEmpty_completes
       (.popping operation expected next : LocalState α)
       (.atomic operation
         (.popFailure thread (some expected) none))
-      .idle :=
+      (.returning operation .popEmpty) :=
   .popFailureEmpty operation expected next
 
 /-- The completing failed-pop action linearizes as an empty pop. -/
@@ -541,8 +584,8 @@ theorem emptyPopLoad_commitsPopEmpty
 /--
 A finite local execution retaining invocation and operation identity.
 
-Executions may end in a non-idle state, representing a finite prefix with a
-pending invocation.
+Executions may end in any non-idle state, including `returning`, representing
+a finite prefix before the client-visible response.
 -/
 inductive Execution (thread : Nat) :
     LocalState α →
@@ -830,6 +873,11 @@ theorem exists_atomic_of_mem_projectedActions
           · obtain ⟨owner, ownerMember⟩ :=
               inductionHypothesis inRest
             exact ⟨owner, by simp [ownerMember]⟩
+      | respond operation response =>
+          obtain ⟨owner, ownerMember⟩ :=
+            inductionHypothesis (by
+              simpa [projectedActions, Label.action?] using member)
+          exact ⟨owner, by simp [ownerMember]⟩
 
 /-- Every action projected from a local execution belongs to its fixed thread. -/
 theorem Execution.projectedActionsHaveThread

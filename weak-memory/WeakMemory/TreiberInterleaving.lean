@@ -9,7 +9,8 @@ namespace WeakMemory.TreiberRC11.Interleaving
 one finite global list. This module checks the local source shape of that list:
 projecting it to any one thread must produce a `ControlFlow.Execution` that
 starts idle. The final local state may remain non-idle, representing a finite
-prefix with a pending invocation.
+prefix with a pending invocation or with a linearized operation whose response
+has not yet been emitted.
 
 The source certificate also records the two global allocation disciplines
 that are not properties of a single local execution:
@@ -59,6 +60,7 @@ def invocationOperation? :
   | ⟨_, .writeNext .., _⟩ => none
   | ⟨_, .readNext .., _⟩ => none
   | ⟨_, .atomic .., _⟩ => none
+  | ⟨_, .respond .., _⟩ => none
 
 /-- Invocation operation identifiers in global skeleton order. -/
 def invocationOperations
@@ -76,6 +78,7 @@ def pushReservation? :
   | ⟨_, .writeNext .., _⟩ => none
   | ⟨_, .readNext .., _⟩ => none
   | ⟨_, .atomic .., _⟩ => none
+  | ⟨_, .respond .., _⟩ => none
 
 /-- Push-reserved node identifiers in global skeleton order. -/
 def pushReservations

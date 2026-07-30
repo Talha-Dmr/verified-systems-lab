@@ -112,7 +112,19 @@ theorems.
   supplied as an arbitrary graph certificate
 - `HerlihyWing.History`, `Completion`, `Equivalent`, `RealTimePrecedes`, and
   `Linearizable`, providing an identity-preserving finite-history definition;
-  the source response/commit bridge remains a separate unfinished theorem
+  completion and real-time composition remain unfinished
+- Explicit source response labels separated from their atomic linearization
+  points by a `returning` local state, including prefixes that commit before
+  returning
+- `sourceHistory` and `sourceCommittedOperations`, preserving thread and
+  operation identity in client and commit projections
+- An indexed `MethodTrace` refinement proving that each local operation has
+  the exact `invocation ; commit ; response` shape, while internal retries are
+  silent
+- `scheduledOperations`, recovering operation identity from canonical event
+  IDs without changing the atomic graph event type
+- Source/schedule commit permutation and identity-erasure theorems connecting
+  scheduled operations to the anonymous commit history already proved legal
 
 ## Exactly What Is Proved?
 
@@ -220,15 +232,17 @@ translation or executable validator must produce and validate those choices.
 Happens-before acyclicity and no-thin-air are derived rather than repeated as
 certificate fields.
 
-`TreiberHistory` now defines classical Herlihy--Wing completion, per-thread
+`TreiberHistory` defines classical Herlihy--Wing completion, per-thread
 equivalence, real-time preservation, and sequential legality with operation
-identity retained. It is intentionally not yet connected to the graph commit
-order: control flow still needs explicit response labels and a unique
-operation-to-commit bridge. Moreover, RC11 consistency alone does not turn
-cross-thread wall-clock order into C11 happens-before. The eventual classical
-Herlihy--Wing theorem must therefore state and discharge a client real-time
-compatibility condition; the all-RC11-executions result will separately use
-the appropriate HB/causal formulation.
+identity retained. Control flow now emits explicit responses after a distinct
+atomic commit, and exact event-ID lookup reconstructs the matching operation
+identity in any respecting graph schedule. The remaining bridge must derive
+history well-formedness, the completion choice, and per-thread equivalence.
+Moreover, RC11 consistency alone does not turn cross-thread wall-clock order
+into C11 happens-before. The eventual classical Herlihy--Wing theorem must
+therefore state and discharge a client real-time compatibility condition; the
+all-RC11-executions result will separately use the appropriate HB/causal
+formulation.
 
 ## Model References
 
@@ -290,10 +304,10 @@ implementation. The Lean proof boundary described above remains unchanged.
 
 ## Next Precise Milestone
 
-Add explicit source response labels, preserve operation IDs through numbered
-atomic events, and connect graph commits to `TreiberHistory` completion and
-real-time order. Then provide the C/RC11 translation or validator that
-produces `AtomicRelationData`, `RC11OrderWitness`, and immutable field-read
-values for exactly the supported executions. Until those links are proved,
-the project does not claim that the C Treiber stack is fully verified under
-RC11.
+Derive `TreiberHistory` well-formedness and completion from the indexed method
+trace, prove that every respecting schedule preserves each thread's commit
+order, and state the exact cross-thread real-time compatibility boundary.
+Then provide the C/RC11 translation or validator that produces
+`AtomicRelationData`, `RC11OrderWitness`, and immutable field-read values for
+exactly the supported executions. Until those links are proved, the project
+does not claim that the C Treiber stack is fully verified under RC11.

@@ -34,10 +34,11 @@ release sequence, and mixed source/atomic happens-before chain.
 `TreiberRelations` and `TreiberRelationOrder` construct `rf`, `mo`, all eleven
 relation fields, and coherence from finite execution data plus a common rank.
 `TreiberSourceExecution` installs that canonical graph beneath the existing
-linearizability chain. Connecting the source trace to identified
-Herlihy--Wing responses and translating the C source into the finite semantic
-inputs are still missing. We deliberately do not claim a complete C11
-semantics.
+linearizability chain. Source responses are now distinct occurrences, and
+canonical graph schedules recover the source operation identity of every
+commit. Proving the remaining Herlihy--Wing completion and real-time fields,
+and translating the C source into the finite semantic inputs, are still
+missing. We deliberately do not claim a complete C11 semantics.
 -/
 
 inductive MemoryOrder where
