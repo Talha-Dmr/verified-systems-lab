@@ -18,6 +18,11 @@ theorems.
 - An immutable node heap, freshness condition, and successful/failed CAS steps
 - `TreiberRA.allowedExecution_linearizable`, proving the linearization core for
   every execution admitted by the operational RA fragment
+- `TreiberRC11.WellFormed`, collecting the current single-location graph
+  conditions for `po`, `rf`, `mo`, release sequences, synchronization, and
+  RMW atomicity
+- `TreiberRC11.certifiedSchedule_linearizable`, composing a certified graph
+  schedule with the operational RA proof
 
 ## Exactly What Is Proved?
 
@@ -56,6 +61,19 @@ Herlihy–Wing invocation/response definition. The stress test is not a proof,
 and the project does not claim to verify the complete C11 semantics or the C
 source directly.
 
+The RC11-style layer now proves the following conditional path:
+
+```text
+well-formed graph + certified schedule
+                  ↓
+operational RA Treiber execution
+                  ↓
+legal sequential stack history
+```
+
+The remaining mathematical obligation is to construct that certified schedule
+from graph well-formedness rather than receiving it as an assumption.
+
 ## Memory-Management Boundary
 
 Each node is pushed only once and is neither freed nor reused after a pop.
@@ -86,8 +104,7 @@ GENMC_BIN=/absolute/path/to/genmc ./weak-memory/run_genmc.sh
 
 ## Next Precise Milestone
 
-Add well-formedness, modification-order, reads-from, and release-sequence
-conditions to the execution graph. Then prove a second bridge from that
-axiomatic RC11 fragment to `TreiberRA.AllowedExecution`. Until that is done,
-the project does not claim that the C Treiber stack is fully verified under
-RC11.
+Extend the graph with the remaining RC11 coherence and release-sequence
+conditions, then prove that every accepted finite graph admits a
+`TreiberRC11.CertifiedSchedule`. Until that existence theorem is complete, the
+project does not claim that the C Treiber stack is fully verified under RC11.

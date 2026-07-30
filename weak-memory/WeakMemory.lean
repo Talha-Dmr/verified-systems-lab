@@ -11,9 +11,10 @@ three layers separate:
 3. the abstract successful-CAS commits of Treiber's stack.
 
 The theorem `Treiber.commitTrace_linearizable` proves that every abstract
-commit trace is a legal sequential stack history. A later milestone must prove
-that every allowed release-acquire execution of the C algorithm induces such a
-commit trace. We deliberately do not claim that bridge theorem yet.
+commit trace is a legal sequential stack history. `TreiberRA` proves the next
+bridge for a release-acquire operational model, while `TreiberRC11` introduces
+the finite execution-graph layer and states the remaining scheduling
+obligation. We deliberately do not claim a complete C11 semantics.
 -/
 
 inductive MemoryOrder where
@@ -62,10 +63,10 @@ structure Event where
 abbrev Relation (α : Type) := α → α → Prop
 
 /--
-A deliberately small execution-graph interface.
+A deliberately small, algorithm-independent execution-graph vocabulary.
 
-Well-formedness and the full RC11 consistency axioms will be added after the
-algorithm-independent graph layer has stabilized.
+The Treiber-specific graph, its current well-formedness conditions, and the
+bridge to the operational model live in `WeakMemory.TreiberRC11`.
 -/
 structure Execution where
   events : List Event
