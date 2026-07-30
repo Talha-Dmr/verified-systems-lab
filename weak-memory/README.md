@@ -37,6 +37,9 @@ theorems.
 - `exists_respectsGraph_of_orderAcyclic`, constructing a finite topological
   schedule and proving that it covers every event exactly once and respects
   both constituent orders
+- `orderAcyclic_of_wellFormed_coherent` and
+  `CoreConsistent.orderAcyclic`, proving that RC11 coherence already
+  discharges the combined scheduling-acyclicity premise in this event model
 - `TreiberRC11.ReplayInvariant`, stating fresh and unique node allocation,
   immutable pop publication, and an empty initial head
 - `replay?_eq_some_advanceUncheckedList`, deriving successful executable
@@ -56,6 +59,11 @@ theorems.
   `linearizable_of_generatedCandidate`, proving that an emitted list connected
   to the graph carrier by a permutation automatically satisfies the
   allocator-table interface and enters the existing end-to-end theorem
+- `ControlFlow.LocalState`, `Label`, `LocalStep`, and `Execution`, retaining
+  operation identity across source-shaped push/pop invocations and retry loops
+- Control-flow theorems proving that failures update the expected pointer,
+  weak compare-exchange may fail spuriously, every projected action belongs to
+  its thread, and a failed pop CAS observing null completes immediately
 
 ## Exactly What Is Proved?
 
@@ -79,16 +87,18 @@ operational RA Treiber execution
 
 In `WeakMemory/TreiberRA.lean`, nodes are immutable and enter the shared heap
 only at a successful release push CAS. Pop observations are acquiring. Failed
-CAS attempts are stuttering steps that do not change shared state.
+CAS attempts do not change shared state. A failed pop CAS that observes null
+is nevertheless the empty-pop linearization point because the C loop returns
+without another atomic operation.
 
 The remaining source-level boundary is:
 
 ```text
 C11 Treiber source / complete RC11 semantics
                     ↓ not yet proved
-per-thread invocation/retry control-flow generation
+global interleaving and po/rf/mo graph construction
                     ↓ not yet proved
-core-consistent graph + OrderAcyclic + GeneratedCandidate
+per-thread ControlFlow + core-consistent GeneratedCandidate
 ```
 
 The current theorems establish the linearization-point core, not yet the full
@@ -99,38 +109,39 @@ source directly.
 The RC11-style and replay layers now prove:
 
 ```text
-core-consistent finite graph
- + acyclic transitive closure of (po ∪ eco)
- + locally generated Treiber candidate
-                    ↓ proved
-       allocator-table GraphTyping
-                    ↓ proved
-       explicit Treiber ReplayInvariant
-                    ↓ proved
-  constructed order respecting po and eco
-                    ↓ proved
-       successful executable replay
-                    ↓ proved
-       certified operational schedule
-                    ↓ proved
-          legal sequential stack history
+core-consistent finite graph ──→ OrderAcyclic ──→ respecting schedule
+             +                                      +
+locally generated candidate ──→ GraphTyping ──→ ReplayInvariant
+                                                    ↓
+                                      successful executable replay
+                                                    ↓
+                                      certified operational schedule
+                                                    ↓
+                                      legal sequential stack history
 ```
 
 Executable replay is not treated as an oracle: its acceptance is proved
 equivalent to the inductive operational semantics. Combined-order acyclicity
-is an explicit premise: the current `CoreConsistent` fields do not silently
-claim to imply it. The replay proof uses `rf`, modification-order totality,
-and reads-before to show that every event observes the current head. The
-remaining heap obligations are visible in `ReplayInvariant`; they are not
-hidden inside a replay-success assumption. `GraphTyping` derives those
-obligations from a functional allocator table: successful pushes record fresh
-immutable nodes and pops name their recorded publisher. Failed weak
-compare-exchanges record the current head but may be spurious, matching the C
-implementation's use of `atomic_compare_exchange_weak_explicit`.
+is no longer an external premise: `orderAcyclic_of_wellFormed_coherent`
+derives it from well-formedness and coherence using a reads-from
+source/modification-order rank. The replay proof uses `rf`,
+modification-order totality, and reads-before to show that every event
+observes the current head. The remaining heap obligations are visible in
+`ReplayInvariant`; they are not hidden inside a replay-success assumption.
+`GraphTyping` derives those obligations from a functional allocator table:
+successful pushes record fresh immutable nodes and pops name their recorded
+publisher. Failed weak compare-exchanges record the current head but may be
+spurious, matching the C implementation's use of
+`atomic_compare_exchange_weak_explicit`.
 `GeneratedEvents` builds the table incrementally, and `GeneratedCandidate`
 uses an explicit permutation proof instead of identifying emission chronology
 with the graph carrier's arbitrary enumeration. This is a local typing
 certificate, not yet a generator for `po`, `rf`, `mo`, or `eco`.
+`TreiberControlFlow` now constrains each thread to the source retry shape and
+retains operation identifiers. Its invocation labels record initial load
+observations because the current operational action type does not yet contain
+a standalone load event; connecting those observations and the non-atomic node
+reads to a complete C11 graph remains future work.
 
 ## Model References
 
@@ -192,11 +203,11 @@ implementation. The Lean proof boundary described above remains unchanged.
 
 ## Next Precise Milestone
 
-Add per-thread push and pop invocation state machines above `GeneratedEvents`.
-They must enforce retry control flow, including compare-exchange updating the
-expected head after failure, and emit the corresponding event sequence and
-program-order edges. In parallel, formalize whether the current
-`CoreConsistent` conditions already imply `OrderAcyclic`; the relational audit
-suggests they may. Until the source-to-graph and complete memory-model links
-are proved, the project does not claim that the C Treiber stack is fully
-verified under RC11.
+Connect `ControlFlow.Execution` to `GeneratedEvents` with fresh event
+identifiers, globally unique operation/node reservations, and program-order
+edges induced by each thread's atomic-label order. Then construct reads-from
+and modification order rather than accepting a completed graph. The following
+source bridge must also represent the initial atomic loads and justify
+visibility of the non-atomic node fields before dereference. Until those and
+the complete memory-model links are proved, the project does not claim that
+the C Treiber stack is fully verified under RC11.

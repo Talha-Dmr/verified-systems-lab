@@ -174,22 +174,21 @@ theorem GraphTyping.replayAccepted
 namespace CoreConsistent
 
 /--
-Core consistency, combined-order acyclicity, and local graph typing construct
-the complete certified operational schedule.
+Core consistency and local graph typing construct the complete certified
+operational schedule. Scheduling acyclicity is derived from coherence.
 -/
 theorem existsCertifiedSchedule_of_graphTyping
     [DecidableEq α]
     {graph : Graph α}
     {initial : TreiberRA.State α}
     (consistent : CoreConsistent graph)
-    (orderAcyclic : graph.OrderAcyclic)
     (typing : GraphTyping graph initial) :
     ∃ schedule final,
       RespectsGraph graph schedule ∧
         replay? initial schedule = some final ∧
         CertifiedSchedule graph initial schedule final :=
   consistent.existsCertifiedSchedule_of_replayInvariant
-    orderAcyclic typing.toReplayInvariant
+    typing.toReplayInvariant
 
 end CoreConsistent
 
@@ -202,7 +201,6 @@ theorem linearizable_of_graphTyping
     {initial : TreiberRA.State α}
     {initialValues : List α}
     (consistent : CoreConsistent graph)
-    (orderAcyclic : graph.OrderAcyclic)
     (typing : GraphTyping graph initial)
     (initialRepresentation :
       TreiberRA.Represents
@@ -218,7 +216,7 @@ theorem linearizable_of_graphTyping
               (projectedActions schedule)))
           finalValues :=
   linearizable_of_replayInvariant
-    consistent orderAcyclic typing.toReplayInvariant
+    consistent typing.toReplayInvariant
     initialRepresentation
 
 end WeakMemory.TreiberRC11

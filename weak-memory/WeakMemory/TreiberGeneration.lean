@@ -417,22 +417,21 @@ theorem GeneratedCandidate.replayAccepted
 namespace CoreConsistent
 
 /--
-Core consistency and combined-order acyclicity turn a generated candidate into
-a complete certified operational schedule.
+Core consistency turns a generated candidate into a complete certified
+operational schedule. Scheduling acyclicity is derived from coherence.
 -/
 theorem existsCertifiedSchedule_of_generatedCandidate
     [DecidableEq α]
     {graph : Graph α}
     {initial : TreiberRA.State α}
     (consistent : CoreConsistent graph)
-    (orderAcyclic : graph.OrderAcyclic)
     (candidate : GeneratedCandidate graph initial) :
     ∃ schedule final,
       RespectsGraph graph schedule ∧
         replay? initial schedule = some final ∧
         CertifiedSchedule graph initial schedule final :=
   consistent.existsCertifiedSchedule_of_graphTyping
-    orderAcyclic candidate.toGraphTyping
+    candidate.toGraphTyping
 
 end CoreConsistent
 
@@ -443,7 +442,6 @@ theorem linearizable_of_generatedCandidate
     {initial : TreiberRA.State α}
     {initialValues : List α}
     (consistent : CoreConsistent graph)
-    (orderAcyclic : graph.OrderAcyclic)
     (candidate : GeneratedCandidate graph initial)
     (initialRepresentation :
       TreiberRA.Represents
@@ -459,7 +457,7 @@ theorem linearizable_of_generatedCandidate
               (projectedActions schedule)))
           finalValues :=
   linearizable_of_graphTyping
-    consistent orderAcyclic candidate.toGraphTyping
+    consistent candidate.toGraphTyping
     initialRepresentation
 
 end WeakMemory.TreiberRC11

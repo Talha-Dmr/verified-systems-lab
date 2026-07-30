@@ -1,4 +1,4 @@
-import WeakMemory.TreiberSchedule
+import WeakMemory.TreiberOrderAcyclic
 
 namespace WeakMemory.TreiberRC11
 
@@ -960,14 +960,13 @@ theorem existsCertifiedSchedule_of_replayInvariant
     {graph : Graph α}
     {initial : TreiberRA.State α}
     (consistent : CoreConsistent graph)
-    (orderAcyclic : graph.OrderAcyclic)
     (invariant : ReplayInvariant graph initial) :
     ∃ schedule final,
       RespectsGraph graph schedule ∧
         replay? initial schedule = some final ∧
         CertifiedSchedule graph initial schedule final := by
   obtain ⟨schedule, respects⟩ :=
-    consistent.existsRespectsGraph orderAcyclic
+    consistent.existsRespectsGraph consistent.orderAcyclic
   let final := advanceUncheckedList initial schedule
   have replayAccepted :
       replay? initial schedule = some final :=
@@ -991,7 +990,7 @@ theorem existsCertifiedSchedule_of_replayInvariant
 end CoreConsistent
 
 /--
-End-to-end graph theorem under explicit scheduling and Treiber invariants.
+End-to-end graph theorem under core consistency and Treiber invariants.
 
 It constructs the schedule and final operational state, proves executable
 replay succeeds, and yields a legal sequential stack history.
@@ -1002,7 +1001,6 @@ theorem linearizable_of_replayInvariant
     {initial : TreiberRA.State α}
     {initialValues : List α}
     (consistent : CoreConsistent graph)
-    (orderAcyclic : graph.OrderAcyclic)
     (invariant : ReplayInvariant graph initial)
     (initialRepresentation :
       TreiberRA.Represents
@@ -1019,7 +1017,7 @@ theorem linearizable_of_replayInvariant
           finalValues := by
   obtain ⟨schedule, final, respects, replayAccepted, certificate⟩ :=
     consistent.existsCertifiedSchedule_of_replayInvariant
-      orderAcyclic invariant
+      invariant
   obtain ⟨finalValues, finalRepresentation, legalHistory⟩ :=
     certifiedSchedule_linearizable
       certificate initialRepresentation

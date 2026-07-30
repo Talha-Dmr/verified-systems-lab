@@ -14,13 +14,16 @@ The theorem `Treiber.commitTrace_linearizable` proves that every abstract
 commit trace is a legal sequential stack history. `TreiberRA` proves the next
 bridge for a release-acquire operational model, `TreiberRC11` introduces the
 finite execution-graph layer, and `TreiberSchedule` constructs a respecting
-event order from an explicit acyclicity premise. `TreiberInvariant` derives
-successful replay and linearizability from visible allocation and publication
-obligations, while `TreiberTyping` derives those obligations from a functional
-allocator table and local event rules. `TreiberGeneration` constructs the
-table and a chronological emitted-event list together, then connects that list
-to the graph carrier by permutation. It does not yet generate graph relations
-or source control flow. We deliberately do not claim a complete C11 semantics.
+event order from acyclicity. `TreiberOrderAcyclic` derives that acyclicity from
+well-formedness and RC11 coherence. `TreiberInvariant` derives successful
+replay and linearizability from visible allocation and publication obligations,
+while `TreiberTyping` derives those obligations from a functional allocator
+table and local event rules. `TreiberGeneration` constructs the table and a
+chronological emitted-event list together, then connects that list to the
+graph carrier by permutation. `TreiberControlFlow` constrains per-thread
+invocations and weak-CAS retries while retaining operation identity. It does
+not yet generate graph relations or a complete C source execution. We
+deliberately do not claim a complete C11 semantics.
 -/
 
 inductive MemoryOrder where

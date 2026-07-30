@@ -29,9 +29,10 @@ It formalizes a finite, single-atomic-location fragment containing:
 
 `CoreConsistent` adds the non-SC atomic RC11 no-thin-air and coherence
 conditions. This is not yet the complete ISO C11/RC11 model. In particular,
-SC order, fences, non-atomic accesses, and the theorem that the relational
-conditions alone generate a replayable operational schedule remain separate
-obligations. `WeakMemory.TreiberReplay` provides the executable replay layer.
+SC order, fences, non-atomic accesses, and a source-to-graph construction
+remain outside this fragment. Later modules derive scheduling acyclicity and
+replay from core consistency plus explicit Treiber typing.
+`WeakMemory.TreiberReplay` provides the executable replay layer.
 -/
 
 abbrev EventId := Nat

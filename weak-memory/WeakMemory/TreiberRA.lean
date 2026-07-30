@@ -132,8 +132,29 @@ def commit? : Action α → Option (Treiber.Commit α)
   | .pushSuccess _ _ value _ => some (.push value)
   | .pushFailure .. => none
   | .popSuccess _ _ value _ => some (.popValue value)
-  | .popFailure .. => none
+  | .popFailure _ _ none => some .popEmpty
+  | .popFailure _ _ (some _) => none
   | .popEmpty _ => some .popEmpty
+
+/--
+A failed pop compare-exchange that observes null is the empty-pop
+linearization point: the C loop returns without issuing another atomic read.
+-/
+@[simp] theorem popFailure_none_commits
+    (thread : Nat)
+    (expected : Option NodeId) :
+    commit? (.popFailure thread expected none : Action α) =
+      some .popEmpty :=
+  rfl
+
+/-- A failed pop compare-exchange that observes a node only retries. -/
+@[simp] theorem popFailure_some_stutters
+    (thread : Nat)
+    (expected : Option NodeId)
+    (actual : NodeId) :
+    commit? (.popFailure thread expected (some actual) : Action α) =
+      none :=
+  rfl
 
 @[simp] theorem pushSuccess_hasRelease (thread nodeId : Nat) (value : α)
     (expected : Option NodeId) :
@@ -201,7 +222,11 @@ inductive Step : State α → Action α → State α → Prop where
         (.popEmpty thread)
         { heap := heap, head := none }
 
-/-- Failed CAS actions stutter; successful observations refine one stack step. -/
+/--
+CAS failures leave the concrete state unchanged. A pop failure that observes
+null nevertheless commits an abstract empty pop because the C loop then
+returns immediately.
+-/
 def ProjectedStep (before : List α) (action : Action α)
     (after : List α) : Prop :=
   match action.commit? with
@@ -247,8 +272,16 @@ theorem step_refines {beforeState afterState : State α}
           subst nodesEqual
           exact ⟨representedRest, tail,
             Treiber.CommitStep.popValue node.value representedRest⟩
-  | popFailure state thread expected =>
-      exact ⟨beforeValues, representation, rfl⟩
+  | popFailure thread expected =>
+      cases beforeState with
+      | mk heap head =>
+          cases head with
+          | none =>
+              cases representation
+              exact ⟨[], Represents.empty,
+                Treiber.CommitStep.popEmpty⟩
+          | some nodeId =>
+              exact ⟨beforeValues, representation, rfl⟩
   | popEmpty heap thread =>
       cases representation
       exact ⟨[], Represents.empty, Treiber.CommitStep.popEmpty⟩
@@ -265,7 +298,7 @@ inductive AllowedExecution :
       (later : AllowedExecution middle rest final) :
       AllowedExecution initial (action :: rest) final
 
-/-- Remove failed CAS attempts and retain only linearization-point commits. -/
+/-- Retain exactly the actions that serve as linearization-point commits. -/
 def commits : List (Action α) → List (Treiber.Commit α)
   | [] => []
   | action :: rest =>

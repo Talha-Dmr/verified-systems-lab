@@ -23,6 +23,8 @@ The accepted-execution interface below uses the finite graph enumeration as
 its event order and certifies that it respects `po` and all of `eco`.
 `WeakMemory.TreiberSchedule` separately constructs an arbitrary respecting
 order from explicit acyclicity of the combined scheduling relation.
+`WeakMemory.TreiberOrderAcyclic` later derives that acyclicity from
+well-formedness and coherence.
 `WeakMemory.TreiberInvariant` then derives replay acceptance for that order
 from explicit allocation and publication invariants.
 -/

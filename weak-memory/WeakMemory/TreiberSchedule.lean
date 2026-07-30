@@ -9,11 +9,11 @@ The replay layer accepts an event schedule that already respects program order
 and extended coherence. This module constructs such a schedule from a finite
 graph when the union of those two ordering constraints is acyclic.
 
-The acyclicity premise is explicit. `CoreConsistent` rules out the RC11 cycles
-represented by its no-thin-air and coherence fields, but it does not by itself
-state acyclicity of the full `po ∪ eco` scheduling relation.
-`WeakMemory.TreiberInvariant` consumes the resulting order and proves replay
-acceptance under explicit Treiber-specific graph invariants.
+This module keeps the acyclicity premise explicit in its generic finite
+scheduling theorem. `WeakMemory.TreiberOrderAcyclic` proves that, for the
+current Treiber event universe, well-formedness and RC11 coherence discharge
+that premise. `WeakMemory.TreiberInvariant` consumes the resulting order and
+proves replay acceptance under explicit Treiber-specific graph invariants.
 -/
 
 namespace Graph
