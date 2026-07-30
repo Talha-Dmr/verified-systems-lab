@@ -121,13 +121,29 @@ The script:
 1. Builds the C code with warnings treated as errors.
 2. Runs the sequential and multithreaded tests.
 3. Builds the Lean project so the kernel checks all theorems.
-4. Runs the bounded weak-memory harnesses when GenMC is available.
+4. Runs both bounded weak-memory harnesses explicitly under RC11 with GenMC.
 
-GenMC is optional. If its local binary is elsewhere:
+Install the pinned local GenMC toolchain once:
+
+```bash
+./weak-memory/install_genmc.sh
+```
+
+The bootstrap script targets Debian-based systems with Ubuntu 24.04 package
+names. It downloads and extracts LLVM 18 and builds GenMC v0.17.0 entirely
+under the ignored `.tools/` directory; it does not require `sudo` or modify
+system packages. `verify.sh` fails instead of silently skipping the bounded
+checks when GenMC is unavailable.
+
+To use an existing GenMC installation instead:
 
 ```bash
 GENMC_BIN=/absolute/path/to/genmc ./weak-memory/run_genmc.sh
 ```
+
+GenMC exhaustively explores these finite harnesses, but that bounded
+exploration is supporting evidence rather than a proof of the unbounded C
+implementation. The Lean proof boundary described above remains unchanged.
 
 ## Next Precise Milestone
 

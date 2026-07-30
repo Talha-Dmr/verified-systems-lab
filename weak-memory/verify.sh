@@ -18,5 +18,5 @@ cd "$project_dir"
 lake build
 lake exe weakMemoryDemo
 
-echo "Optional GenMC checks"
+echo "GenMC bounded RC11 checks"
 "$project_dir/run_genmc.sh"
