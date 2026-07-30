@@ -32,3 +32,11 @@ echo "GenMC: publication"
 
 echo "GenMC: two-thread Treiber"
 "$genmc_bin" --rc11 --disable-estimation "$project_dir/genmc/treiber_two_threads.c"
+
+echo "GenMC Relinche: one push and one pop"
+"$genmc_bin" \
+  --rc11 \
+  --disable-estimation \
+  --disable-mm-detector \
+  --check-lin-spec="$project_dir/genmc/treiber_stack_one_push_one_pop.spec" \
+  "$project_dir/genmc/treiber_relinche_one_push_one_pop.c"

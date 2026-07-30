@@ -4,6 +4,7 @@ import WeakMemory.TreiberMethodTrace
 import WeakMemory.TreiberScheduledHistory
 import WeakMemory.TreiberVerifiedModelProvenance
 import WeakMemory.TreiberSupportedModelSemantics
+import WeakMemory.TreiberExecutionFrontend
 
 open WeakMemory
 
@@ -44,3 +45,4 @@ def main : IO Unit := do
   IO.println "Lean theorem checked: accepted models retain exact proof-relevant provenance back to every raw input field."
   IO.println "Lean theorem checked: every normalized proof-carrying model round-trips through the complete raw validator."
   IO.println "Lean theorem checked: every accepted pinned Treiber model execution is node-safe and Herlihy-Wing linearizable."
+  IO.println "Lean theorem checked: an exact external frontend contract transfers provenance, safety, and linearizability."

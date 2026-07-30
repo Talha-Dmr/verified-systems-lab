@@ -10,7 +10,8 @@ theorems.
 
 - Treiber `push`, `pop`, and `is_empty` implemented with C11 atomics
 - A native stress test using four threads and 80,000 distinct nodes
-- Two small bounded C harnesses for GenMC
+- Two bounded safety harnesses and one bounded Relinche linearizability
+  harness for GenMC
 - Memory-order and execution-graph vocabulary in Lean
 - A sequential stack specification and legal-history definition in Lean
 - `Treiber.commitTrace_linearizable`, proving that successful abstract
@@ -150,6 +151,15 @@ theorems.
 - `NormalizedSupportedModelExecution.toRaw_supported`, proving the converse
   model-to-validator direction: canonical proof-carrying model executions
   serialize to raw inputs accepted by the complete executable pipeline
+- `ExternalExecutionSemantics`, `PureExecutionFrontend`, and
+  `FrontendContract`, isolating the remaining non-circular program/execution
+  frontend obligation as pinned program identity, exact validator acceptance,
+  and exact client-history fidelity
+- `verified_of_external_allowed`, transferring raw-input provenance,
+  descriptor agreement, modeled node-access safety, and Herlihy--Wing
+  linearizability to every external execution covered by an explicit
+  frontend contract, without introducing an axiom or pretending that such a
+  C frontend has already been constructed
 - Executable two-thread examples showing that an overlapping empty pop is
   accepted while the same schedule is rejected when a completed push precedes
   the other thread's invocation
@@ -339,7 +349,10 @@ The script:
 3. Runs the sequential and multithreaded tests.
 4. Builds the Lean project so the kernel checks all theorems and the executable
    single- and cross-thread raw-model examples.
-5. Runs both bounded weak-memory harnesses explicitly under RC11 with GenMC.
+5. Runs two bounded weak-memory safety harnesses explicitly under RC11 with
+   GenMC.
+6. Runs GenMC's Relinche checker against the exact `treiber.c` implementation
+   for the most-parallel client containing one push and one pop.
 
 Install the pinned local GenMC toolchain once:
 
@@ -359,9 +372,17 @@ To use an existing GenMC installation instead:
 GENMC_BIN=/absolute/path/to/genmc ./weak-memory/run_genmc.sh
 ```
 
-GenMC exhaustively explores these finite harnesses, but that bounded
-exploration is supporting evidence rather than a proof of the unbounded C
-implementation. The Lean proof boundary described above remains unchanged.
+GenMC exhaustively explores these finite harnesses according to its
+implemented model, but that bounded exploration is supporting evidence rather
+than a proof of the unbounded C implementation. In particular, the pinned
+GenMC v0.17.0 interpreter does not branch on LLVM's `cmpxchg weak` flag:
+equal expected and observed values always succeed, so spurious weak-CAS
+failures are absent. It also uses the success ordering for the CAS read half
+instead of selecting the failure ordering on failure. The Lean semantics does
+model equal-value weak-CAS failures, so the GenMC executions form a
+strong-CAS-like subset of the executions admitted by the current Lean model
+and by C11. See `tools/README-genmc-validation-boundary.md` for the source
+audit and exact limitations.
 
 ## Next Precise Milestone
 
@@ -370,6 +391,11 @@ hash-pinned reclamation-free C program under the explicitly selected
 C11/RC11 semantics must translate to finite raw source, relation, schedule,
 publication, next-read, and client-order data accepted by `validate?`.
 Validator soundness is now proved, but validator acceptance is not yet proved
-complete for executions of the C program. Until that connection is formalized
-or isolated behind a precisely specified trusted translator, the project does
-not claim full C-source verification under RC11.
+complete for executions of the C program. `TreiberExecutionFrontend` now
+states this missing completeness and history-fidelity boundary as a
+conditional, axiom-free contract and proves the guarantees that follow from
+it. The next proof must instantiate that contract with an independently
+defined, versioned Treiber C11/RC11 execution semantics; defining the external
+`allowed` predicate as validator acceptance would be circular. Until that
+instantiation is proved, the project does not claim full C-source verification
+under RC11.
