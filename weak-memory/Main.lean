@@ -1,5 +1,5 @@
-import WeakMemory.TreiberGeneratedConsistency
-import WeakMemory.TreiberNodeAccess
+import WeakMemory.TreiberSourceExecution
+import WeakMemory.TreiberHistory
 
 open WeakMemory
 
@@ -27,3 +27,5 @@ def main : IO Unit := do
   IO.println "Lean theorem checked: controlled interleavings enforce unique operations and node reservations."
   IO.println "Lean theorem checked: eleven remaining relation fields plus coherence reconstruct core consistency."
   IO.println "Lean theorem checked: source node reads expose their release-sequence publication obligation."
+  IO.println "Lean theorem checked: finite rf/mo data and a common rank construct core-consistent source graphs."
+  IO.println "Lean theorem checked: finite identified histories have a formal Herlihy-Wing linearizability predicate."

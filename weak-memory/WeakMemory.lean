@@ -29,7 +29,11 @@ and `TreiberGeneratedConsistency` reconstructs core consistency from the
 eleven remaining relation fields plus coherence. Standalone head loads are now
 explicit atomic events, while non-atomic `node->next` accesses are explicit
 source occurrences with a separate release-sequence publication certificate.
-Constructing that certificate together with `rf`/`mo` is still missing. We
+`TreiberRelations` and `TreiberRelationOrder` construct `rf`, `mo`, all eleven
+relation fields, and coherence from finite execution data plus a common rank.
+`TreiberSourceExecution` installs that canonical graph beneath the existing
+linearizability chain. Deriving node-publication certificates and connecting
+the source trace to identified Herlihy--Wing responses are still missing. We
 deliberately do not claim a complete C11 semantics.
 -/
 

@@ -80,8 +80,8 @@ theorems.
   generated relation
 - `CarrierProgramOrderWellFormed`, deriving the seven carrier, initializer,
   and program-order fields of `WellFormed` from the controlled candidate
-- `RemainingConsistency`, containing only the eleven still-supplied
-  reads-from, modification-order, RMW, and initial-order fields plus coherence
+- `RemainingConsistency`, the reusable interface for eleven relation fields
+  plus coherence; the canonical source-execution path now derives it
 - `linearizable_of_remainingConsistency`, reconstructing `WellFormed`,
   no-thin-air, scheduling acyclicity, and `CoreConsistent` before applying the
   existing replay and linearizability chain
@@ -90,6 +90,19 @@ theorems.
 - `SourceHappensBefore`, `VisibleNextWrite`, and `NodeAccessCertificate`,
   combining source sequenced-before with graph synchronizes-with so every
   modeled `readNext` can be linked to its exact pre-publication `writeNext`
+- `AtomicRelationData`, constructing canonical reads-from and modification
+  order from a finite write order and one selected source ID per read, then
+  deriving all eleven `RemainingWellFormedRelations` fields
+- `RC11OrderWitness`, using one common finite rank for `po`, `rf`, `mo`, and
+  `rb` to derive extended-coherence order, synchronization order,
+  happens-before order, and coherence
+- `SourceAtomicExecution`, whose carrier, program order, reads-from,
+  modification order, remaining relation fields, coherence, no-thin-air,
+  scheduling acyclicity, and replay schedule are all constructed rather than
+  supplied as an arbitrary graph certificate
+- `HerlihyWing.History`, `Completion`, `Equivalent`, `RealTimePrecedes`, and
+  `Linearizable`, providing an identity-preserving finite-history definition;
+  the source response/commit bridge remains a separate unfinished theorem
 
 ## Exactly What Is Proved?
 
@@ -122,25 +135,30 @@ The remaining source-level boundary is:
 ```text
 C11 Treiber source / complete RC11 semantics
                     ↓ not yet proved
-non-atomic node-field events and rf/mo construction
+finite rf/mo choices + rank + node-publication witnesses
                     ↓ not yet proved
-ControlledCandidate + RemainingConsistency
+SourceAtomicExecution + NodeAccessCertificate
 ```
 
-The current theorems establish the linearization-point core, not yet the full
-Herlihy–Wing invocation/response definition. The stress test is not a proof,
-and the project does not claim to verify the complete C11 semantics or the C
-source directly.
+The current theorems establish the linearization-point core and a generic
+Herlihy–Wing invocation/response definition, but not yet the theorem connecting
+the two. The stress test is not a proof, and the project does not claim to
+verify the complete C11 semantics or the C source directly.
 
 The RC11-style and replay layers now prove:
 
 ```text
+source skeleton + finite rf/mo data ──→ canonical Graph
+                    │
+                    ├──→ eleven remaining WellFormed fields
+                    └──→ rank witness ──→ coherence
+                                      ↓
+                           SourceAtomicExecution
+                                      ↓
 ControlledCandidate ──→ carrier/initializer/program-order WellFormed fields
          │
          └────────────→ GeneratedCandidate ──→ GraphTyping ──→ ReplayInvariant
 
-RemainingConsistency ──→ remaining WellFormed fields + coherence
-                                      ↓
              CoreConsistent + derived no-thin-air and OrderAcyclic
                                       ↓
                          respecting replay schedule
@@ -177,11 +195,25 @@ are now retained as occurrence-identified source labels. The local machine
 proves which acquire load or failed CAS authorizes each dereference and which
 field write precedes each release push. `NodeAccessCertificate` joins those
 source edges with a release-sequence/reads-from witness. Constructing that
-certificate from the eventual RF/MO execution data remains open.
-`RemainingConsistency` still accepts eleven `rf`/`mo`/RMW relation properties
-and coherence; it does not claim those relations came from the C program.
-Happens-before acyclicity and no-thin-air are now derived rather than repeated
-as certificate fields.
+certificate from the RF/MO execution data remains open.
+`RemainingConsistency` remains as a reusable interface, but the canonical
+`SourceAtomicExecution` path no longer asks a caller to assemble its eleven
+fields or coherence: `AtomicRelationData` and `RC11OrderWitness` derive them.
+The write order and read-source function are genuine semantic choices of an
+RC11 execution, not values inferable from source syntax. A future C/RC11
+translation or executable validator must produce and validate those choices.
+Happens-before acyclicity and no-thin-air are derived rather than repeated as
+certificate fields.
+
+`TreiberHistory` now defines classical Herlihy--Wing completion, per-thread
+equivalence, real-time preservation, and sequential legality with operation
+identity retained. It is intentionally not yet connected to the graph commit
+order: control flow still needs explicit response labels and a unique
+operation-to-commit bridge. Moreover, RC11 consistency alone does not turn
+cross-thread wall-clock order into C11 happens-before. The eventual classical
+Herlihy--Wing theorem must therefore state and discharge a client real-time
+compatibility condition; the all-RC11-executions result will separately use
+the appropriate HB/causal formulation.
 
 ## Model References
 
@@ -243,10 +275,12 @@ implementation. The Lean proof boundary described above remains unchanged.
 
 ## Next Precise Milestone
 
-Construct reads-from and modification order from explicit finite execution
-data and discharge the eleven `RemainingConsistency` relation fields instead
-of accepting them. The same construction must produce each
-`NodeAccessCertificate` release-sequence witness; a later successful pop CAS
-cannot justify its earlier dereference. Until those and the complete
-source/memory-model links are proved, the project does not claim that the C
-Treiber stack is fully verified under RC11.
+Connect each source `readNext` occurrence to a
+`NodeAccessCertificate` witness derived from the constructed RF/MO data; a
+later successful pop CAS cannot justify its earlier dereference. Then add
+explicit source response labels, preserve operation IDs through numbered
+atomic events, and connect graph commits to `TreiberHistory` completion and
+real-time order. Finally, provide the C/RC11 translation or validator that
+produces `AtomicRelationData` and `RC11OrderWitness` for exactly the supported
+executions. Until those links are proved, the project does not claim that the
+C Treiber stack is fully verified under RC11.
