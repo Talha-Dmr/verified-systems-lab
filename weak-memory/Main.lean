@@ -1,4 +1,4 @@
-import WeakMemory.TreiberRC11
+import WeakMemory.TreiberReplay
 
 open WeakMemory
 
@@ -11,3 +11,4 @@ def main : IO Unit := do
   IO.println "Lean theorem checked: abstract Treiber commit traces are legal stack histories."
   IO.println "Lean theorem checked: allowed RA-fragment executions are linearizable."
   IO.println "Lean theorem checked: certified RC11-style graph schedules compose with the RA proof."
+  IO.println "Lean theorem checked: accepted graph replay is equivalent to operational execution."

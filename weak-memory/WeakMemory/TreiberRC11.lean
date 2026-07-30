@@ -22,14 +22,16 @@ It formalizes a finite, single-atomic-location fragment containing:
 * modification order (`mo`);
 * release/acquire synchronization;
 * happens-before;
+* reads-before and extended coherence order;
 * functional reads-from;
 * a strict total modification order on writes;
 * the immediate-predecessor rule for successful read-modify-write events.
 
-This is not yet the complete ISO C11/RC11 model. In particular, the theorem
-that every well-formed graph admits a certified operational schedule remains a
-separate proof obligation. The final theorem in this file is conditional on
-such a schedule and composes it with the already-proved operational result.
+`CoreConsistent` adds the non-SC atomic RC11 no-thin-air and coherence
+conditions. This is not yet the complete ISO C11/RC11 model. In particular,
+SC order, fences, non-atomic accesses, and the theorem that the relational
+conditions alone generate a replayable operational schedule remain separate
+obligations. `WeakMemory.TreiberReplay` provides the executable replay layer.
 -/
 
 abbrev EventId := Nat
@@ -178,6 +180,61 @@ inductive HappensBefore (graph : Graph α) : Relation (Event α) where
       HappensBefore graph middle last →
       HappensBefore graph first last
 
+/--
+Reads-before (`rb`, also called from-read) relates a read to every later
+modification than the write from which that read takes its value.
+-/
+def ReadsBefore (graph : Graph α)
+    (read laterWrite : Event α) : Prop :=
+  ∃ source,
+    graph.readsFrom source read ∧
+    graph.modificationOrder source laterWrite ∧
+    read ≠ laterWrite
+
+/--
+Extended coherence order is the transitive closure of `rf`, `mo`, and `rb`.
+-/
+inductive ExtendedCoherence (graph : Graph α) :
+    Relation (Event α) where
+  | readsFrom {source target} :
+      graph.readsFrom source target →
+      ExtendedCoherence graph source target
+  | modificationOrder {source target} :
+      graph.modificationOrder source target →
+      ExtendedCoherence graph source target
+  | readsBefore {source target} :
+      graph.ReadsBefore source target →
+      ExtendedCoherence graph source target
+  | transitive {first middle last} :
+      ExtendedCoherence graph first middle →
+      ExtendedCoherence graph middle last →
+      ExtendedCoherence graph first last
+
+/-- The transitive closure used by RC11's no-thin-air condition. -/
+inductive CausalOrder (graph : Graph α) :
+    Relation (Event α) where
+  | programOrder {source target} :
+      graph.programOrder source target →
+      CausalOrder graph source target
+  | readsFrom {source target} :
+      graph.readsFrom source target →
+      CausalOrder graph source target
+  | transitive {first middle last} :
+      CausalOrder graph first middle →
+      CausalOrder graph middle last →
+      CausalOrder graph first last
+
+/--
+The non-SC RC11 coherence condition: `hb ; eco?` is irreflexive.
+
+The optional `eco` edge is split into the two conclusions below.
+-/
+def Coherent (graph : Graph α) : Prop :=
+  ∀ {source middle},
+    graph.HappensBefore source middle →
+    source ≠ middle ∧
+      ¬ graph.ExtendedCoherence middle source
+
 end Graph
 
 def Acyclic (relation : Relation α) : Prop :=
@@ -190,6 +247,8 @@ These conditions are intentionally named individually so later work can audit
 which parts correspond to RC11 axioms and which are Treiber-specific.
 -/
 structure WellFormed (graph : Graph α) : Prop where
+  noDuplicateEvents :
+    graph.events.Nodup
   uniqueIds :
     ∀ {left right},
       left ∈ graph.events →
@@ -285,6 +344,48 @@ structure WellFormed (graph : Graph α) : Prop where
             graph.modificationOrder middle rmw)
   happensBeforeAcyclic :
     Acyclic graph.HappensBefore
+
+/--
+The consistency conditions from the atomic, non-SC core of RC11 that are
+meaningful for this single-location model.
+
+SC order, fences, non-atomic races, dependencies, and multiple locations
+remain outside the current formalization.
+-/
+structure CoreConsistent (graph : Graph α) : Prop
+    extends WellFormed graph where
+  noThinAir :
+    Acyclic graph.CausalOrder
+  coherence :
+    graph.Coherent
+
+namespace CoreConsistent
+
+/-- No program-order edge can return through reads-from. -/
+theorem noProgramOrderReadsFromCycle
+    {graph : Graph α}
+    (consistent : CoreConsistent graph)
+    {first second : Event α}
+    (programOrder : graph.programOrder first second)
+    (readsFrom : graph.readsFrom second first) :
+    False := by
+  apply consistent.noThinAir first
+  exact Graph.CausalOrder.transitive
+    (Graph.CausalOrder.programOrder programOrder)
+    (Graph.CausalOrder.readsFrom readsFrom)
+
+/-- An `hb` edge cannot return through extended coherence order. -/
+theorem noHappensBeforeExtendedCoherenceCycle
+    {graph : Graph α}
+    (consistent : CoreConsistent graph)
+    {first second : Event α}
+    (happensBefore : graph.HappensBefore first second)
+    (extendedCoherence :
+      graph.ExtendedCoherence second first) :
+    False :=
+  (consistent.coherence happensBefore).2 extendedCoherence
+
+end CoreConsistent
 
 namespace WellFormed
 
@@ -462,8 +563,9 @@ def Before (first second : Event α) (schedule : List (Event α)) : Prop :=
     schedule = earlier ++ first :: between ++ second :: later
 
 /--
-The schedule covers every graph event exactly once and respects both `po` and
-`mo`. This certificate is the target of the future graph-linearization proof.
+The schedule covers every graph event exactly once and respects program order
+and extended coherence order. In particular, it respects `rf`, `mo`, and
+reads-before.
 -/
 structure RespectsGraph (graph : Graph α)
     (schedule : List (Event α)) : Prop where
@@ -475,15 +577,16 @@ structure RespectsGraph (graph : Graph α)
     ∀ {source target},
       graph.programOrder source target →
       Before source target schedule
-  modificationOrder :
+  extendedCoherence :
     ∀ {source target},
-      graph.modificationOrder source target →
+      graph.ExtendedCoherence source target →
       Before source target schedule
 
 structure CertifiedSchedule (graph : Graph α)
     (initial : TreiberRA.State α)
     (schedule : List (Event α))
     (final : TreiberRA.State α) : Prop where
+  consistent : CoreConsistent graph
   respectsGraph : RespectsGraph graph schedule
   executes : ScheduledExecution graph initial schedule final
 

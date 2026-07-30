@@ -21,8 +21,16 @@ theorems.
 - `TreiberRC11.WellFormed`, collecting the current single-location graph
   conditions for `po`, `rf`, `mo`, release sequences, synchronization, and
   RMW atomicity
+- `TreiberRC11.CoreConsistent`, adding reads-before, extended coherence,
+  no-thin-air, and the non-SC atomic RC11 coherence condition
 - `TreiberRC11.certifiedSchedule_linearizable`, composing a certified graph
   schedule with the operational RA proof
+- An executable action and graph replay checker in
+  `WeakMemory/TreiberReplay.lean`
+- `applyAction?_eq_some_iff` and `replay?_eq_some_iff`, proving that executable
+  acceptance exactly characterizes the corresponding operational judgments
+- `acceptedExecution_linearizable`, closing the proof chain for graphs whose
+  supplied order respects `po` and `eco` and passes deterministic replay
 
 ## Exactly What Is Proved?
 
@@ -61,18 +69,37 @@ Herlihy–Wing invocation/response definition. The stress test is not a proof,
 and the project does not claim to verify the complete C11 semantics or the C
 source directly.
 
-The RC11-style layer now proves the following conditional path:
+The RC11-style and replay layers now prove:
 
 ```text
-well-formed graph + certified schedule
-                  ↓
-operational RA Treiber execution
-                  ↓
-legal sequential stack history
+core-consistent graph
+ + order respecting po and eco
+ + successful executable replay
+                 ↓ proved
+ certified operational schedule
+                 ↓ proved
+    legal sequential stack history
 ```
 
-The remaining mathematical obligation is to construct that certified schedule
-from graph well-formedness rather than receiving it as an assumption.
+Executable replay is not treated as an oracle: its acceptance is proved
+equivalent to the inductive operational semantics. The remaining mathematical
+obligation is stronger: derive a suitable event order and successful replay
+from relational graph conditions and Treiber-specific publication invariants,
+rather than supplying the order and replay equation.
+
+## Model References
+
+The definitions of reads-before (`rb`), extended coherence (`eco`),
+no-thin-air, and non-SC coherence follow the atomic core presented in:
+
+- [Lahav et al., *Repairing Sequential Consistency in C/C++11*][rc11-paper]
+- [The accompanying executable `rc11.cat` model][rc11-cat]
+
+The present Lean development intentionally formalizes only the
+single-location, non-SC fragment used by this Treiber stack.
+
+[rc11-paper]: https://plv.mpi-sws.org/scfix/full.pdf
+[rc11-cat]: https://diy.inria.fr/www/weblib/rc11.cat.html
 
 ## Memory-Management Boundary
 
@@ -104,7 +131,8 @@ GENMC_BIN=/absolute/path/to/genmc ./weak-memory/run_genmc.sh
 
 ## Next Precise Milestone
 
-Extend the graph with the remaining RC11 coherence and release-sequence
-conditions, then prove that every accepted finite graph admits a
-`TreiberRC11.CertifiedSchedule`. Until that existence theorem is complete, the
-project does not claim that the C Treiber stack is fully verified under RC11.
+Define the combined `po ∪ eco` ordering constraint and construct a finite
+topological schedule from its acyclicity. Then derive replay acceptance from
+explicit Treiber publication, freshness, payload, and next-pointer invariants.
+Until those derivations are complete, the project does not claim that the C
+Treiber stack is fully verified under RC11.
