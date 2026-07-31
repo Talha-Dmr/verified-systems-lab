@@ -1,0 +1,390 @@
+line,physical_line,candidate_id,work_key,title,decision,canonical,doi,open_pdf
+19,,CG0019,arxiv:2312.15379,A flexible specification approach for verifying total correctness of fine-grained concurrent modules,include-adjacent,,,
+23,,CG0023,arxiv:2502.03320,Complementing an imperative process algebra with a rely/guarantee logic,exclude-topic,,10.48550/arxiv.2502.03320,
+24,,CG0024,arxiv:2507.04298,CCR 2.0: High-level Reasoning for Conditional Refinements,exclude-topic,,10.48550/arxiv.2507.04298,
+25,,CG0025,arxiv:2601.11836,Trace Validation of Unmodified Concurrent Systems with OmniLink,exclude-topic,,10.48550/arxiv.2601.11836,
+30,,CG0030,arxiv:2607.12642,Building Extensible Program Logics through Effect Handlers,exclude-topic,,,
+32,,CG0032,doi:10.1002/cpe.3928,Testing for linearizability,include-adjacent,,10.1002/cpe.3928,https://ora.ox.ac.uk/objects/uuid:c8038e41-29cc-4b67-a68b-47ac1edc0e5c/files/mcb5b4f9d990a3524c36fe31147420a02
+34,,CG0034,doi:10.1002/malq.19630090502,Semantical Analysis of Modal Logic I Normal Modal Propositional Calculi,exclude-topic,,10.1002/malq.19630090502,
+35,,CG0035,doi:10.1006/inco.1995.1134,Forward and Backward Simulations: I. Untimed Systems,exclude-topic,,10.1006/inco.1995.1134,https://doi.org/10.1006/inco.1995.1134
+36,,CG0036,doi:10.1006/inco.1996.0056,Full Abstraction for a Shared-Variable Parallel Language,exclude-topic,,10.1006/inco.1996.0056,
+37,,CG0037,doi:10.1006/inco.1996.0083,Undecidable Verification Problems for Programs with Unreliable Channels,exclude-topic,,10.1006/inco.1996.0083,
+38,,CG0038,doi:10.1006/inco.2001.3085,Fair Simulation,include-context,,10.1006/inco.2001.3085,
+39,,CG0039,doi:10.1006/jpdc.1996.0107,Cilk: An Efficient Multithreaded Runtime System,exclude-topic,,10.1006/jpdc.1996.0107,
+40,,CG0040,doi:10.1006/jpdc.1998.1446,Nonblocking Algorithms and Preemption-Safe Locking on Multiprogrammed Shared Memory Multiprocessors,include-adjacent,,10.1006/jpdc.1998.1446,
+41,,CG0041,doi:10.1007/1-4020-3532-2_8,On the Utility of Canonical Abstraction,exclude-topic,,10.1007/1-4020-3532-2_8,
+44,,CG0044,doi:10.1007/11513988_50,Abstraction Refinement via Inductive Learning,exclude-topic,,10.1007/11513988_50,https://link.springer.com/content/pdf/10.1007/11513988_50.pdf
+46,,CG0046,doi:10.1007/11531142_26,Static Deadlock Detection for Java Libraries,exclude-topic,,10.1007/11531142_26,
+47,,CG0047,doi:10.1007/11547662_7,Memory Usage Verification for OO Programs,exclude-topic,,10.1007/11547662_7,
+48,,CG0048,doi:10.1007/11561071_31,Allocating Memory in a Lock-Free Manner,include-adjacent,,10.1007/11561071_31,
+49,,CG0049,doi:10.1007/11561927_8,Obstruction-Free Algorithms Can Be Practically Wait-Free,include-adjacent,,10.1007/11561927_8,
+50,,CG0050,doi:10.1007/11693024_3,Type-Based Amortised Heap-Space Analysis,exclude-topic,,10.1007/11693024_3,
+51,,CG0051,doi:10.1007/11783596_11,Progress in Deriving Concurrent Programs: Emphasizing the Role of Stable Guards,include-adjacent,,10.1007/11783596_11,
+53,,CG0053,doi:10.1007/11795490_3,A Lazy Concurrent List-Based Set Algorithm,exclude-topic,,10.1007/11795490_3,
+54,,CG0054,doi:10.1007/11817949_16,A New Type System for Deadlock-Free Processes,exclude-topic,,10.1007/11817949_16,
+55,,CG0055,doi:10.1007/11817963_35,Automatic Termination Proofs for Programs with Shape-Shifting Heaps,exclude-topic,,10.1007/11817963_35,
+56,,CG0056,doi:10.1007/11817963_44,Formal Verification of a Lazy Concurrent List-Based Set Algorithm,include-adjacent,,10.1007/11817963_44,
+58,,CG0058,doi:10.1007/11864219_11,Checking a Multithreaded Algorithm with +CAL,include-adjacent,,10.1007/11864219_11,
+61,,CG0061,doi:10.1007/3-540-10003-2_69,Characterizing Correctness Properties of Parallel Programs Using Fixpoints,exclude-topic,,10.1007/3-540-10003-2_69,
+63,,CG0063,doi:10.1007/3-540-10828-9_61,On the algebraic specification of nondeterministic programming languages,exclude-topic,,10.1007/3-540-10828-9_61,
+66,,CG0066,doi:10.1007/3-540-16042-6_21,A proof technique for rely/guarantee properties,exclude-topic,,10.1007/3-540-16042-6_21,
+67,,CG0067,doi:10.1007/3-540-16442-1_14,Data Refinement Refined,exclude-topic,,10.1007/3-540-16442-1_14,https://link.springer.com/content/pdf/10.1007/3-540-16442-1_14.pdf
+68,,CG0068,doi:10.1007/3-540-16780-3_99,An interactive verification system based on dynamic logic,exclude-topic,,10.1007/3-540-16780-3_99,
+69,,CG0069,doi:10.1007/3-540-36108-1_18,A Practical Multi-word Compare-and-Swap Operation,include-adjacent,,10.1007/3-540-36108-1_18,
+71,,CG0071,doi:10.1007/3-540-36135-9_20,From States to Transitions: Improving Translation of LTL Formulae to Büchi Automata,exclude-topic,,10.1007/3-540-36135-9_20,https://link.springer.com/content/pdf/10.1007/3-540-36135-9_20.pdf
+72,,CG0072,doi:10.1007/3-540-40026-5_4,Even Better DCAS-Based Concurrent Deques,include-adjacent,,10.1007/3-540-40026-5_4,
+73,,CG0073,doi:10.1007/3-540-44585-4_6,Fast LTL to Büchi Automata Translation,exclude-topic,,10.1007/3-540-44585-4_6,https://link.springer.com/content/pdf/10.1007%2F3-540-44585-4_6.pdf
+76,,CG0076,doi:10.1007/3-540-44880-2_10,Using Coupled Simulations in Non-atomic Refinement,include-adjacent,,10.1007/3-540-44880-2_10,
+77,,CG0077,doi:10.1007/3-540-44898-5_4,Checking Interference with Fractional Permissions,exclude-topic,,10.1007/3-540-44898-5_4,
+78,,CG0078,doi:10.1007/3-540-45319-9_1,Branching vs. Linear Time: Final Showdown,exclude-topic,,10.1007/3-540-45319-9_1,https://link.springer.com/content/pdf/10.1007%2F3-540-45319-9_1.pdf
+83,,CG0083,doi:10.1007/3-540-45927-8_4,Another Type System for In-Place Update,exclude-topic,,10.1007/3-540-45927-8_4,
+86,,CG0086,doi:10.1007/3-540-48234-2_20,dSPIN: A Dynamic Extension of SPIN,exclude-topic,,10.1007/3-540-48234-2_20,
+87,,CG0087,doi:10.1007/3-540-48257-1_24,PVS: An Experience Report,exclude-topic,,10.1007/3-540-48257-1_24,
+89,,CG0089,doi:10.1007/3-540-53479-2_17,Action versus State based Logics for Transition Systems,exclude-topic,,10.1007/3-540-53479-2_17,https://ir.cwi.nl/pub/1624/1624D.pdf
+90,,CG0090,doi:10.1007/3-540-56188-9,Distributed Algorithms,exclude-secondary,,10.1007/3-540-56188-9,
+91,,CG0091,doi:10.1007/3-540-57659-2_3,Analysis of Dynamic Structures for Efficient Parallel Execution,exclude-topic,,10.1007/3-540-57659-2_3,
+94,,CG0094,doi:10.1007/3-540-61474-5_91,"PVS: Combining specification, proof checking, and model checking",exclude-topic,,10.1007/3-540-61474-5_91,
+95,,CG0095,doi:10.1007/3-540-61769-8_9,A cyclic distributed garbage collector for network objects,exclude-topic,,10.1007/3-540-61769-8_9,
+96,,CG0096,doi:10.1007/3-540-63166-6_10,Construction of Abstract State Graphs with PVS,exclude-topic,,10.1007/3-540-63166-6_10,
+99,,CG0099,doi:10.1007/978-1-4020-8157-6_28,TVLA: A system for generating abstract interpreters,exclude-topic,,10.1007/978-1-4020-8157-6_28,
+100,,CG0100,doi:10.1007/978-1-4020-8354-9,Time and Modality,exclude-secondary,,10.1007/978-1-4020-8354-9,
+101,,CG0101,doi:10.1007/978-1-4419-8528-6,A Discipline of Multiprogramming,exclude-secondary,,10.1007/978-1-4419-8528-6,
+102,,CG0102,doi:10.1007/978-1-4471-0257-1,Refinement in Z and Object-Z,exclude-secondary,,10.1007/978-1-4471-0257-1,
+103,,CG0103,doi:10.1007/978-1-4612-0931-7,The Temporal Logic of Reactive and Concurrent Systems,include-context,,10.1007/978-1-4612-0931-7,
+105,,CG0105,doi:10.1007/978-1-4613-8928-6_23,On a decision method in restricted second-order arithmetic,exclude-topic,,10.1007/978-1-4613-8928-6_23,
+107,,CG0107,doi:10.1007/978-1-4757-3472-0_2,Cooperating sequential processes,exclude-topic,,10.1007/978-1-4757-3472-0_2,
+108,,CG0108,doi:10.1007/978-1-4757-3837-7,A Logical Approach to Discrete Math,exclude-secondary,,10.1007/978-1-4757-3837-7,
+109,,CG0109,doi:10.1007/978-1-4842-4932-1,Programming Persistent Memory,exclude-secondary,,10.1007/978-1-4842-4932-1,
+110,,CG0110,doi:10.1007/978-3-030-03592-1_19,Store Buffer Reduction in the Presence of Mixed-Size Accesses and Misalignment,include-context,,10.1007/978-3-030-03592-1_19,
+111,,CG0111,doi:10.1007/978-3-030-17184-1_1,Time Credits and Time Receipts in Iris,include-adjacent,,10.1007/978-3-030-17184-1_1,https://link.springer.com/content/pdf/10.1007%2F978-3-030-17184-1_1.pdf
+113,,CG0113,doi:10.1007/978-3-030-25543-5_30,Violat: Generating Tests of Observational Refinement for Concurrent Objects,include-adjacent,,10.1007/978-3-030-25543-5_30,https://link.springer.com/content/pdf/10.1007%2F978-3-030-25543-5_30.pdf
+114,,CG0114,doi:10.1007/978-3-030-31784-3_27,Deciding Fast Termination for Probabilistic VASS with Nondeterminism,exclude-topic,,10.1007/978-3-030-31784-3_27,
+115,,CG0115,doi:10.1007/978-3-030-32505-3_11,Starvation-Free Monitors,include-adjacent,,10.1007/978-3-030-32505-3_11,https://lirias.kuleuven.be/handle/123456789/645768
+116,,CG0116,doi:10.1007/978-3-030-44914-8_11,Verifying Visibility-Based Weak Consistency,exclude-topic,,10.1007/978-3-030-44914-8_11,https://link.springer.com/content/pdf/10.1007%2F978-3-030-44914-8_11.pdf
+117,,CG0117,doi:10.1007/978-3-030-44914-8_13,Aneris: A Mechanised Logic for Modular Reasoning about Distributed Systems,exclude-topic,,10.1007/978-3-030-44914-8_13,
+120,,CG0120,doi:10.1007/978-3-030-48077-6_2,Adding Concurrency to a Sequential Refinement Tower,exclude-topic,,10.1007/978-3-030-48077-6_2,
+121,,CG0121,doi:10.1007/978-3-030-50086-3_3,Defining and Verifying Durable Opacity: Correctness for Persistent Software Transactional Memory,exclude-topic,,10.1007/978-3-030-50086-3_3,
+122,,CG0122,doi:10.1007/978-3-030-67087-0_4,On the State Reachability Problem for Concurrent Programs Under Power,exclude-topic,,10.1007/978-3-030-67087-0_4,
+123,,CG0123,doi:10.1007/978-3-030-72019-3_1,The Decidability of Verification under PS 2.0,include-context,,10.1007/978-3-030-72019-3_1,
+124,,CG0124,doi:10.1007/978-3-030-72019-3_20,Temporal Refinements for Guarded Recursive Types,exclude-topic,,10.1007/978-3-030-72019-3_20,https://link.springer.com/content/pdf/10.1007/978-3-030-72019-3_20.pdf
+127,,CG0127,doi:10.1007/978-3-030-90870-6_22,Concise Outlines for a Complex Logic: A Proof Outline Checker for TaDA,include-adjacent,,10.1007/978-3-030-90870-6_22,
+128,,CG0128,doi:10.1007/978-3-030-91014-3_17,Verifying and Optimizing the HMCS Lock for Arm Servers,include-adjacent,,10.1007/978-3-030-91014-3_17,
+129,,CG0129,doi:10.1007/978-3-030-99336-8_12,Probabilistic Total Store Ordering,include-context,,10.1007/978-3-030-99336-8_12,https://link.springer.com/content/pdf/10.1007/978-3-030-99336-8_12.pdf
+131,,CG0131,doi:10.1007/978-3-030-99336-8_9,View-Based Owicki-Gries Reasoning for Persistent x86-TSO (Extended Version),include-adjacent,,10.1007/978-3-030-99336-8_9,https://link.springer.com/content/pdf/10.1007/978-3-030-99336-8_9.pdf
+135,,CG0135,doi:10.1007/978-3-031-37706-8_12,Unblocking Dynamic Partial Order Reduction,exclude-topic,,10.1007/978-3-031-37706-8_12,https://link.springer.com/content/pdf/10.1007/978-3-031-37706-8_12.pdf
+137,,CG0137,doi:10.1007/978-3-031-37706-8_8,Lincheck: A Practical Framework for Testing Concurrent Data Structures on JVM,linked-existing,S163,10.1007/978-3-031-37706-8_8,https://link.springer.com/content/pdf/10.1007/978-3-031-37706-8_8.pdf
+138,,CG0138,doi:10.1007/978-3-031-40436-8_5,Specifying and Reasoning About Shared-Variable Concurrency,exclude-secondary,,10.1007/978-3-031-40436-8_5,
+139,,CG0139,doi:10.1007/978-3-031-47115-5_17,Verifying Read-Copy Update Under RC11,include-closest,,10.1007/978-3-031-47115-5_17,
+140,,CG0140,doi:10.1007/978-3-031-50521-8_2,A Fully Verified Persistency Library,include-adjacent,,10.1007/978-3-031-50521-8_2,
+141,,CG0141,doi:10.1007/978-3-031-56222-8_1,Fairness and Liveness Under Weak Consistency,linked-existing,A25,10.1007/978-3-031-56222-8_1,
+143,,CG0143,doi:10.1007/978-3-031-57267-8_6,"Intel PMDK Transactions: Specification, Validation and Concurrency",include-adjacent,,10.1007/978-3-031-57267-8_6,
+144,,CG0144,doi:10.1007/978-3-031-57267-8_8,Specifying and Verifying Persistent Libraries,include-adjacent,,10.1007/978-3-031-57267-8_8,
+145,,CG0145,doi:10.1007/978-3-031-65941-6_3,Verifying Safe Memory Reclamation in Concurrent Programs with CafeOBJ,include-closest,,10.1007/978-3-031-65941-6_3,
+146,,CG0146,doi:10.1007/978-3-031-66673-5_13,Exploring the Boundaries of Rely/Guarantee and Links to Linearisability,include-adjacent,,10.1007/978-3-031-66673-5_13,
+147,,CG0147,doi:10.1007/978-3-031-66676-6_4,Practical Rely/Guarantee Verification of an Efficient Lock for seL4 on Multicore Architectures,include-adjacent,,10.1007/978-3-031-66676-6_4,
+148,,CG0148,doi:10.1007/978-3-031-66676-6_5,A Rely-Guarantee Framework for Proving Deadlock Freedom Under Causal Consistency,include-adjacent,,10.1007/978-3-031-66676-6_5,
+149,,CG0149,doi:10.1007/978-3-031-71162-6_27,Unifying Weak Memory Verification Using Potentials,linked-existing,S141,10.1007/978-3-031-71162-6_27,
+151,,CG0151,doi:10.1007/978-3-031-91118-7_3,Sufficient Conditions for Robustness of RDMA Programs,include-adjacent,,10.1007/978-3-031-91118-7_3,https://link.springer.com/content/pdf/10.1007/978-3-031-91118-7_3.pdf
+152,,CG0152,doi:10.1007/978-3-031-92196-4_1,"A Tale of Formal Methods, Organic Computing, and Intelligent Robotics — The Scientific Life of Wolfgang Reif",exclude-secondary,,10.1007/978-3-031-92196-4_1,
+154,,CG0154,doi:10.1007/978-3-031-98208-8_8,Portability of Optimizations from SC to TSO,include-adjacent,,10.1007/978-3-031-98208-8_8,https://arxiv.org/pdf/2504.17646
+155,,CG0155,doi:10.1007/978-3-032-11176-0_7,A Rely-Guarantee-Based Simulation for Cooperative Semantics,exclude-topic,,10.1007/978-3-032-11176-0_7,
+157,,CG0157,doi:10.1007/978-3-319-06251-8_1,Developments in concurrent Kleene algebra,exclude-topic,,10.1007/978-3-319-06251-8_1,https://doi.org/10.1016/j.jlamp.2015.09.012
+158,,CG0158,doi:10.1007/978-3-319-06410-9_15,Quiescent Consistency: Defining and Verifying Relaxed Linearizability,include-adjacent,,10.1007/978-3-319-06410-9_15,
+159,,CG0159,doi:10.1007/978-3-319-10181-1_21,Verifying Linearizability on TSO Architectures,include-adjacent,,10.1007/978-3-319-10181-1_21,
+162,,CG0162,doi:10.1007/978-3-319-12736-1_15,Resource Analysis of Complex Programs with Cost Equations,exclude-topic,,10.1007/978-3-319-12736-1_15,
+164,,CG0164,doi:10.1007/978-3-319-21668-3_1,Poling: SMT Aided Linearizability Proofs,linked-existing,S180/PA84,10.1007/978-3-319-21668-3_1,
+166,,CG0166,doi:10.1007/978-3-319-24953-7_24,TSO-to-TSO Linearizability Is Undecidable,exclude-duplicate,,10.1007/978-3-319-24953-7_24,
+168,,CG0168,doi:10.1007/978-3-319-47677-3_3,Performance Evaluation of Concurrent Data Structures,exclude-topic,,10.1007/978-3-319-47677-3_3,
+170,,CG0170,doi:10.1007/978-3-319-48989-6_26,A Generic Logic for Proving Linearizability,include-adjacent,,10.1007/978-3-319-48989-6_26,
+171,,CG0171,doi:10.1007/978-3-319-48989-6_29,Explaining Relaxed Memory Models with Program Transformations,include-context,,10.1007/978-3-319-48989-6_29,
+172,,CG0172,doi:10.1007/978-3-319-51517-5_2,ARM Architecture and Programming,exclude-topic,,10.1007/978-3-319-51517-5_2,
+175,,CG0175,doi:10.1007/978-3-319-66706-5_9,Effect Summaries for Thread-Modular Analysis,include-adjacent,,10.1007/978-3-319-66706-5_9,
+176,,CG0176,doi:10.1007/978-3-319-70278-0_30,A Concurrent Perspective on Smart Contracts,exclude-topic,,10.1007/978-3-319-70278-0_30,
+178,,CG0178,doi:10.1007/978-3-319-73721-8_10,From Shapes to Amortized Complexity,exclude-topic,,10.1007/978-3-319-73721-8_10,
+179,,CG0179,doi:10.1007/978-3-319-73721-8_9,On abstraction and compositionality for weak-memory linearisability,linked-existing,S181/PA85,10.1007/978-3-319-73721-8_9,
+180,,CG0180,doi:10.1007/978-3-319-89884-1_13,A Separation Logic for a Promising Semantics,include-adjacent,,10.1007/978-3-319-89884-1_13,https://link.springer.com/content/pdf/10.1007%2F978-3-319-89884-1_13.pdf
+181,,CG0181,doi:10.1007/978-3-319-89884-1_15,Deadlock-Free Monitors,include-adjacent,,10.1007/978-3-319-89884-1_15,https://link.springer.com/content/pdf/10.1007%2F978-3-319-89884-1_15.pdf
+183,,CG0183,doi:10.1007/978-3-319-89884-1_32,"Paxos Consensus, Deconstructed and Abstracted (Extended Version)",exclude-topic,,10.1007/978-3-319-89884-1_32,https://link.springer.com/content/pdf/10.1007%2F978-3-319-89884-1_32.pdf
+184,,CG0184,doi:10.1007/978-3-319-89960-2_11,Automating Deductive Verification for Weak-Memory Programs,include-adjacent,,10.1007/978-3-319-89960-2_11,
+185,,CG0185,doi:10.1007/978-3-319-89960-2_9,Hoare Logics for Time Bounds - A Study in Meta Theory,exclude-topic,,10.1007/978-3-319-89960-2_9,https://doi.org/10.1007/978-3-319-89960-2_9
+186,,CG0186,doi:10.1007/978-3-319-89963-3_16,Geometric Nontermination Arguments,exclude-topic,,10.1007/978-3-319-89963-3_16,https://link.springer.com/content/pdf/10.1007%2F978-3-319-89963-3_16.pdf
+187,,CG0187,doi:10.1007/978-3-319-91280-6_1757,Curriculum,exclude-topic,,10.1007/978-3-319-91280-6_1757,
+189,,CG0189,doi:10.1007/978-3-319-96142-2_21,Reasoning About TSO Programs Using Reduction and Abstraction,include-adjacent,,10.1007/978-3-319-96142-2_21,https://link.springer.com/content/pdf/10.1007%2F978-3-319-96142-2_21.pdf
+190,,CG0190,doi:10.1007/978-3-319-98938-9_7,Making Linearizability Compositional for Partially Ordered Executions,linked-existing,S182/PA86,10.1007/978-3-319-98938-9_7,
+191,,CG0191,doi:10.1007/978-3-540-24622-0_21,Symbolic Implementation of the Best Transformer,exclude-topic,,10.1007/978-3-540-24622-0_21,
+192,,CG0192,doi:10.1007/978-3-540-24730-2_15,A Tool for Checking ANSI-C Programs,exclude-topic,,10.1007/978-3-540-24730-2_15,https://link.springer.com/content/pdf/10.1007/978-3-540-24730-2_15.pdf
+193,,CG0193,doi:10.1007/978-3-540-24730-2_39,Symbolically Computing Most-Precise Abstract Operations for Shape Analysis,exclude-topic,,10.1007/978-3-540-24730-2_39,https://link.springer.com/content/pdf/10.1007%2F978-3-540-24730-2_39.pdf
+194,,CG0194,doi:10.1007/978-3-540-27813-9_2,Static Program Analysis via 3-Valued Logic,exclude-topic,,10.1007/978-3-540-27813-9_2,https://link.springer.com/content/pdf/10.1007/978-3-540-27813-9_2.pdf
+196,,CG0196,doi:10.1007/978-3-540-27864-1_20,Partially Disjunctive Heap Abstraction,exclude-topic,,10.1007/978-3-540-27864-1_20,
+197,,CG0197,doi:10.1007/978-3-540-28644-8_2,A Semantics for Concurrent Separation Logic,exclude-topic,,10.1007/978-3-540-28644-8_2,https://doi.org/10.1016/j.tcs.2006.12.034
+198,,CG0198,doi:10.1007/978-3-540-28644-8_4,"Resources, Concurrency and Local Reasoning",exclude-topic,,10.1007/978-3-540-28644-8_4,https://doi.org/10.1016/j.tcs.2006.12.035
+200,,CG0200,doi:10.1007/978-3-540-31980-1_7,Context-Bounded Model Checking of Concurrent Software,exclude-topic,,10.1007/978-3-540-31980-1_7,
+201,,CG0201,doi:10.1007/978-3-540-32275-7_14,Reasoning About Systems with Transition Fairness,include-context,,10.1007/978-3-540-32275-7_14,
+203,,CG0203,doi:10.1007/978-3-540-45099-3_15,TVLA: A System for Implementing Static Analyses,exclude-topic,,10.1007/978-3-540-45099-3_15,
+205,,CG0205,doi:10.1007/978-3-540-69166-2_24,Heap Decomposition for Concurrent Shape Analysis,include-closest,,10.1007/978-3-540-69166-2_24,
+206,,CG0206,doi:10.1007/978-3-540-69850-0_12,Design and Synthesis of Synchronization Skeletons Using Branching Time Temporal Logic,exclude-topic,,10.1007/978-3-540-69850-0_12,
+207,,CG0207,doi:10.1007/978-3-540-70545-1_10,A Hybrid Type System for Lock-Freedom of Mobile Processes,exclude-duplicate,CG0539,10.1007/978-3-540-70545-1_10,
+209,,CG0209,doi:10.1007/978-3-540-70545-1_37,Thread Quantification for Concurrent Shape Analysis,include-closest,,10.1007/978-3-540-70545-1_37,https://link.springer.com/content/pdf/10.1007/978-3-540-70545-1_37.pdf
+210,,CG0210,doi:10.1007/978-3-540-73210-5_11,Proving Linearizability Via Non-atomic Refinement,include-closest,,10.1007/978-3-540-73210-5_11,
+212,,CG0212,doi:10.1007/978-3-540-73368-3_25,Revamping TVLA: Making Parametric Shape Analysis Competitive,exclude-topic,,10.1007/978-3-540-73368-3_25,
+213,,CG0213,doi:10.1007/978-3-540-73368-3_49,Comparison Under Abstraction for Verifying Linearizability,linked-existing,S156/PA71,10.1007/978-3-540-73368-3_49,https://link.springer.com/content/pdf/10.1007%2F978-3-540-73368-3_49.pdf
+214,,CG0214,doi:10.1007/978-3-540-73368-3_5,A Tutorial on Satisfiability Modulo Theories,exclude-topic,,10.1007/978-3-540-73368-3_5,https://link.springer.com/content/pdf/10.1007%2F978-3-540-73368-3_5.pdf
+215,,CG0215,doi:10.1007/978-3-540-74061-2_15,Modular Safety Checking for Fine-Grained Concurrency,include-adjacent,,10.1007/978-3-540-74061-2_15,http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.154.9220
+216,,CG0216,doi:10.1007/978-3-540-74407-8_18,A Marriage of Rely/Guarantee and Separation Logic,exclude-topic,,10.1007/978-3-540-74407-8_18,
+218,,CG0218,doi:10.1007/978-3-540-75596-8_4,Branching vs. Linear Time: Semantical Perspective,exclude-topic,,10.1007/978-3-540-75596-8_4,https://drops.dagstuhl.de/storage/00lipics/lipics-vol012-csl2011/LIPIcs.CSL.2011.3/LIPIcs.CSL.2011.3.pdf
+219,,CG0219,doi:10.1007/978-3-540-77096-1_29,The Baskets Queue,include-adjacent,,10.1007/978-3-540-77096-1_29,
+220,,CG0220,doi:10.1007/978-3-540-78127-1_36,From Monadic Logic to PSL,exclude-topic,,10.1007/978-3-540-78127-1_36,https://link.springer.com/content/pdf/10.1007%2F978-3-540-78127-1_36.pdf
+222,,CG0222,doi:10.1007/978-3-540-87603-8_4,Refinement of State-Based Systems: ASMs and Big Commuting Diagrams (Abstract),exclude-topic,,10.1007/978-3-540-87603-8_4,
+223,,CG0223,doi:10.1007/978-3-540-93900-9_27,Shape-Value Abstraction for Verifying Linearizability,include-closest,,10.1007/978-3-540-93900-9_27,
+224,,CG0224,doi:10.1007/978-3-540-93900-9_6,Towards Automatic Stability Analysis for Rely-Guarantee Proofs,exclude-topic,,10.1007/978-3-540-93900-9_6,
+225,,CG0225,doi:10.1007/978-3-642-00590-9_14,Amortised Memory Analysis Using the Depth of Data Structures,exclude-topic,,10.1007/978-3-642-00590-9_14,https://link.springer.com/content/pdf/10.1007/978-3-642-00590-9_14.pdf
+226,,CG0226,doi:10.1007/978-3-642-00590-9_27,A Basis for Verifying Multi-threaded Programs,exclude-topic,,10.1007/978-3-642-00590-9_27,
+229,,CG0229,doi:10.1007/978-3-642-03359-9_27,A Better x86 Memory Model: x86-TSO,linked-existing,S128,10.1007/978-3-642-03359-9_27,
+230,,CG0230,doi:10.1007/978-3-642-04027-6_24,Efficient Type-Checking for Amortised Heap-Space Analysis,exclude-topic,,10.1007/978-3-642-04027-6_24,
+232,,CG0232,doi:10.1007/978-3-642-04761-9_14,Memory Usage Verification Using Hip/Sleek,exclude-topic,,10.1007/978-3-642-04761-9_14,
+234,,CG0234,doi:10.1007/978-3-642-11319-2_25,RGSep Action Inference,include-adjacent,,10.1007/978-3-642-11319-2_25,
+235,,CG0235,doi:10.1007/978-3-642-11957-6_22,Deadlock-Free Channels and Locks,exclude-topic,,10.1007/978-3-642-11957-6_22,https://lirias.kuleuven.be/handle/123456789/255477
+236,,CG0236,doi:10.1007/978-3-642-11957-6_32,Explicit Stabilisation for Modular Rely-Guarantee Reasoning,include-adjacent,,10.1007/978-3-642-11957-6_32,https://link.springer.com/content/pdf/10.1007/978-3-642-11957-6_32.pdf
+237,,CG0237,doi:10.1007/978-3-642-11957-6_6,Amortised Resource Analysis with Separation Logic,exclude-topic,,10.1007/978-3-642-11957-6_6,
+239,,CG0239,doi:10.1007/978-3-642-14107-2_24,Concurrent Abstract Predicates,exclude-topic,,10.1007/978-3-642-14107-2_24,
+240,,CG0240,doi:10.1007/978-3-642-14295-6_40,Automatically Proving Linearizability,include-closest,,10.1007/978-3-642-14295-6_40,https://link.springer.com/content/pdf/10.1007%2F978-3-642-14295-6_40.pdf
+241,,CG0241,doi:10.1007/978-3-642-15375-4_27,Reasoning about Optimistic Concurrency Using a Program Logic for History,include-closest,,10.1007/978-3-642-15375-4_27,http://flint.cs.yale.edu/cs428/doc/rochtr.pdf
+245,,CG0245,doi:10.1007/978-3-642-17653-1_29,Quasi-Linearizability: Relaxed Consistency for Improved Concurrency,exclude-topic,,10.1007/978-3-642-17653-1_29,
+246,,CG0246,doi:10.1007/978-3-642-18275-4_16,Verifying Deadlock-Freedom of Communication Fabrics,exclude-topic,,10.1007/978-3-642-18275-4_16,
+247,,CG0247,doi:10.1007/978-3-642-19718-5_21,Static Analysis of Run-Time Errors in Embedded Critical Parallel C Programs,exclude-topic,,10.1007/978-3-642-19718-5_21,https://link.springer.com/content/pdf/10.1007%2F978-3-642-19718-5_21.pdf
+248,,CG0248,doi:10.1007/978-3-642-20398-5_4,"VeriFast: A Powerful, Sound, Predictable, Fast Verifier for C and Java",exclude-topic,,10.1007/978-3-642-20398-5_4,https://lirias.kuleuven.be/handle/123456789/312066
+249,,CG0249,doi:10.1007/978-3-642-21437-0_25,Verifying Linearisability with Potential Linearisation Points,include-adjacent,,10.1007/978-3-642-21437-0_25,
+250,,CG0250,doi:10.1007/978-3-642-22012-8_34,Deciding Robustness against Total Store Ordering,include-adjacent,,10.1007/978-3-642-22012-8_34,
+252,,CG0252,doi:10.1007/978-3-642-22110-1_47,PRISM 4.0: Verification of Probabilistic Real-Time Systems,exclude-topic,,10.1007/978-3-642-22110-1_47,
+253,,CG0253,doi:10.1007/978-3-642-22110-1_9,Getting Rid of Store-Buffers in TSO Analysis,include-context,,10.1007/978-3-642-22110-1_9,
+256,,CG0256,doi:10.1007/978-3-642-24690-6_10,A Machine-Checked Framework for Relational Separation Logic,include-adjacent,,10.1007/978-3-642-24690-6_10,http://software.imdea.org/~ckunz/rsl2sl/SEFM2011.pdf
+259,,CG0259,doi:10.1007/978-3-642-28717-6_1,Automatic Inference of Resource Consumption Bounds,exclude-topic,,10.1007/978-3-642-28717-6_1,
+261,,CG0261,doi:10.1007/978-3-642-28869-2_5,Concurrent Library Correctness on the TSO Memory Model,include-adjacent,,10.1007/978-3-642-28869-2_5,
+264,,CG0264,doi:10.1007/978-3-642-31424-7_21,How to Prove Algorithms Linearisable,exclude-secondary,,10.1007/978-3-642-31424-7_21,https://link.springer.com/content/pdf/10.1007%2F978-3-642-31424-7_21.pdf
+265,,CG0265,doi:10.1007/978-3-642-31424-7_36,An Axiomatic Memory Model for POWER Multiprocessors,include-context,,10.1007/978-3-642-31424-7_36,
+266,,CG0266,doi:10.1007/978-3-642-31424-7_64,Resource Aware ML,exclude-topic,,10.1007/978-3-642-31424-7_64,https://link.springer.com/content/pdf/10.1007%2F978-3-642-31424-7_64.pdf
+268,,CG0268,doi:10.1007/978-3-642-32027-9_10,Transactional Memory,exclude-topic,,10.1007/978-3-642-32027-9_10,
+270,,CG0270,doi:10.1007/978-3-642-33651-5_3,Show No Weakness: Sequentially Consistent Specifications of TSO Libraries,include-adjacent,,10.1007/978-3-642-33651-5_3,
+271,,CG0271,doi:10.1007/978-3-642-36742-7_23,An Integrated Specification and Verification Technique for Highly Concurrent Data Structures,linked-existing,S170/PA74,10.1007/978-3-642-36742-7_23,
+272,,CG0272,doi:10.1007/978-3-642-36742-7_5,Structural Counter Abstraction,exclude-topic,,10.1007/978-3-642-36742-7_5,https://link.springer.com/content/pdf/10.1007%2F978-3-642-36742-7_5.pdf
+273,,CG0273,doi:10.1007/978-3-642-37036-6_10,A Discipline for Program Verification Based on Backpointers and Its Use in Observational Disjointness,exclude-topic,,10.1007/978-3-642-37036-6_10,
+274,,CG0274,doi:10.1007/978-3-642-37036-6_11,Modular Reasoning about Separation of Concurrent Data Structures,include-adjacent,,10.1007/978-3-642-37036-6_11,https://link.springer.com/content/pdf/10.1007/978-3-642-37036-6_11.pdf
+277,,CG0277,doi:10.1007/978-3-642-37036-6_29,Checking and Enforcing Robustness against TSO,include-adjacent,,10.1007/978-3-642-37036-6_29,
+278,,CG0278,doi:10.1007/978-3-642-37036-6_32,Automatic Type Inference for Amortised Heap-Space Analysis,exclude-topic,,10.1007/978-3-642-37036-6_32,
+279,,CG0279,doi:10.1007/978-3-642-39799-8_11,Automatic Linearizability Proofs of Concurrent Objects with Cooperating Updates,include-closest,,10.1007/978-3-642-39799-8_11,https://link.springer.com/content/pdf/10.1007%2F978-3-642-39799-8_11.pdf
+281,,CG0281,doi:10.1007/978-3-642-40184-8_18,Aspect-Oriented Linearizability Proofs,include-adjacent,,10.1007/978-3-642-40184-8_18,
+282,,CG0282,doi:10.1007/978-3-642-54833-8_9,Impredicative Concurrent Abstract Predicates,include-adjacent,,10.1007/978-3-642-54833-8_9,https://link.springer.com/content/pdf/10.1007%2F978-3-642-54833-8_9.pdf
+283,,CG0283,doi:10.1007/978-3-642-54862-8_11,Proving Nontermination via Safety,exclude-topic,,10.1007/978-3-642-54862-8_11,https://link.springer.com/content/pdf/10.1007%2F978-3-642-54862-8_11.pdf
+284,,CG0284,doi:10.1007/978-3-642-71549-5,Temporal Logic of Programs,exclude-secondary,,10.1007/978-3-642-71549-5,
+285,,CG0285,doi:10.1007/978-3-662-43951-7_14,Robustness against Power is PSpace-complete,include-context,,10.1007/978-3-662-43951-7_14,https://arxiv.org/pdf/1404.7092
+286,,CG0286,doi:10.1007/978-3-662-43951-7_19,Between Linearizability and Quiescent Consistency - Quantitative Quiescent Consistency,exclude-topic,,10.1007/978-3-662-43951-7_19,
+287,,CG0287,doi:10.1007/978-3-662-44202-9_9,TaDA: A Logic for Time and Data Abstraction,include-adjacent,,10.1007/978-3-662-44202-9_9,
+288,,CG0288,doi:10.1007/978-3-662-46669-8_14,Specifying and Verifying Concurrent Algorithms with Histories and Subjectivity,include-closest,,10.1007/978-3-662-46669-8_14,https://link.springer.com/content/pdf/10.1007/978-3-662-46669-8_14.pdf
+289,,CG0289,doi:10.1007/978-3-662-46669-8_6,Automatic Static Cost Analysis for Parallel Programs,exclude-topic,,10.1007/978-3-662-46669-8_6,
+290,,CG0290,doi:10.1007/978-3-662-46681-0_28,Stateless Model Checking for TSO and PSO,linked-existing,S119,10.1007/978-3-662-46681-0_28,
+294,,CG0294,doi:10.1007/978-3-662-48653-5_28,Specifying Concurrent Problems: Beyond Linearizability and up to Tasks - (Extended Abstract),exclude-topic,,10.1007/978-3-662-48653-5_28,https://hal.archives-ouvertes.fr/hal-01207140/file/34.pdf
+296,,CG0296,doi:10.1007/978-3-662-49192-8_33,Bounded TSO-to-SC Linearizability Is Decidable,include-adjacent,,10.1007/978-3-662-49192-8_33,
+298,,CG0298,doi:10.1007/978-3-662-53426-7_23,Linearizability of Persistent Memory Objects Under a Full-System-Crash Failure Model,include-adjacent,,10.1007/978-3-662-53426-7_23,
+299,,CG0299,doi:10.1007/978-3-662-54434-1_17,Tackling Real-Life Relaxed Concurrency with FSL++,include-adjacent,,10.1007/978-3-662-54434-1_17,
+300,,CG0300,doi:10.1007/978-3-662-54434-1_24,Proving Linearizability Using Partial Orders,include-adjacent,,10.1007/978-3-662-54434-1_24,
+301,,CG0301,doi:10.1007/978-3-662-54434-1_26,The Essence of Higher-Order Concurrent Separation Logic,include-adjacent,,10.1007/978-3-662-54434-1_26,https://pure.au.dk/portal/en/publications/b4f2ec41-c162-4d2d-abe2-4acfb7663214
+303,,CG0303,doi:10.1007/978-3-662-54434-1_36,Abstract Specifications for Concurrent Maps,include-adjacent,,10.1007/978-3-662-54434-1_36,
+305,,CG0305,doi:10.1007/978-94-011-1793-7_4,Assigning Meanings to Programs,exclude-secondary,,10.1007/978-94-011-1793-7_4,
+306,,CG0306,doi:10.1007/978-94-017-0435-9_1,Structured Specifications and Interactive Proofs with KIV,exclude-secondary,,10.1007/978-94-017-0435-9_1,
+307,,CG0307,doi:10.1007/bf00121262,Combining partial order reductions with on-the-fly model-checking,exclude-topic,,10.1007/bf00121262,https://link.springer.com/content/pdf/10.1007/3-540-58179-0_69.pdf
+309,,CG0309,doi:10.1007/bf00290732,On some variants of Post's Correspondence Problem,exclude-topic,,10.1007/bf00290732,
+313,,CG0313,doi:10.1007/bf01211617,The rely-guarantee method for verifying shared variable concurrent programs,include-context,,10.1007/bf01211617,https://dl.acm.org/doi/pdf/10.1007/BF01211617
+314,,CG0314,doi:10.1007/bf01257083,The temporal logic of branching time,exclude-topic,,10.1007/bf01257083,https://dl.acm.org/doi/pdf/10.1145/567532.567551
+316,,CG0316,doi:10.1007/bf01444205,Beitr�ge zur Begr�ndung der transfiniten Mengenlehre,exclude-topic,,10.1007/bf01444205,
+317,,CG0317,doi:10.1007/bfb0013029,Expressibility results for linear-time and branching-time logics,exclude-topic,,10.1007/bfb0013029,
+318,,CG0318,doi:10.1007/bfb0015727,Linear and Branching Structures in the Semantics and Logics of Reactive Systems,exclude-topic,,10.1007/bfb0015727,
+319,,CG0319,doi:10.1007/bfb0036900,Behavioural Equivalence Relations Induced by Programming Logics,exclude-topic,,10.1007/bfb0036900,
+321,,CG0321,doi:10.1007/bfb0055612,Sometimes and Not Never Re-revisited: On Branching Versus Linear Time,exclude-topic,,10.1007/bfb0055612,
+323,,CG0323,doi:10.1007/s00165-007-0037-4,Streamlining progress-based derivations of concurrent programs,linked-existing,S36,10.1007/s00165-007-0037-4,
+324,,CG0324,doi:10.1007/s00165-009-0130-y,Proving linearizability with temporal logic,linked-existing,S210/PA102,10.1007/s00165-009-0130-y,
+327,,CG0327,doi:10.1007/s00165-021-00541-8,Verifying correctness of persistent concurrent data structures: a sound and complete method,include-adjacent,,10.1007/s00165-021-00541-8,
+328,,CG0328,doi:10.1007/s00234-004-1233-z,June 2004,exclude-topic,,10.1007/s00234-004-1233-z,
+329,,CG0329,doi:10.1007/s00236-006-0020-1,Refinement verification of the lazy caching algorithm,include-adjacent,,10.1007/s00236-006-0020-1,
+330,,CG0330,doi:10.1007/s00236-007-0044-1,A criterion for atomicity revisited,include-adjacent,,10.1007/s00236-007-0044-1,https://link.springer.com/content/pdf/10.1007/s00236-007-0044-1.pdf
+332,,CG0332,doi:10.1007/s00236-017-0305-6,TSO-to-TSO linearizability is undecidable,include-adjacent,,10.1007/s00236-017-0305-6,https://link.springer.com/content/pdf/10.1007/s00236-017-0305-6.pdf
+333,,CG0333,doi:10.1007/s002360050116,Refinement of fair action systems,include-context,,10.1007/s002360050116,
+336,,CG0336,doi:10.1007/s004460050028,Software transactional memory,exclude-topic,,10.1007/s004460050028,
+338,,CG0338,doi:10.1007/s10009-010-0135-0,Data decision diagrams for Promela systems analysis,exclude-topic,,10.1007/s10009-010-0135-0,
+340,,CG0340,doi:10.1007/s10009-014-0308-3,KIV: overview and VerifyThis competition,exclude-secondary,,10.1007/s10009-014-0308-3,
+344,,CG0344,doi:10.1007/s100090200074,Symmetric Spin,exclude-topic,,10.1007/s100090200074,
+345,,CG0345,doi:10.1007/s10472-013-9389-z,RGITL: A temporal logic framework for compositional reasoning about interleaved programs,include-adjacent,,10.1007/s10472-013-9389-z,
+348,,CG0348,doi:10.1007/s10703-006-4342-y,Model Checking with Strong Fairness,include-context,,10.1007/s10703-006-4342-y,
+349,,CG0349,doi:10.1007/s10703-011-0111-7,Programs with lists are counter automata,exclude-topic,,10.1007/s10703-011-0111-7,https://hal.archives-ouvertes.fr/hal-01418868/file/Fmsd10.pdf
+350,,CG0350,doi:10.1007/s10703-012-0161-5,A formal hierarchy of weak memory models,include-context,,10.1007/s10703-012-0161-5,
+355,,CG0355,doi:10.1007/s10766-017-0518-x,GPS+\documentclass[12pt]{minimal} \usepackage{amsmath} \usepackage{wasysym} \usepackage{amsfonts} \usepackage{amssymb} \usepackage{amsbsy} \usepackage{mathrsfs} \usepackage{upgreek} \setlength{\oddsidemargin}{-69pt} \begin{document}$$+$$\end{document}: Reasoning About Fences and Relaxed Atomics,include-adjacent,,10.1007/s10766-017-0518-x,https://research.tees.ac.uk/files/4220693/IJPP_Preprint.pdf
+356,,CG0356,doi:10.1007/s10817-010-9174-1,Closed-Form Upper Bounds in Static Cost Analysis,exclude-topic,,10.1007/s10817-010-9174-1,
+359,,CG0359,doi:10.1007/s10817-016-9402-4,Complexity and Resource Bound Analysis of Imperative Programs Using Difference Constraints,exclude-topic,,10.1007/s10817-016-9402-4,https://link.springer.com/content/pdf/10.1007%2Fs10817-016-9402-4.pdf
+360,,CG0360,doi:10.1007/s10817-017-9431-7,Verifying the Correctness and Amortized Complexity of a Union-Find Implementation in Separation Logic with Time Credits,include-adjacent,,10.1007/s10817-017-9431-7,
+362,,CG0362,doi:10.1007/s11390-021-1671-7,Verifying Contextual Refinement with Ownership Transfer,include-adjacent,,10.1007/s11390-021-1671-7,
+363,,CG0363,doi:10.1007/s11704-023-2774-9,A program logic for obstruction-freedom,include-closest,,10.1007/s11704-023-2774-9,
+365,,CG0365,doi:10.1016/0001-8708(92)90011-9,Sets with a negative number of elements,exclude-topic,,10.1016/0001-8708(92)90011-9,https://doi.org/10.1016/0001-8708(92)90011-9
+366,,CG0366,doi:10.1016/0020-0190(81)90106-x,Myths About the Mutual Exclusion Problem,exclude-topic,,10.1016/0020-0190(81)90106-x,
+371,,CG0371,doi:10.1016/0168-0072(91)90066-u,,include-context,,10.1016/0168-0072(91)90066-u,
+372,,CG0372,doi:10.1016/0304-3975(81)90110-9,The Temporal Semantics of Concurrent Programs,exclude-topic,,10.1016/0304-3975(81)90110-9,https://doi.org/10.1016/0304-3975(81)90110-9
+373,,CG0373,doi:10.1016/0304-3975(91)90224-p,The existence of refinement mappings,exclude-topic,,10.1016/0304-3975(91)90224-p,https://doi.org/10.1016/0304-3975(91)90224-p
+374,,CG0374,doi:10.1016/0304-3975(92)90014-7,The Revised Report on the Syntactic Theories of Sequential Control and State,exclude-topic,,10.1016/0304-3975(92)90014-7,https://doi.org/10.1016/0304-3975(92)90014-7
+375,,CG0375,doi:10.1016/0890-5401(92)90076-r,A Lattice for Abstract Interpretation of Dynamic (LISP-Like) Structures,exclude-topic,,10.1016/0890-5401(92)90076-r,https://doi.org/10.1016/0890-5401(92)90076-r
+376,,CG0376,doi:10.1016/b978-0-444-88074-1.50021-4,Temporal and Modal Logic,exclude-topic,,10.1016/b978-0-444-88074-1.50021-4,
+377,,CG0377,doi:10.1016/c2011-0-06993-4,The Art of Multiprocessor Programming,exclude-secondary,,10.1016/c2011-0-06993-4,
+378,,CG0378,doi:10.1016/j.camwa.2011.09.024,Task Optimization Based on CPU Pipeline Technique in Multicore System,exclude-topic,,10.1016/j.camwa.2011.09.024,https://doi.org/10.1016/j.camwa.2011.09.024
+380,,CG0380,doi:10.1016/j.entcs.2005.04.010,Finding Symmetry in Models of Concurrent Systems by Static Channel Diagram Analysis,exclude-topic,,10.1016/j.entcs.2005.04.010,https://doi.org/10.1016/j.entcs.2005.04.010
+381,,CG0381,doi:10.1016/j.entcs.2005.04.026,Verifying Concurrent Data Structures by Simulation,include-closest,,10.1016/j.entcs.2005.04.026,https://doi.org/10.1016/j.entcs.2005.04.026
+382,,CG0382,doi:10.1016/j.entcs.2005.09.007,Spin-to-Grape: A Tool for Analysing Symmetry in Promela Models,exclude-topic,,10.1016/j.entcs.2005.09.007,https://doi.org/10.1016/j.entcs.2005.09.007
+383,,CG0383,doi:10.1016/j.entcs.2006.08.044,Derivation of a Scalable Lock-Free Stack Algorithm,linked-existing,A32/PA43,10.1016/j.entcs.2006.08.044,
+385,,CG0385,doi:10.1016/j.entcs.2011.09.029,Concurrent Separation Logic and Operational Semantics,exclude-topic,,10.1016/j.entcs.2011.09.029,
+386,,CG0386,doi:10.1016/j.entcs.2015.12.002,Steps in Modular Specifications for Concurrent Modules (Invited Tutorial Paper),exclude-secondary,,10.1016/j.entcs.2015.12.002,
+388,,CG0388,doi:10.1016/j.jcss.2014.06.005,Runtime analysis of probabilistic programs with unbounded recursion,exclude-topic,,10.1016/j.jcss.2014.06.005,
+389,,CG0389,doi:10.1016/j.jlamp.2018.03.003,A perspective on specifying and verifying concurrent modules,exclude-secondary,,10.1016/j.jlamp.2018.03.003,https://doi.org/10.1016/j.jlamp.2018.03.003
+391,,CG0391,doi:10.1016/j.jpdc.2009.08.011,A scalable lock-free stack algorithm,linked-existing,S50,10.1016/j.jpdc.2009.08.011,
+392,,CG0392,doi:10.1016/j.jpdc.2010.06.006,Transactional memory,exclude-topic,,10.1016/j.jpdc.2010.06.006,http://urn.kb.se/resolve?urn=urn:nbn:se:bth-7687
+393,,CG0393,doi:10.1016/j.scico.2005.03.007,The java.util.concurrent synchronizer framework,exclude-topic,,10.1016/j.scico.2005.03.007,https://doi.org/10.1016/j.scico.2005.03.007
+395,,CG0395,doi:10.1016/j.scico.2014.04.001,Two approaches for proving linearizability of multiset,include-adjacent,,10.1016/j.scico.2014.04.001,
+399,,CG0399,doi:10.1016/j.tcs.2006.12.034,A semantics for concurrent separation logic,exclude-duplicate,,10.1016/j.tcs.2006.12.034,
+400,,CG0400,doi:10.1016/j.tcs.2006.12.035,"Resources, concurrency, and local reasoning",exclude-duplicate,,10.1016/j.tcs.2006.12.035,
+401,,CG0401,doi:10.1016/j.tcs.2007.09.003,A program logic for resources,exclude-topic,,10.1016/j.tcs.2007.09.003,https://www.research.ed.ac.uk/en/publications/444cd0e5-b8f7-4e33-9b0d-c6a88a5fb236
+402,,CG0402,doi:10.1016/j.tcs.2010.09.021,Abstraction for concurrent objects,include-adjacent,,10.1016/j.tcs.2010.09.021,https://doi.org/10.1016/j.tcs.2010.09.021
+403,,CG0403,doi:10.1016/s0020-0190(01)00337-4,Verifying lossy channel systems has nonprimitive recursive complexity,exclude-topic,,10.1016/s0020-0190(01)00337-4,http://www.lsv.ens-cachan.fr/Publis/PAPERS/PDF/Sch-IPL2002.pdf
+404,,CG0404,doi:10.1016/s0049-237x(08)70247-7,,exclude-topic,,10.1016/s0049-237x(08)70247-7,
+405,,CG0405,doi:10.1016/s0304-3975(00)00102-x,,exclude-topic,,10.1016/s0304-3975(00)00102-x,
+406,,CG0406,doi:10.1016/s0890-5401(03)00009-9,,exclude-topic,,10.1016/s0890-5401(03)00009-9,
+407,,CG0407,doi:10.1016/s1570-8683(03)00008-9,Mathematical modal logic: A view of its evolution,exclude-topic,,10.1016/s1570-8683(03)00008-9,https://doi.org/10.1016/s1570-8683(03)00008-9
+408,,CG0408,doi:10.1016/s1571-0661(05)80006-4,Automatically Verifying Concurrent Queue Algorithms,include-adjacent,,10.1016/s1571-0661(05)80006-4,https://doi.org/10.1016/s1571-0661(05)80006-4
+410,,CG0410,doi:10.1017/9781009129220,Real World OCaml: Functional Programming for the Masses,exclude-secondary,,10.1017/9781009129220,
+411,,CG0411,doi:10.1017/cbo9780511609619,Compiling with Continuations,exclude-secondary,,10.1017/cbo9780511609619,
+412,,CG0412,doi:10.1017/cbo9780511663079,Data Refinement,exclude-secondary,,10.1017/cbo9780511663079,
+413,,CG0413,doi:10.1017/s0956796818000151,Iris from the ground up: A modular foundation for higher-order concurrent separation logic,linked-existing,S143,10.1017/s0956796818000151,https://doi.org/10.1017/s0956796818000151
+414,,CG0414,doi:10.1017/s0960129521000487,Two decades of automatic amortized resource analysis,exclude-secondary,,10.1017/s0960129521000487,https://www.cambridge.org/core/services/aop-cambridge-core/content/view/9A47A8663CD8A7147E2F17865C368094/S0960129521000487a.pdf/div-class-title-two-decades-of-automatic-amortized-resource-analysis-div.pdf
+415,,CG0415,doi:10.1023/a:1008624904634,A Mechanically Checked Proof of a Multiprocessor Result via a Uniprocessor View,exclude-topic,,10.1023/a:1008624904634,
+416,,CG0416,doi:10.1023/a:1008696026254,An Analysis of Bitstate Hashing,exclude-topic,,10.1023/a:1008696026254,
+417,,CG0417,doi:10.1080/04597220801912986,Reference,exclude-topic,,10.1080/04597220801912986,
+418,,CG0418,doi:10.1090/psapm/019/0235771,Assigning meanings to programs,exclude-topic,,10.1090/psapm/019/0235771,
+419,,CG0419,doi:10.1090/s0002-9904-1946-08555-9,A variant of a recursively unsolvable problem,exclude-topic,,10.1090/s0002-9904-1946-08555-9,https://www.ams.org/bull/1946-52-04/S0002-9904-1946-08555-9/S0002-9904-1946-08555-9.pdf
+420,,CG0420,doi:10.1093/comjnl/38.3.260,"Temporal Logic: Mathematical Foundations and Computational Aspects, Volume 1",exclude-topic,,10.1093/comjnl/38.3.260,https://doi.org/10.1093/comjnl/38.3.260
+421,,CG0421,doi:10.1093/comjnl/6.4.308,The Mechanical Evaluation of Expressions,exclude-topic,,10.1093/comjnl/6.4.308,https://academic.oup.com/comjnl/article-pdf/6/4/308/1067901/6-4-308.pdf
+422,,CG0422,doi:10.1093/jigpal/jzl009,Verifying Temporal Heap Properties Specified via Evolution Logic,exclude-topic,,10.1093/jigpal/jzl009,https://link.springer.com/content/pdf/10.1007%2F3-540-36575-3_15.pdf
+423,,CG0423,doi:10.1093/logcom/6.3.343,Verification of temporal properties,include-context,,10.1093/logcom/6.3.343,
+426,,CG0426,doi:10.1109/71.819952,Universal Constructions for Large Objects,exclude-topic,,10.1109/71.819952,
+431,,CG0431,doi:10.1109/fmcad.2014.6987598,Faster temporal reasoning for infinite-state programs,exclude-topic,,10.1109/fmcad.2014.6987598,https://figshare.com/articles/report/Faster_temporal_reasoning_for_infinite-state_programs/10161236/1/files/18312608.pdf
+432,,CG0432,doi:10.1109/hpca.2014.6835927,TSO-CC: Consistency directed cache coherence for TSO,include-context,,10.1109/hpca.2014.6835927,
+433,,CG0433,doi:10.1109/icdcs.2003.1203503,Obstruction-free synchronization: double-ended queues as an example,include-adjacent,,10.1109/icdcs.2003.1203503,
+436,,CG0436,doi:10.1109/imis.2011.55,Task Optimization Based on CPU Pipeline Technique in Multicore System,exclude-topic,,10.1109/imis.2011.55,
+437,,CG0437,doi:10.1109/isca.2014.6853222,Memory persistency,exclude-duplicate,,10.1109/isca.2014.6853222,
+438,,CG0438,doi:10.1109/ispa.2010.13,Parallel Task Developing Based on Software Pipeline in Multicore System,exclude-topic,,10.1109/ispa.2010.13,
+439,,CG0439,doi:10.1109/lics.1988.5115,The existence of refinement mappings,exclude-topic,,10.1109/lics.1988.5115,
+440,,CG0440,doi:10.1109/lics.1996.561322,Model-checking of correctness conditions for concurrent objects,include-adjacent,,10.1109/lics.1996.561322,https://doi.org/10.1006/inco.1999.2847
+441,,CG0441,doi:10.1109/lics.1998.705674,Linear vs. branching time: a complexity-theoretic perspective,exclude-topic,,10.1109/lics.1998.705674,
+442,,CG0442,doi:10.1109/lics.1999.782641,Linear types and non-size-increasing polynomial time computation,exclude-topic,,10.1109/lics.1999.782641,https://doi.org/10.1016/s0890-5401(03)00009-9
+443,,CG0443,doi:10.1109/lics.2002.1029817,Separation logic: a logic for shared mutable data structures,exclude-topic,,10.1109/lics.2002.1029817,http://ttic.uchicago.edu/~dreyer/seplogic.pdf
+444,,CG0444,doi:10.1109/lics.2004.1319596,Model checking probabilistic pushdown automata,exclude-topic,,10.1109/lics.2004.1319596,
+445,,CG0445,doi:10.1109/lics.2006.52,Variables as Resource in Hoare Logics,exclude-topic,,10.1109/lics.2006.52,
+446,,CG0446,doi:10.1109/lics.2007.30,Local Action and Abstract Separation Logic,exclude-topic,,10.1109/lics.2007.30,
+447,,CG0447,doi:10.1109/lics.2010.24,Undecidability of Propositional Separation Logic and Its Neighbours,exclude-duplicate,,10.1109/lics.2010.24,
+448,,CG0448,doi:10.1109/lics.2011.46,Separation Logic in the Presence of Garbage Collection,exclude-topic,,10.1109/lics.2011.46,
+452,,CG0452,doi:10.1109/mm.2015.46,Memory persistency,include-context,,10.1109/mm.2015.46,
+453,,CG0453,doi:10.1109/nvmsa.2017.8064467,Designing persistent heap for byte addressable NVRAM,exclude-topic,,10.1109/nvmsa.2017.8064467,
+454,,CG0454,doi:10.1109/pdp.2016.103,Reasoning about Fences and Relaxed Atomics,exclude-duplicate,,10.1109/pdp.2016.103,https://research.tees.ac.uk/ws/files/4182816/611789.pdf
+455,,CG0455,doi:10.1109/pmmp.1993.315553,Interprocedural heap analysis for parallelizing imperative programs,exclude-topic,,10.1109/pmmp.1993.315553,
+457,,CG0457,doi:10.1109/sfcs.1977.32,The temporal logic of programs,include-context,,10.1109/sfcs.1977.32,
+458,,CG0458,doi:10.1109/sfcs.1994.365680,Scheduling multithreaded computations by work stealing,exclude-topic,,10.1109/sfcs.1994.365680,
+460,,CG0460,doi:10.1109/superc.1990.130060,A simple and correct shared-queue algorithm using compare-and-swap,include-adjacent,,10.1109/superc.1990.130060,
+461,,CG0461,doi:10.1109/superc.1990.130084,Scan primitives for vector computers,exclude-topic,,10.1109/superc.1990.130084,
+462,,CG0462,doi:10.1109/tc.1979.1675439,How to Make a Multiprocessor Computer That Correctly Executes Multiprocess Programs,include-context,,10.1109/tc.1979.1675439,
+463,,CG0463,doi:10.1109/time.2011.12,Interleaved Programs and Rely-Guarantee Reasoning with ITL,exclude-topic,,10.1109/time.2011.12,
+466,,CG0466,doi:10.1109/tpds.2011.159,User-Level Implementations of Read-Copy Update,exclude-topic,,10.1109/tpds.2011.159,http://www.rdrop.com/users/paulmck/RCU/urcu-main-accepted.2011.08.30a.pdf
+467,,CG0467,doi:10.1109/tse.1977.229904,Proving the Correctness of Multiprocess Programs,exclude-topic,,10.1109/tse.1977.229904,http://www.cis.umassd.edu/~hxu/courses/cis481/references/Lamport-1977.pdf
+469,,CG0469,doi:10.1109/tse.2012.82,Verifying Linearizability via Optimized Refinement Checking,include-adjacent,,10.1109/tse.2012.82,https://ink.library.smu.edu.sg/sis_research/4996
+470,,CG0470,doi:10.1134/s0361768821060050,A Survey of Programming Language Memory Models,exclude-secondary,,10.1134/s0361768821060050,
+471,,CG0471,doi:10.1136/bjo.46.11.704,A and V,exclude-topic,,10.1136/bjo.46.11.704,https://bjo.bmj.com/content/bjophthalmol/46/11/704.1.full.pdf
+472,,CG0472,doi:10.1142/s0129626407003125,A Lazy Concurrent List-Based Set Algorithm,exclude-topic,,10.1142/s0129626407003125,
+478,,CG0478,doi:10.1145/103727.103729,Algorithms for scalable synchronization on shared-memory multiprocessors,exclude-topic,,10.1145/103727.103729,https://dl.acm.org/doi/pdf/10.1145/103727.103729
+479,,CG0479,doi:10.1145/1040305.1040326,Separation logic and abstraction,exclude-topic,,10.1145/1040305.1040326,
+480,,CG0480,doi:10.1145/1040305.1040327,Permission accounting in separation logic,exclude-topic,,10.1145/1040305.1040327,
+481,,CG0481,doi:10.1145/1040305.1040336,The Java memory model,linked-existing,S130,10.1145/1040305.1040336,http://hdl.handle.net/1903/1949
+482,,CG0482,doi:10.1145/1047659.1040326,Separation logic and abstraction,exclude-duplicate,,10.1145/1047659.1040326,
+483,,CG0483,doi:10.1145/1047659.1040336,The Java memory model,exclude-duplicate,,10.1145/1047659.1040336,
+484,,CG0484,doi:10.1145/1050849.1050865,A brief survey of program slicing,exclude-topic,,10.1145/1050849.1050865,
+486,,CG0486,doi:10.1145/1073970.1073974,Dynamic circular work-stealing deque,exclude-topic,,10.1145/1073970.1073974,
+487,,CG0487,doi:10.1145/1094811.1094852,X10: an object-oriented approach to non-uniform cluster computing,exclude-topic,,10.1145/1094811.1094852,
+489,,CG0489,doi:10.1145/1122971.1122992,Proving correctness of highly-concurrent linearisable objects,include-adjacent,,10.1145/1122971.1122992,https://hal.inria.fr/hal-01248204/file/PPoPP-2006-listRG.pdf
+490,,CG0490,doi:10.1145/1122971.1122994,Scalable synchronous queues,linked-existing,S101,10.1145/1122971.1122994,
+493,,CG0493,doi:10.1145/1182613.1182618,Logical characterizations of heap abstractions,exclude-topic,,10.1145/1182613.1182618,http://arxiv.org/pdf/cs/0312014
+494,,CG0494,doi:10.1145/1190215.1190261,Modular verification of a non-blocking stack,linked-existing,S39,10.1145/1190215.1190261,
+495,,CG0495,doi:10.1145/1190216.1190257,Proving that programs eventually do something good,include-adjacent,,10.1145/1190216.1190257,
+497,,CG0497,doi:10.1145/1233307.1233309,Concurrent programming without locks,include-adjacent,,10.1145/1233307.1233309,
+499,,CG0499,doi:10.1145/1250734.1250765,Thread-modular shape analysis,include-adjacent,,10.1145/1250734.1250765,http://www.cs.tau.ac.il/~msagiv/p266-gotsman.pdf
+501,,CG0501,doi:10.1145/1273442.1250765,Thread-modular shape analysis,exclude-duplicate,,10.1145/1273442.1250765,
+502,,CG0502,doi:10.1145/1273442.1250771,Proving thread termination,include-adjacent,,10.1145/1273442.1250771,
+503,,CG0503,doi:10.1145/1287624.1287653,Finding bugs efficiently with a SAT solver,exclude-topic,,10.1145/1287624.1287653,
+505,,CG0505,doi:10.1145/1328897.1328459,Proving non-termination,exclude-topic,,10.1145/1328897.1328459,
+507,,CG0507,doi:10.1145/136035.136043,Symbolic Boolean manipulation with ordered binary-decision diagrams,exclude-topic,,10.1145/136035.136043,
+509,,CG0509,doi:10.1145/1375581.1375587,A study of concurrent real-time garbage collectors,exclude-topic,,10.1145/1375581.1375587,
+510,,CG0510,doi:10.1145/1375581.1375598,Deriving linearizable fine-grained concurrent objects,include-adjacent,,10.1145/1375581.1375598,
+511,,CG0511,doi:10.1145/1375634.1375637,Parallel generational-copying garbage collection with a block-structured heap,exclude-topic,,10.1145/1375634.1375637,http://research.microsoft.com/~simonpj/papers/parallel-gc/par-gc-ismm08.pdf
+512,,CG0512,doi:10.1145/1375634.1375656,Analysing memory resource bounds for low-level programs,exclude-topic,,10.1145/1375634.1375656,https://durham-repository.worktribe.com/output/1161355
+513,,CG0513,doi:10.1145/1411203.1411224,Implicitly-threaded parallelism in Manticore,exclude-topic,,10.1145/1411203.1411224,https://www.cambridge.org/core/services/aop-cambridge-core/content/view/9F8A993EE51C782F80AB993F05DCA215/S0956796810000201a.pdf/div-class-title-implicitly-threaded-parallelism-in-manticore-div.pdf
+515,,CG0515,doi:10.1145/1411204.1411226,Parametric higher-order abstract syntax for mechanized semantics,exclude-topic,,10.1145/1411204.1411226,
+519,,CG0519,doi:10.1145/1480881.1480917,Compositional shape analysis by means of bi-abduction,exclude-topic,,10.1145/1480881.1480917,https://ora.ox.ac.uk/objects/uuid:bcfefe74-a79c-4155-8160-c51f92f05466/files/mecd5da2692206979dc44c10b8352a0c2
+520,,CG0520,doi:10.1145/1480881.1480922,Local rely-guarantee reasoning,include-adjacent,,10.1145/1480881.1480922,http://flint.cs.yale.edu/cs428/doc/lrg-tr.pdf
+521,,CG0521,doi:10.1145/1480881.1480925,State-dependent representation independence,exclude-topic,,10.1145/1480881.1480925,http://ttic.uchicago.edu/~amal/papers/sdri.pdf
+522,,CG0522,doi:10.1145/1480881.1480930,Relaxed memory models,include-context,,10.1145/1480881.1480930,
+523,,CG0523,doi:10.1145/1504176.1504186,Idempotent work stealing,include-adjacent,,10.1145/1504176.1504186,
+524,,CG0524,doi:10.1145/1506409.1506431,Scalable synchronous queues,exclude-duplicate,,10.1145/1506409.1506431,
+526,,CG0526,doi:10.1145/1543135.1542493,Progress guarantee for parallel programs via bounded lock-freedom,linked-existing,S42/PA35,10.1145/1543135.1542493,
+527,,CG0527,doi:10.1145/155332.155343,Implementation of a portable nested data-parallel language,exclude-topic,,10.1145/155332.155343,https://dl.acm.org/doi/pdf/10.1145/173284.155343
+528,,CG0528,doi:10.1145/1594834.1480886,Proving that non-blocking algorithms don't block,linked-existing,S10/PA09,10.1145/1594834.1480886,
+529,,CG0529,doi:10.1145/1594834.1480917,Compositional shape analysis by means of bi-abduction,exclude-duplicate,,10.1145/1594834.1480917,
+530,,CG0530,doi:10.1145/1594834.1480922,Local rely-guarantee reasoning,exclude-duplicate,,10.1145/1594834.1480922,
+531,,CG0531,doi:10.1145/161468.161469,A methodology for implementing highly concurrent data objects,linked-existing,S145/PA64,10.1145/161468.161469,https://dl.acm.org/doi/pdf/10.1145/161468.161469
+532,,CG0532,doi:10.1145/1640089.1640106,The design of a task parallel library,exclude-topic,,10.1145/1640089.1640106,
+533,,CG0533,doi:10.1145/1640089.1640133,"On understanding data abstraction, revisited",exclude-topic,,10.1145/1640089.1640133,
+534,,CG0534,doi:10.1145/165180.165205,Polling efficiently on stock hardware,exclude-topic,,10.1145/165180.165205,
+536,,CG0536,doi:10.1145/1693453.1693459,Featherweight X10: a core calculus for async-finish parallelism,exclude-topic,,10.1145/1693453.1693459,
+538,,CG0538,doi:10.1145/1706299.1706322,A theory of indirection via approximation,exclude-topic,,10.1145/1706299.1706322,
+539,,CG0539,doi:10.1145/1745312.1745313,A hybrid type system for lock-freedom of mobile processes,include-adjacent,,10.1145/1745312.1745313,
+540,,CG0540,doi:10.1145/1745312.1745315,Verifying safety properties of concurrent heap-manipulating programs,include-adjacent,,10.1145/1745312.1745315,https://dl.acm.org/doi/pdf/10.1145/1745312.1745315
+541,,CG0541,doi:10.1145/1749608.1749613,Finite differencing of logical formulas for static analysis,exclude-topic,,10.1145/1749608.1749613,https://link.springer.com/content/pdf/10.1007/3-540-36575-3_26.pdf
+542,,CG0542,doi:10.1145/1785414.1785443,x86-TSO,linked-existing,S128,10.1145/1785414.1785443,
+543,,CG0543,doi:10.1145/1806596.1806630,The reachability-bound problem,exclude-topic,,10.1145/1806596.1806630,
+544,,CG0544,doi:10.1145/1806596.1806634,Line-up: a complete and automatic linearizability checker,include-adjacent,,10.1145/1806596.1806634,
+545,,CG0545,doi:10.1145/1809028.1806630,The reachability-bound problem,exclude-duplicate,,10.1145/1809028.1806630,
+546,,CG0546,doi:10.1145/1835698.1835722,Verifying linearizability with hindsight,include-adjacent,,10.1145/1835698.1835722,
+548,,CG0548,doi:10.1145/1897852.1897873,Data structures in the multicore age,exclude-secondary,,10.1145/1897852.1897873,
+549,,CG0549,doi:10.1145/1925844.1926394,Mathematizing C++ concurrency,exclude-duplicate,,10.1145/1925844.1926394,
+550,,CG0550,doi:10.1145/1926385.1926394,Mathematizing C++ concurrency,linked-existing,S131,10.1145/1926385.1926394,https://kar.kent.ac.uk/50265/1/popl085ap-sewell.pdf
+551,,CG0551,doi:10.1145/1926385.1926402,A kripke logical relation between ML and assembly,exclude-topic,,10.1145/1926385.1926402,
+552,,CG0552,doi:10.1145/1929553.1929565,The essence of monotonic state,exclude-topic,,10.1145/1929553.1929565,https://hal.inria.fr/hal-01081193/file/pilkiewicz-pottier-monotonicity.pdf
+554,,CG0554,doi:10.1145/1950365.1950379,Mnemosyne: lightweight persistent memory,include-adjacent,,10.1145/1950365.1950379,
+556,,CG0556,doi:10.1145/197917.198176,Set-linearizability,include-adjacent,,10.1145/197917.198176,https://dl.acm.org/doi/pdf/10.1145/197917.198176
+557,,CG0557,doi:10.1145/1993498.1993520,Understanding POWER multiprocessors,include-context,,10.1145/1993498.1993520,http://www.cl.cam.ac.uk/%7Epes20/ppc-supplemental/pldi105-sarkar.pdf
+558,,CG0558,doi:10.1145/2020976.2021006,The art of multiprocessor programming by Maurice Herlihy and Nir Shavit,exclude-secondary,,10.1145/2020976.2021006,
+559,,CG0559,doi:10.1145/203095.201069,Conjoining specifications,exclude-topic,,10.1145/203095.201069,https://dl.acm.org/doi/pdf/10.1145/203095.201069
+560,,CG0560,doi:10.1145/209936.209958,Cilk: an efficient multithreaded runtime system,exclude-topic,,10.1145/209936.209958,https://doi.org/10.1006/jpdc.1996.0107
+561,,CG0561,doi:10.1145/2103656.2103666,The marriage of bisimulations and Kripke logical relations,exclude-topic,,10.1145/2103656.2103666,http://www.mpi-sws.org/~gil/publications/rts.pdf
+563,,CG0563,doi:10.1145/2103776.2103785,The VerCors project: setting up basecamp,exclude-topic,,10.1145/2103776.2103785,https://ris.utwente.nl/ws/files/5458321/plpv08-Amighi.pdf
+564,,CG0564,doi:10.1145/224164.224182,Abstract models of memory management,exclude-topic,,10.1145/224164.224182,http://nrs.harvard.edu/urn-3:HUL.InstRepos:3293156
+565,,CG0565,doi:10.1145/2247684.2247685,Can parallel data structures rely on automatic memory managers?,include-adjacent,,10.1145/2247684.2247685,http://safari.ece.cmu.edu/MSPC2012/erez_abstract.pdf
+567,,CG0567,doi:10.1145/229000.226322,Elements of style: analyzing a software design feature with a counterexample detector,exclude-topic,,10.1145/229000.226322,https://dl.acm.org/doi/pdf/10.1145/229000.226322
+569,,CG0569,doi:10.1145/232627.232650,A provable time and space efficient implementation of NESL,exclude-topic,,10.1145/232627.232650,https://dl.acm.org/doi/pdf/10.1145/232627.232650
+570,,CG0570,doi:10.1145/2362389.2362393,Multivariate amortized resource analysis,exclude-topic,,10.1145/2362389.2362393,https://dl.acm.org/doi/pdf/10.1145/2362389.2362393
+571,,CG0571,doi:10.1145/237721.237725,Solving shape-analysis problems in languages with destructive updating,exclude-topic,,10.1145/237721.237725,https://dl.acm.org/doi/pdf/10.1145/237721.237725
+572,,CG0572,doi:10.1145/2429069.2429099,Library abstraction for C/C++ concurrency,linked-existing,S172/PA76,10.1145/2429069.2429099,https://kar.kent.ac.uk/50270/1/POPL.13.library_abstraction_c_cpp.pdf
+573,,CG0573,doi:10.1145/2429069.2429104,Views,include-adjacent,,10.1145/2429069.2429104,
+574,,CG0574,doi:10.1145/2429069.2429109,Quantitative relaxation of concurrent data structures,exclude-topic,,10.1145/2429069.2429109,http://cs.uni-salzburg.at/%7Eck/publications/conferences/POPL13-QuantitativeRelaxation.pdf
+576,,CG0576,doi:10.1145/244795.244800,Abstract interpretation of reactive systems,exclude-topic,,10.1145/244795.244800,https://dl.acm.org/doi/pdf/10.1145/244795.244800
+577,,CG0577,doi:10.1145/2480359.2429099,Library abstraction for C/C++ concurrency,exclude-duplicate,,10.1145/2480359.2429099,
+578,,CG0578,doi:10.1145/2480359.2429104,Views,exclude-duplicate,,10.1145/2480359.2429104,
+581,,CG0581,doi:10.1145/2488364.2490873,Proving the Correctness of Nonblocking Data Structures,exclude-secondary,,10.1145/2488364.2490873,
+583,,CG0583,doi:10.1145/2500365.2500600,Unifying refinement and hoare-style reasoning in a logic for higher-order concurrency,include-adjacent,,10.1145/2500365.2500600,
+584,,CG0584,doi:10.1145/2509136.2509514,CDSchecker: checking concurrent data structures written with C/C++ atomics,linked-existing,S102/PA54,10.1145/2509136.2509514,
+587,,CG0587,doi:10.1145/2535838.2535877,Verifying eventual consistency of optimistic replication systems,exclude-topic,,10.1145/2535838.2535877,https://dl.acm.org/doi/pdf/10.1145/2578855.2535877?download=true
+588,,CG0588,doi:10.1145/2542667,Undecidability of Propositional Separation Logic and Its Neighbours,exclude-topic,,10.1145/2542667,http://spiral.imperial.ac.uk/bitstream/10044/1/95206/2/DTR10-1.pdf
+589,,CG0589,doi:10.1145/2544174.2500600,Unifying refinement and hoare-style reasoning in a logic for higher-order concurrency,exclude-duplicate,,10.1145/2544174.2500600,
+592,,CG0592,doi:10.1145/2594291.2594347,Herding cats,exclude-duplicate,,10.1145/2594291.2594347,
+594,,CG0594,doi:10.1145/2603088.2603161,Zero-reachability in probabilistic multi-counter automata,exclude-topic,,10.1145/2603088.2603161,
+595,,CG0595,doi:10.1145/2627752,Herding Cats,linked-existing,S116,10.1145/2627752,https://hal.inria.fr/hal-01081413/file/p40-alglave.pdf
+597,,CG0597,doi:10.1145/2660193.2660243,GPS,linked-existing,S183/PA87,10.1145/2660193.2660243,

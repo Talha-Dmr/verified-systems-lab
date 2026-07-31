@@ -1,0 +1,65 @@
+{
+  "citation_seed_snapshot_sha256s": [
+    "2417ed11ce57ec4ecb71203ffbf82b9ca69a4c47f629b6a18077270ef9bc174d"
+  ],
+  "created_at_utc": "2026-07-31T05:46:40+00:00",
+  "merged_edge_count": 64,
+  "merged_work_count": 65,
+  "method_note": "Every unique work from every source run is retained after work-key deduplication. Run, provider, and seed provenance are unioned. Keyword categories only prioritize manual title/full-text screening and never constitute inclusion or exclusion. Mixed seed or screening snapshots make this a cumulative candidate union, not a single protocol wave.",
+  "publication_cutoff": "2026-07-31",
+  "queue_row_count": 65,
+  "repository_commit": "764d8dc6b37c7a8d08dd10c70d6a33c4de272682",
+  "screening_snapshot_compatibility": "identical",
+  "screening_snapshot_sha256s": [
+    "a8b68bd43515a0135a696979ff2e4cbba5b1a645d5d1352eeebc2f957e8ea374"
+  ],
+  "script_sha256": "973a783f45238d8833789c92196e877d35c67ccdbeea54acf70374726c9cc3a5",
+  "script_version": "3",
+  "seed_snapshot_compatibility": "identical",
+  "source_checksums_verified": 23,
+  "source_citation_runs": [
+    {
+      "checksum_manifest_sha256": "49209458aa37dbf64be40abe49922bbb61c52e731e7d1cd61c8d0a05614043d9",
+      "checksums_verified": 10,
+      "citation_seeds_sha256": "2417ed11ce57ec4ecb71203ffbf82b9ca69a4c47f629b6a18077270ef9bc174d",
+      "coverage_status": "incomplete",
+      "edge_count": 0,
+      "path": "/home/talha/Projects/math/weak-memory/research/novelty-audit/data/citation-runs/20260731T054700Z-gao-thesis-opencitations",
+      "publication_cutoff": "2026-07-31",
+      "request_status": "complete",
+      "run_id": "20260731T054700Z-gao-thesis-opencitations",
+      "screening_sha256": "a8b68bd43515a0135a696979ff2e4cbba5b1a645d5d1352eeebc2f957e8ea374",
+      "seed_ids": [
+        "CS043"
+      ],
+      "status": "complete-with-coverage-limitations",
+      "work_count": 1
+    },
+    {
+      "checksum_manifest_sha256": "7e1d8e66b2384c618aec02b5f64969646d1f6fd31a12e106a755668819b9babe",
+      "checksums_verified": 13,
+      "citation_seeds_sha256": "2417ed11ce57ec4ecb71203ffbf82b9ca69a4c47f629b6a18077270ef9bc174d",
+      "coverage_status": "incomplete",
+      "edge_count": 64,
+      "path": "/home/talha/Projects/math/weak-memory/research/novelty-audit/data/citation-runs/20260731T054800Z-gao-thesis-semanticscholar",
+      "publication_cutoff": "2026-07-31",
+      "request_status": "incomplete",
+      "run_id": "20260731T054800Z-gao-thesis-semanticscholar",
+      "screening_sha256": "a8b68bd43515a0135a696979ff2e4cbba5b1a645d5d1352eeebc2f957e8ea374",
+      "seed_ids": [
+        "CS043"
+      ],
+      "status": "incomplete-with-errors",
+      "work_count": 65
+    }
+  ],
+  "source_edge_row_count": 64,
+  "source_run_count": 2,
+  "source_work_row_count": 66,
+  "status": "queue-prepared-human-screening-pending",
+  "triage_state_counts": {
+    "existing-seed": 1,
+    "priority-title-screen": 2,
+    "title-screen": 62
+  }
+}

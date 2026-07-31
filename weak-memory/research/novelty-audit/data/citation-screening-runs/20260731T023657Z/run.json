@@ -1,0 +1,23 @@
+{
+  "created_at_utc": "2026-07-31T02:36:57+00:00",
+  "method_note": "Every deduplicated work is retained. Keyword categories only prioritize manual title/full-text screening and never constitute inclusion or exclusion.",
+  "queue_row_count": 979,
+  "repository_commit": "764d8dc6b37c7a8d08dd10c70d6a33c4de272682",
+  "script_sha256": "2d869eee500839202ee09e8e5af5b089de1bff02ac7aee2edec2ce923f98cc03",
+  "script_version": "1",
+  "source_checksum_manifest_sha256": "5e726b371b3b781b17a186efdd1f50f6942d330f31ec8e71cdec7ee7e8af209b",
+  "source_checksums_verified": 100,
+  "source_citation_run": "/home/talha/Projects/math/weak-memory/research/novelty-audit/data/citation-runs/20260731T022348Z",
+  "source_citation_run_coverage_status": "incomplete",
+  "source_citation_run_request_status": "incomplete",
+  "source_citation_run_status": "incomplete-with-errors",
+  "source_edge_count": 1355,
+  "source_work_count": 979,
+  "status": "queue-prepared-human-screening-pending",
+  "triage_state_counts": {
+    "existing-seed": 31,
+    "manual-date-check": 75,
+    "priority-title-screen": 57,
+    "title-screen": 816
+  }
+}

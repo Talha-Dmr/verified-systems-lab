@@ -1,0 +1,61 @@
+line,physical_line,candidate_id,work_key,title,decision,canonical,doi,open_pdf
+61,62,CG0010,doi:10.1007/978-1-4612-1674-2,Refinement Calculus,exclude-secondary,,10.1007/978-1-4612-1674-2,
+62,63,CG0011,doi:10.1007/978-1-4757-3472-0_2,Cooperating Sequential Processes,exclude-topic,,10.1007/978-1-4757-3472-0_2,
+63,64,CG0012,doi:10.1007/978-3-030-81688-9_2,Ghost Signals: Verifying Termination of Busy Waiting,linked-existing,S93,10.1007/978-3-030-81688-9_2,https://arxiv.org/pdf/2010.11762
+64,65,CG0013,doi:10.1007/978-3-031-40436-8_5,Specifying and Reasoning About Shared-Variable Concurrency,exclude-secondary,,10.1007/978-3-031-40436-8_5,
+65,66,CG0014,doi:10.1007/978-3-319-33693-0_13,Towards a Thread-Local Proof Technique for Starvation Freedom,include-adjacent,,10.1007/978-3-319-33693-0_13,
+66,67,CG0015,doi:10.1007/978-3-540-24851-4_26,Lock Reservation for Java Reconsidered,exclude-topic,,10.1007/978-3-540-24851-4_26,
+67,68,CG0017,doi:10.1007/978-3-540-48654-1_28,Trace Refinement of Action Systems,include-adjacent,,10.1007/978-3-540-48654-1_28,
+68,69,CG0019,doi:10.1007/978-3-540-73210-5_11,Proving Linearizability Via Non-atomic Refinement,linked-existing,S218,10.1007/978-3-540-73210-5_11,https://link.springer.com/content/pdf/10.1007/978-3-540-73210-5_11.pdf
+69,70,CG0020,doi:10.1007/978-3-540-74061-2_15,Modular Safety Checking for Fine-Grained Concurrency,include-adjacent,,10.1007/978-3-540-74061-2_15,
+70,71,CG0021,doi:10.1007/978-3-642-00590-9_19,Abstraction for Concurrent Objects,include-adjacent,,10.1007/978-3-642-00590-9_19,
+71,72,CG0022,doi:10.1007/978-3-642-00768-2_13,Inferring Synchronization under Limited Observability,include-adjacent,,10.1007/978-3-642-00768-2_13,https://gretay.github.io/papers/inferguards-tacas09.pdf
+72,73,CG0024,doi:10.1007/978-3-642-21437-0_25,Verifying Linearisability with Potential Linearisation Points,include-adjacent,,10.1007/978-3-642-21437-0_25,
+73,74,CG0025,doi:10.1007/978-3-642-22012-8_36,Liveness-Preserving Atomicity Abstraction,linked-existing,S199,10.1007/978-3-642-22012-8_36,https://www.cs.ox.ac.uk/files/4074/icalp11.pdf
+74,75,CG0026,doi:10.1007/978-3-642-25873-2_22,On the Nature of Progress,include-context,,10.1007/978-3-642-25873-2_22,
+75,76,CG0027,doi:10.1007/978-3-642-31424-7_21,How to Prove Algorithms Linearisable,exclude-secondary,,10.1007/978-3-642-31424-7_21,https://link.springer.com/content/pdf/10.1007%2F978-3-642-31424-7_21.pdf
+76,77,CG0029,doi:10.1007/978-3-642-32940-1_19,Linearizability with Ownership Transfer,include-adjacent,,10.1007/978-3-642-32940-1_19,
+77,78,CG0030,doi:10.1007/978-3-642-40184-8_17,Characterizing Progress Properties of Concurrent Objects via Contextual Refinements,linked-existing,S200,10.1007/978-3-642-40184-8_17,https://www.cs.yale.edu/homes/hoffmann/papers/LHXZ13progress.pdf
+78,79,CG0031,doi:10.1007/978-3-662-02880-3_1,The Refinement Calculus,include-context,,10.1007/978-3-662-02880-3_1,
+79,80,CG0032,doi:10.1007/978-3-662-49498-1_8,Modular Termination Verification for Non-blocking Concurrency,linked-existing,S17,10.1007/978-3-662-49498-1_8,https://vtss.doc.ic.ac.uk/publications/daRochaPinto2016Modular.techreport.pdf
+80,81,CG0033,doi:10.1007/978-3-662-54434-1_24,Proving Linearizability Using Partial Orders,include-adjacent,,10.1007/978-3-662-54434-1_24,
+81,82,CG0034,doi:10.1007/978-3-662-54434-1_34,A Higher-Order Logic for Concurrent Termination-Preserving Refinement,include-adjacent,,10.1007/978-3-662-54434-1_34,
+82,83,CG0036,doi:10.1007/bf00277386,Data Refinement by Calculation,include-context,,10.1007/bf00277386,
+83,84,CG0037,doi:10.1007/bf01211617,The Rely-Guarantee Method for Verifying Shared Variable Concurrent Programs,include-context,,10.1007/bf01211617,https://dl.acm.org/doi/pdf/10.1007/BF01211617
+84,85,CG0038,doi:10.1007/s00165-003-0007-4,Relational Concurrent Refinement,include-adjacent,,10.1007/s00165-003-0007-4,
+85,86,CG0040,doi:10.1007/s00165-009-0130-y,Proving Linearizability with Temporal Logic,linked-existing,S210,10.1007/s00165-009-0130-y,https://opus.bibliothek.uni-augsburg.de/opus4/files/38931/38931.pdf
+86,87,CG0041,doi:10.1007/s001650070008,"Encoding, Decoding and Data Refinement",include-context,,10.1007/s001650070008,
+87,88,CG0042,doi:10.1007/s001650200032,A Refinement Calculus for Shared-Variable Parallel and Distributed Programming,include-adjacent,,10.1007/s001650200032,
+88,89,CG0043,doi:10.1007/s002360050116,Refinement of Fair Action Systems,include-context,,10.1007/s002360050116,
+89,90,CG0044,doi:10.1007/s11390-021-1671-7,Verifying Contextual Refinement with Ownership Transfer,include-adjacent,,10.1007/s11390-021-1671-7,
+90,91,CG0045,doi:10.1007/s11704-023-2774-9,A Program Logic for Obstruction-Freedom,linked-existing,S224,10.1007/s11704-023-2774-9,
+91,92,CG0047,doi:10.1016/0020-0190(81)90106-x,Myths About the Mutual Exclusion Problem,exclude-topic,,10.1016/0020-0190(81)90106-x,
+92,93,CG0048,doi:10.1016/0167-6423(90)90091-q,The Z Notation: A Reference Manual,exclude-secondary,,10.1016/0167-6423(90)90091-q,
+93,94,CG0049,doi:10.1016/j.entcs.2006.08.044,Derivation of a Scalable Lock-Free Stack Algorithm,linked-existing,S227,10.1016/j.entcs.2006.08.044,https://www.sciencedirect.com/science/article/pii/S1571066107004689/pdfft?isDTMRedir=true&download=true
+94,95,CG0053,doi:10.1017/cbo9780511663079,Data Refinement,exclude-secondary,,10.1017/cbo9780511663079,
+95,96,CG0055,doi:10.1109/fmcad.2016.7886679,Lazy Sequentialization for TSO and PSO via Shared Memory Abstractions,include-adjacent,,10.1109/fmcad.2016.7886679,https://eprints.soton.ac.uk/397759/2/tsopsowithappendix.pdf
+96,97,CG0056,doi:10.1109/icdcs.2003.1203503,Obstruction-Free Synchronization: Double-Ended Queues as an Example,include-adjacent,,10.1109/icdcs.2003.1203503,
+97,98,CG0059,doi:10.1109/isca.2012.6237045,End-to-End Sequential Consistency,exclude-topic,,10.1109/isca.2012.6237045,
+98,99,CG0061,doi:10.1109/lics.2013.18,Quantitative Reasoning for Proving Lock-Freedom,linked-existing,A27,10.1109/lics.2013.18,https://www.cs.cmu.edu/~janh/assets/pdf/HoffmannMZ13.pdf
+99,100,CG0063,doi:10.1109/tc.1979.1675439,How to Make a Multiprocessor Computer That Correctly Executes Multiprocess Programs,include-context,,10.1109/tc.1979.1675439,
+100,101,CG0065,doi:10.1109/tpds.2004.8,Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects,linked-existing,S154,10.1109/tpds.2004.8,https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf
+101,102,CG0066,doi:10.1109/tpds.2011.159,User-Level Implementations of Read-Copy Update,exclude-topic,,10.1109/tpds.2011.159,
+102,103,CG0067,doi:10.1109/tpds.2016.2633353,Fence-Free Synchronization with Dynamically Serialized Synchronization Variables,exclude-topic,,10.1109/tpds.2016.2633353,https://ipads.se.sjtu.edu.cn/_media/publications/syncorder_tpds17.pdf
+103,104,CG0068,doi:10.1109/tse.2005.47,Exploiting Purity for Atomicity,exclude-topic,,10.1109/tse.2005.47,
+104,105,CG0069,doi:10.1109/tse.2006.1599419,Runtime Analysis of Atomicity for Multithreaded Programs,exclude-topic,,10.1109/tse.2006.1599419,
+105,106,CG0070,doi:10.1109/tse.2006.18,Runtime Analysis of Atomicity for Multithreaded Programs,exclude-duplicate,CG0069,10.1109/tse.2006.18,
+106,107,CG0071,doi:10.1109/wvrs.1995.476849,Direct Methods for Visual Scene Reconstruction,exclude-topic,,10.1109/wvrs.1995.476849,
+107,108,CG0072,doi:10.1145/1007512.1007543,Exploiting Purity for Atomicity,exclude-duplicate,CG0068,10.1145/1007512.1007543,
+108,109,CG0075,doi:10.1145/103727.103729,Algorithms for Scalable Synchronization on Shared-Memory Multiprocessors,exclude-topic,,10.1145/103727.103729,
+109,110,CG0079,doi:10.1145/1167473.1167496,Eliminating Synchronization-Related Atomic Operations with Biased Locking and Bulk Rebiasing,exclude-topic,,10.1145/1167473.1167496,
+110,111,CG0080,doi:10.1145/1250662.1250696,Mechanisms for Store-Wait-Free Multiprocessors,exclude-topic,,10.1145/1250662.1250696,
+111,112,CG0081,doi:10.1145/1555754.1555785,InvisiFence: Performance-Transparent Memory Ordering in Conventional Multiprocessors,exclude-topic,,10.1145/1555754.1555785,
+112,113,CG0082,doi:10.1145/1594834.1480886,Proving That Non-Blocking Algorithms Don't Block,linked-existing,S10,10.1145/1594834.1480886,https://people.mpi-sws.org/~viktor/papers/popl2009-nonblocking.pdf
+113,114,CG0083,doi:10.1145/1785414.1785443,x86-TSO: A Rigorous and Usable Programmer's Model for x86 Multiprocessors,linked-existing,S128,10.1145/1785414.1785443,https://www.cl.cam.ac.uk/~pes20/weakmemory/x86tso-paper.tphols.pdf
+114,115,CG0084,doi:10.1145/1854273.1854287,Simple and Fast Biased Locks,exclude-topic,,10.1145/1854273.1854287,
+115,116,CG0086,doi:10.1145/1941487.1941509,Proving Program Termination,exclude-topic,,10.1145/1941487.1941509,
+116,117,CG0087,doi:10.1145/1993806.1993821,On the Power of Hardware Transactional Memory to Simplify Memory Management,exclude-topic,,10.1145/1993806.1993821,
+117,118,CG0088,doi:10.1145/203095.201069,Conjoining Specifications,exclude-topic,,10.1145/203095.201069,
+118,119,CG0089,doi:10.1145/2429069.2429111,Logical Relations for Fine-Grained Concurrency,include-adjacent,,10.1145/2429069.2429111,
+119,120,CG0090,doi:10.1145/2464996.2465015,Address-Aware Fences,exclude-topic,,10.1145/2464996.2465015,
+120,121,CG0091,doi:10.1145/2480359.2429111,Logical Relations for Fine-Grained Concurrency,exclude-duplicate,CG0089,10.1145/2480359.2429111,

@@ -1,0 +1,5 @@
+review_id,reviewer_role,reviewer_name,affiliation,contact_method,packet_commit,sent_at_utc,responded_at_utc,verdict,closest_work,model_objection,source_locations,quotation_permission,response_archive,status,notes
+R01,"Author of closest weak-memory fairness work",,,,,,,,,,,,,"not-contacted","Silence must not be interpreted as agreement"
+R02,"Author of closest weak-memory liveness work",,,,,,,,,,,,,"not-contacted","Silence must not be interpreted as agreement"
+R03,"Independent RC11/Treiber verification expert",,,,,,,,,,,,,"not-contacted","Prefer a reviewer who can compare the execution spaces and fairness quantifiers"
+R04,"Independent formal-methods artifact evaluator",,,,,,,,,,,,,"not-contacted","Prefer a reviewer able to build and inspect the Lean theorem surface"

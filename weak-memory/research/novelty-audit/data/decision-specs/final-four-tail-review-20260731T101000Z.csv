@@ -1,0 +1,60 @@
+line,physical_line,candidate_id,work_key,title,decision,canonical,doi,open_pdf
+121,122,CG0092,doi:10.1145/2483852.2483867,,exclude-secondary,,10.1145/2483852.2483867,
+122,123,CG0093,doi:10.1145/2485922.2485941,,include-adjacent,,10.1145/2485922.2485941,https://iacoma.cs.uiuc.edu/iacoma-papers/isca13_2.pdf
+123,124,CG0094,doi:10.1145/2486159.2486184,,include-adjacent,,10.1145/2486159.2486184,https://csaws.cs.technion.ac.il/~anastas/anchor-spaa13.pdf
+124,125,CG0095,doi:10.1145/2491956.2462189,,include-adjacent,,10.1145/2491956.2462189,
+125,126,CG0096,doi:10.1145/2541228.2555297,,exclude-topic,,10.1145/2541228.2555297,
+126,127,CG0097,doi:10.1145/2541940.2541987,,include-adjacent,,10.1145/2541940.2541987,https://www.cs.tau.ac.il/~mad/publications/asplos2014-ffwsq.pdf
+127,128,CG0098,doi:10.1145/2592798.2592808,,include-adjacent,,10.1145/2592798.2592808,
+128,129,CG0100,doi:10.1145/2603088.2603123,,linked-existing,S53,10.1145/2603088.2603123,https://flint.cs.yale.edu/flint/publications/rgsimt-tr.pdf
+129,130,CG0102,doi:10.1145/2676726.2676980,,exclude-duplicate,,10.1145/2676726.2676980,
+130,131,CG0104,doi:10.1145/2796550,Verifying Linearisability,exclude-secondary,,10.1145/2796550,
+131,132,CG0105,doi:10.1145/2837614.2837635,,linked-existing,S19,10.1145/2837614.2837635,https://cs.nju.edu.cn/xyfeng/research/publications/POPL2016.pdf
+132,133,CG0109,doi:10.1145/2980983.2908114,,exclude-duplicate,CG0106,10.1145/2980983.2908114,
+133,134,CG0110,doi:10.1145/301308.301350,,exclude-topic,,10.1145/301308.301350,
+134,135,CG0111,doi:10.1145/3087801.3087839,On Using Time Without Clocks via Zigzag Causality,exclude-topic,,10.1145/3087801.3087839,
+135,136,CG0115,doi:10.1145/3200691.3178488,,exclude-duplicate,CG0114,10.1145/3200691.3178488,
+136,137,CG0116,doi:10.1145/3212734.3212763,The Convergence of Stochastic Gradient Descent in Asynchronous Shared Memory,exclude-topic,,10.1145/3212734.3212763,
+137,138,CG0117,doi:10.1145/3212734.3212798,A Brief Tutorial on Distributed and Concurrent Machine Learning,exclude-secondary,,10.1145/3212734.3212798,
+138,139,CG0118,doi:10.1145/3241624.2926699,,exclude-duplicate,CG0107,10.1145/3241624.2926699,
+139,140,CG0119,doi:10.1145/3360587,Specifying concurrent programs in separation logic: morphisms and simulations,include-adjacent,,10.1145/3360587,https://arxiv.org/pdf/1904.07136
+140,141,CG0123,doi:10.1145/3453483.3454031,Transfinite Iris: resolving an existential dilemma of step-indexed separation logic,exclude-topic,,10.1145/3453483.3454031,
+141,142,CG0125,doi:10.1145/3485541,The reads-from equivalence for the TSO and PSO memory models,include-context,,10.1145/3485541,https://arxiv.org/pdf/2011.11763
+142,143,CG0126,doi:10.1145/3498689,Simuliris: a separation logic framework for verifying concurrent program optimizations,exclude-topic,,10.1145/3498689,
+143,144,CG0128,doi:10.1145/361227.361234,Reduction: a method of proving properties of parallel programs,exclude-topic,,10.1145/361227.361234,
+144,145,CG0129,doi:10.1145/3632851,Trillium: Higher-Order Concurrent and Distributed Separation Logic for Intensional Refinement,linked-existing,S22,10.1145/3632851,https://iris-project.org/pdfs/2024-popl-trillium.pdf
+145,146,CG0131,doi:10.1145/3656399,Compositional Semantics for Shared-Variable Concurrency,include-adjacent,,10.1145/3656399,
+146,147,CG0133,doi:10.1145/3719027.3765138,Generalized Security-Preserving Refinement for Concurrent Systems,exclude-topic,,10.1145/3719027.3765138,
+147,148,CG0136,doi:10.1145/383962.384016,,include-adjacent,,10.1145/383962.384016,
+148,149,CG0137,doi:10.1145/42190.42348,Control predicates are better than dummy variables for reasoning about program control,exclude-topic,,10.1145/42190.42348,
+149,150,CG0138,doi:10.1145/48022.48023,Distributed cooperation with action systems,include-context,,10.1145/48022.48023,
+150,151,CG0139,doi:10.1145/564870.564881,,include-adjacent,,10.1145/564870.564881,
+151,152,CG0140,doi:10.1145/564879.564881,,exclude-duplicate,CG0139,10.1145/564879.564881,
+152,153,CG0141,doi:10.1145/582419.582433,,exclude-topic,,10.1145/582419.582433,
+153,154,CG0142,doi:10.1145/69575.69577,,exclude-topic,,10.1145/69575.69577,
+154,155,CG0143,doi:10.1145/780822.781169,,exclude-duplicate,CG0144,10.1145/780822.781169,
+155,156,CG0144,doi:10.1145/781131.781169,A type and effect system for atomicity,exclude-topic,,10.1145/781131.781169,
+156,157,CG0145,doi:10.1145/78969.78972,Linearizability: a correctness condition for concurrent objects,exclude-topic,,10.1145/78969.78972,
+157,158,CG0146,doi:10.1145/964001.964023,Atomizer: a dynamic atomicity checker for multithreaded programs,exclude-topic,,10.1145/964001.964023,
+158,159,CG0148,doi:10.2200/s00346ed1v01y201104cac016,,exclude-secondary,,10.2200/s00346ed1v01y201104cac016,
+159,160,CG0151,doi:10.4204/eptcs.282.2,Some Challenges of Specifying Concurrent Program Components,include-context,,10.4204/eptcs.282.2,https://arxiv.org/pdf/1810.09611
+160,161,CG0152,doi:10.4230/lipics.ecoop.2019.19,Transferring Obligations Through Synchronizations,linked-existing,S104,10.4230/lipics.ecoop.2019.19,https://drops.dagstuhl.de/storage/00lipics/lipics-vol134-ecoop2019/LIPIcs.ECOOP.2019.19/LIPIcs.ECOOP.2019.19.pdf
+161,162,CG0153,doi:10.4230/lipics.itp.2025.27,Inductive Predicates via Least Fixpoints in Higher-Order Separation Logic,exclude-topic,,10.4230/lipics.itp.2025.27,
+162,163,CG0154,doi:10.5075/epfl-thesis-7141,Distributed Computing with Modern Shared Memory,exclude-secondary,,10.5075/epfl-thesis-7141,
+163,164,CG0155,doi:10.5555/3077629.3077662,Lazy sequentialization for TSO and PSO via shared memory abstractions,include-adjacent,,10.5555/3077629.3077662,https://bfischer.pages.cs.sun.ac.za/pdfs/fmcad-16.preprint.pdf
+164,165,CG0156,s2:013fe9bdb7ce5c09e7add1b25a28778ce41414d9,Laws and Semantics for Rely-Guarantee Refinement,include-adjacent,,,https://www.cs.ncl.ac.uk/publications/trs/papers/1425.pdf
+165,166,CG0157,s2:08ce18ec0f11a05384f7dcd113b5e25ecbb5a966,Pretending Atomicity,include-context,,,
+166,167,CG0159,s2:1c6785ac51aac5b3558ddf7b0889e22cd57a484b,This paper is included in the Proceedings of the 18th USENIX Symposium on Operating Systems Design and Implementation.,exclude-secondary,,,
+167,168,CG0160,s2:26baeb2570c4bad3785804f0aaf1e23c72d5976f,IBM Research Report Inferring Synchronization under Limited Observability,exclude-topic,,,
+168,169,CG0161,s2:3668112a6ee2420072cff37fd657e42769f5140a,A Tutorial Introduction to PVS,exclude-secondary,,,
+169,170,CG0163,s2:4f9e72c5ed0bd8ecd55347075b878824fb288d7b,Refinement Calculus: A Systematic Introduction,exclude-secondary,,,
+170,171,CG0165,s2:6c2610831f12f81cb59e6869aab6a8e7a650dbfe,The Z notation: a reference manual,exclude-secondary,,,
+171,172,CG0166,s2:6f56e475209603fa2ab9fc48e6e89adee7435ffa,Embedding rely-guarantee reasoning in temporal logic,include-adjacent,,,
+172,173,CG0167,s2:84fd1e94bdf24f093e38a6349dfa1e5be60a19ad,Trillium: History-Sensitive Refinement in Separation Logic,linked-existing,S22,,https://iris-project.org/pdfs/2024-popl-trillium.pdf
+173,174,CG0174,s2:b880031c13d80aba6815972c5fda81c498589f21,Programming from specifications,exclude-secondary,,,
+174,175,CG0178,s2:f3a17aa2299a1257457e85939e248645bc2e5991,Programming from specifications (2nd ed.),exclude-secondary,,,
+175,176,CG0179,unknown:semanticscholar:cs107:citations:0:25,Universität Augsburg Proving Linearizability with Temporal Logic,linked-existing,S210,,https://opus.bibliothek.uni-augsburg.de/opus4/files/38931/38931.pdf
+176,177,CG0039,doi:10.1007/s00165-008-0092-5,Trace-based derivation of a scalable lock-free stack algorithm,linked-existing,S227,10.1007/s00165-008-0092-5,
+177,178,CG0113,doi:10.1145/3158108,Progress of Concurrent Objects with Partial Methods,linked-existing,S230,10.1145/3158108,https://hongjin-liang.github.io/papers/popl18-partial.pdf
+178,179,CG0147,doi:10.1561/2500000041,Progress of Concurrent Objects,linked-existing,S229,10.1561/2500000041,https://plax-lab.github.io/publications/fntpl20/fntpl20-progress.pdf
+179,180,CG0103,doi:10.1145/2694344.2694374,Temporally Bounding TSO for Fence-Free Asymmetric Synchronization,linked-existing,S228,10.1145/2694344.2694374,https://www.cs.tau.ac.il/~mad/publications/asplos2015-tbtso.pdf

@@ -25,6 +25,16 @@ memory-fairness theorem is retained as a corollary. The strong-CAS variant
 remains future work. The primary-source search was refreshed on the audit
 date; it must still be repeated at submission time.
 
+**Post-audit extension (2026-07-31):** the previously single-site generic rule
+has been conservatively generalized to a site-indexed rule with explicit
+generation-changing modifications, an eventual stabilization cutoff, and a
+helper-thread witness. A two-site operational client now has success-rich,
+all-spurious, and wrong-site executions. This extension is an implementation
+milestone, not a retrospective change to the audited Treiber novelty claim.
+The realistic next client is a reclamation-free Michael--Scott queue; its
+separate roadmap and claim boundary are in
+[`site-indexed-progress-roadmap.md`](site-indexed-progress-roadmap.md).
+
 ## 1. Purpose
 
 The purpose of this project is not merely to verify another implementation of

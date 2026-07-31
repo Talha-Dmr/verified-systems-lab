@@ -5,6 +5,12 @@ submission-time literature search remain required
 **Model version:** `TreiberC11V1`
 **Review date:** 2026-07-31
 
+**Post-review note:** the working tree now contains a conservative
+site-indexed extension and a two-site validation client. Those later results
+are exposed through `WeakCASSiteResult` and documented in
+`site-indexed-progress-roadmap.md`; they are not silently folded into the
+audited `TreiberC11V1` claim below.
+
 ## 1. Result in one sentence
 
 For the repository's explicit finite-thread, reclamation-free Treiber model,
