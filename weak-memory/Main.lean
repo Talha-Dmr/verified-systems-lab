@@ -11,6 +11,7 @@ import WeakMemory.InfiniteExecutionPrefix
 import WeakMemory.TreiberC11V1FairLockFreedom
 import WeakMemory.WeakCASTreiberResult
 import WeakMemory.WeakCASProgress
+import WeakMemory.MSQueueResult
 
 open WeakMemory
 
@@ -65,3 +66,5 @@ def main : IO Unit := do
   IO.println "Lean theorem checked: recurring pending reclamation-free push/pop demand then yields infinitely many responses."
   IO.println "Lean theorem checked: one concrete infinite weak-CAS Treiber execution satisfies the complete fairness bundle and the linearizable long-run theorem."
   IO.println "Lean theorem checked: the reusable primitive-justice rule also derives response progress for a Treiber-independent weak-CAS increment loop."
+  IO.println "Lean theorem checked: concrete thread and per-site RC11 memory fairness derive Michael--Scott queue progress obligations."
+  IO.println "Lean theorem checked: every admitted finite queue prefix is FIFO-linearizable and fair infinite executions are system lock-free."
