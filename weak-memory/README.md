@@ -1,4 +1,8 @@
-# 14G — Concurrent Algorithm Verification under Weak Memory
+# Formal Verification of Concurrent Algorithms under Weak Memory
+
+**Primary MSC:** 68Q85 — Models and methods for concurrent and distributed
+computing
+**Secondary MSC:** 68Q60, 68Q55, 03B70
 
 This project establishes the first verifiable foundation of the research route
 using a Treiber stack without memory reclamation. The goal is not merely to
@@ -20,6 +24,12 @@ artifact gates are collected in
 [`research/publication-boundary.md`](research/publication-boundary.md).
 The latest local and MSI evidence is recorded in
 [`research/verification-report-2026-07-31.md`](research/verification-report-2026-07-31.md).
+Working-tree evidence for the active site-indexed/MS queue milestones is
+recorded separately in
+[`research/site-indexed-verification-2026-07-31.md`](research/site-indexed-verification-2026-07-31.md).
+The active multi-location research program and its exact completion gates are
+recorded in
+[`research/site-indexed-progress-roadmap.md`](research/site-indexed-progress-roadmap.md).
 
 ## Current Contents
 
@@ -40,6 +50,115 @@ The latest local and MSI evidence is recorded in
   method response progress from independently dischargeable
   response-free-suffix obligations and non-circular primitive weak-CAS
   justice
+- A reusable `WeakCAS.SiteProgressRule` for multi-location algorithms, with
+  generation-sensitive site modification, an eventual stabilization cutoff,
+  helper-thread witnesses, per-site justice, and a strong-CAS specialization
+- A proof that the original single-site rule is recovered conservatively by
+  taking `Site := Unit`, so the Treiber and counter theorem surfaces remain
+  intact
+- A two-site operational client with a success-rich positive run, a fair
+  all-spurious run at both sites, and a wrong-site separation showing that
+  unrelated successes cannot discharge justice for a stable retry site
+- `WeakCASSiteResult`, a compact public theorem surface for the site-indexed
+  rule and its positive, negative, and compatibility results
+- A Michael--Scott FIFO sequential specification with abstract enqueue,
+  dequeue-value, and dequeue-empty commits, plus a proof that every commit
+  trace is a legal queue history
+- A reusable finite multi-location non-SC RC11/RA core with per-location
+  initialization and modification order, typed same-location reads-from,
+  RMW adjacency, RC11 release sequences (same-thread plain writes followed by
+  RF-linked RMWs), `rb`/`eco`/`hb`, no-thin-air, and coherence
+- A valid two-location release/acquire and RMW example, a proof that unrelated
+  writes receive no cross-location modification-order edge, and an invalid
+  stale-RF RMW example rejected by the same well-formedness predicate
+- A second valid two-location witness combining a thread-owned dynamic
+  initializer, initializer-to-publication program order, a plain-write/RMW
+  release sequence, acquire synchronization, and a genuinely nonempty
+  reads-before edge
+- A source-shaped Michael--Scott local control machine covering fresh-node
+  initialization, snapshot validation, mismatch and genuinely spurious CAS
+  failure, tail helping, link/head commits, and separate method responses
+- A retroactive empty-dequeue commit record anchored at the earlier null
+  `head.next` load and validated by the later Head reload, together with a
+  regression proving that commit-record emission order is not linearization
+  order
+- A global Michael--Scott source-trace certificate with canonical dynamic
+  event IDs, unique invocation and node identities, per-thread `Run`
+  projections, source-level immutable payload provenance, exact static/dynamic
+  RC11 carrier construction, and carrier-ordered empty anchors; negative
+  regressions reject node reuse, wrong payloads, dangling anchors, and
+  noncanonical IDs (the cross-thread payload visibility/HB proof remains a
+  later publication obligation)
+- A concrete source-backed Michael--Scott execution built only through the
+  exact carrier projection, with explicit per-site RF/MO, full RC11 `Valid`,
+  and a checked dynamic-next-initializer -> release-link -> acquire-read HB
+  publication path
+- A memory-model-independent Michael--Scott chain kernel with fresh acyclic
+  node append, aligned immutable payloads, Head/Tail indices, one-node Tail
+  lag, invariant preservation, Tail-help stuttering, and a proof that every
+  finite structural replay projects to a legal FIFO commit trace
+- An exact source-to-chain scheduling bridge that extracts all successful
+  structural CAS effects, anchors retroactive empty dequeue at its earlier
+  null read, orders records through a whole-carrier `PO`/`ECO`-respecting RC11
+  atom schedule, and forbids favorable omission or invention through an exact
+  coverage certificate
+- A generic finite-list bucketing theorem deriving exact structural-record
+  coverage from unique scheduled IDs and source-checked anchor membership, so
+  certificate construction cannot accept record coverage as an
+  algorithm-specific oracle
+- A finite minimal-element topological constructor that produces such a
+  whole-carrier atom schedule from an explicit `PO ∪ ECO` acyclicity proof,
+  plus a common-rank discharge for checked witnesses; generic RC11 `Valid`
+  alone is intentionally not claimed to imply this multi-location premise
+- A valid two-location/two-thread RC11 counterexample with an alternating
+  `PO`/`MO` cycle, proving that no atom list can respect every `PO` and `ECO`
+  edge and mechanically separating generic validity from schedule existence
+- Scheduled visibility lemmas proving that RF sources precede their reads,
+  MO/RB successors follow them, no MO-later write is already visible before
+  the read, and successful RMWs use their immediate MO predecessor
+- Exact structural-point reconstruction and RF witnesses, exhaustive
+  initializer-or-structural write origins, and site-specific `next`/Tail/Head
+  predecessor classifications; checked compare operands prove link sites are
+  single-assignment and Head/Tail CAS chains carry their expected pointer from
+  the immediately preceding write
+- Source-derived uniqueness of every structural anchor, including
+  retroactive empty-dequeue points, so `Certificate.ofReplay` no longer asks a
+  caller for a point-uniqueness proof
+- Whole-run and last-step factorization for the local source machine, with a
+  first same-attempt provenance theorem recovering Tail load, null-next load,
+  stable Tail validation, and successful link CAS together with their typed
+  program-order edges
+- Complete same-attempt control provenance for all three successful Tail
+  paths, successful Head advance, and retroactive empty validation, plus
+  source-derived reservation uniqueness and exact payload/link agreement for
+  every successful value dequeue
+- Exact structural-record prefixes, a rooted single-assignment link graph,
+  and a deterministic canonical prefix representation whose link, Tail,
+  Head, and empty transitions preserve the queue invariant
+- Per-record readiness at the exact atom-schedule prefix and a generic prefix
+  induction which now derives `AtomSchedule.canonicalReplay`,
+  `canonicalCertificate`, and `canonicalFIFO` for every admitted
+  `AtomSchedule`; no replay or final state is supplied as an oracle
+- A concrete instantiation of that bridge for the checked 18-atom
+  source-backed RC11 execution, including the silent Tail swing and a derived
+  legal FIFO history
+- A queue-specific finite Herlihy--Wing history theory, source-history
+  well-formedness and completion, exact source/schedule operation
+  equivalence, and derived same-thread real-time preservation, including the
+  retroactive empty-dequeue point
+- `Structural.AtomSchedule.linearizable`, which combines those client-history
+  facts with canonical FIFO replay; the only external finite-history premise
+  is explicit cross-thread client real-time compatibility, since that order
+  is not an RC11 edge
+- A coherent infinite Michael--Scott carrier whose finite `SupportedExecution`
+  witnesses restrict one global RF lookup and one global per-site MO relation,
+  together with the exact `.head`/`.tail`/`.next node` weak-CAS progress
+  interface
+- `InfiniteRC11Execution.linearizableLockFree_of_siteJustice`, combining
+  client-compatible linearization schedules for every finite prefix with the
+  non-circular stable-site/matching-attempt obligation and per-site primitive
+  justice; a strong-CAS specialization and recurring-demand late-response
+  theorem are also checked
 - A concrete one-location CAS-loop theorem discharging the scheduling and
   retry obligations from weak thread fairness
 - A second Treiber-independent client of the generic rule: a minimal

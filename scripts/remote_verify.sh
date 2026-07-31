@@ -8,7 +8,9 @@ suite="${1:-weak-memory}"
 
 case "$suite" in
   weak-memory)
-    verify_commands=("./weak-memory/verify.sh")
+    verify_commands=(
+      "env WEAK_MEMORY_SOURCE_CHECK_PREVERIFIED=1 ./weak-memory/verify.sh"
+    )
     ;;
   verified-compiler)
     verify_commands=("./verified-compiler/verify.sh")
@@ -16,7 +18,7 @@ case "$suite" in
   all)
     verify_commands=(
       "./verified-compiler/verify.sh"
-      "./weak-memory/verify.sh"
+      "env WEAK_MEMORY_SOURCE_CHECK_PREVERIFIED=1 ./weak-memory/verify.sh"
     )
     ;;
   *)
@@ -44,6 +46,13 @@ ssh_options=(
   -o ServerAliveCountMax=3
 )
 
+if [[ "$suite" == "weak-memory" || "$suite" == "all" ]]; then
+  echo "Checking the pinned Clang source descriptor locally"
+  python3 \
+    "$project_root/weak-memory/tools/extract_treiber_source_trust_boundary.py" \
+    --check
+fi
+
 if ! ssh "${ssh_options[@]}" "$remote_host" \
   "test -d '$remote_dir/.git'"; then
   echo "Remote repository not found: $remote_host:$remote_dir" >&2
@@ -61,6 +70,7 @@ rsync \
   --exclude '/verified-compiler/.lake/' \
   --exclude '/weak-memory/.lake/' \
   --exclude '/weak-memory/build/' \
+  --exclude '/weak-memory/research/novelty-audit/data/' \
   -e "ssh ${ssh_options[*]}" \
   "$project_root/" \
   "$remote_host:$remote_dir/"
