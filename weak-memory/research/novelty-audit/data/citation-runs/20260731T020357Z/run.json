@@ -1,0 +1,51 @@
+{
+  "citation_seeds_file": "/home/talha/Projects/math/weak-memory/research/novelty-audit/citation-seeds.csv",
+  "citation_seeds_sha256": "a2e0f1cabbcd3244bbcf88fdeda6903b859c892c28a615b084888d82af574b21",
+  "coverage_limited_manifest_row_count": 0,
+  "coverage_notes": {
+    "identity_and_versions": "Seed metadata is checked against requested identifiers and normalized titles, arXiv version suffixes are collapsed, and 10.48550/arXiv aliases map to arXiv keys. Seeds carrying both a publication DOI and an arXiv ID still require manual version reconciliation before a snowballing wave can be called complete.",
+    "interpretation": "Index absence is not evidence of nonexistence; citation graphs complement, but do not replace, database queries, full-text screening, artifact inspection, and expert review.",
+    "opencitations": "The unified OpenCitations Index v1 API is queried. An authorization token is read from OPENCITATIONS_ACCESS_TOKEN when present but is never persisted. Citation/reference counts are fetched and must match returned relation rows before pagination is treated as complete.",
+    "publication_cutoff": "Raw payloads are never discarded. Normalized works and edges carry included, excluded-after-cutoff, or unknown-date status. Every 2026 seed has an exact eligible-version date, while citing works with insufficient dates remain explicit coverage limits.",
+    "semantic_scholar": "The Academic Graph API is a mutable provider snapshot. An API key is read from SEMANTIC_SCHOLAR_API_KEY when present but is never persisted. Relation pagination is followed until the provider omits next, an error occurs, or the recorded local ceiling is hit."
+  },
+  "coverage_status": "complete",
+  "cutoff_edge_counts": {
+    "conflict": 0,
+    "excluded-after-cutoff": 0,
+    "included": 42,
+    "unknown-date": 0
+  },
+  "deduplicated_edge_count": 42,
+  "deduplicated_work_count": 43,
+  "external_anchor_status": "local-create-only-until-committed-or-published",
+  "failed_request_or_normalization_count": 0,
+  "finished_at_utc": "2026-07-31T02:04:02+00:00",
+  "http_attempt_count": 3,
+  "max_records_per_seed_direction": 5000,
+  "normalized_edge_occurrence_count": 42,
+  "normalized_work_occurrence_count": 44,
+  "providers": [
+    "semanticscholar"
+  ],
+  "publication_cutoff": "2026-07-31",
+  "repository_commit": "764d8dc6b37c7a8d08dd10c70d6a33c4de272682",
+  "request_count": 3,
+  "request_status": "complete",
+  "screening_file": "/home/talha/Projects/math/weak-memory/research/novelty-audit/screening.csv",
+  "screening_sha256": "207a6acee2d17f8653dd9edc5b9934221910be43bc506768e306f4bf62c630d7",
+  "script_sha256": "990abfe1adbb95d85409e8866d65088bb57ef848d92548a5d168c9123a747f9f",
+  "script_version": "3",
+  "seed_count": 1,
+  "seed_ids": [
+    "CS031"
+  ],
+  "skipped_operation_count": 0,
+  "started_at_utc": "2026-07-31T02:03:57+00:00",
+  "status": "complete",
+  "successful_request_count": 3,
+  "unresolved_forward_cutoff_edge_count": 0,
+  "unresolved_forward_cutoff_edge_sample": [],
+  "user_agent": "verified-systems-lab-novelty-audit/1 (https://github.com/Talha-Dmr/verified-systems-lab)",
+  "version_alias_seed_ids_requiring_manual_reconciliation": []
+}

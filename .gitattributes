@@ -3,5 +3,5 @@
 references/msc2020/MSC_2020.* -text
 
 # Preserve checksum-addressed novelty-audit evidence byte for byte.
-weak-memory/research/novelty-audit/*.csv -text
-weak-memory/research/novelty-audit/data/** -text
+weak-memory/research/novelty-audit/*.csv -text whitespace=-trailing-space,cr-at-eol
+weak-memory/research/novelty-audit/data/** -text whitespace=-trailing-space,cr-at-eol

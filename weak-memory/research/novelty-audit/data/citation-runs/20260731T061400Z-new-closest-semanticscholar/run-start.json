@@ -1,0 +1,31 @@
+{
+  "citation_seeds_file": "/home/talha/Projects/math/weak-memory/research/novelty-audit/citation-seeds.csv",
+  "citation_seeds_sha256": "cb65ad70d9766d516c88b96e070cd58ae9b5c154d97a323128cbaf779c63ffb7",
+  "credentials_present": {
+    "opencitations_access_token": false,
+    "semantic_scholar_api_key": false
+  },
+  "input_snapshots": {
+    "citation_seeds": "inputs/citation-seeds.csv",
+    "screening": "inputs/screening.csv",
+    "script": "inputs/search_citation_graphs.py"
+  },
+  "max_records_per_seed_direction": 5000,
+  "providers": [
+    "semanticscholar"
+  ],
+  "publication_cutoff": "2026-07-31",
+  "repository_commit": "764d8dc6b37c7a8d08dd10c70d6a33c4de272682",
+  "screening_file": "/home/talha/Projects/math/weak-memory/research/novelty-audit/screening.csv",
+  "screening_sha256": "64e6ec2731e8880e395903d6da80ddd06b04d0e79e40fca734b5a2b29c28e456",
+  "script_sha256": "dd41a6bde4867d453594fed6a5f9d7a57c0a3c77b7f33a3adcd1d41691026053",
+  "script_version": "4",
+  "seed_count": 3,
+  "seed_ids": [
+    "CS044",
+    "CS045",
+    "CS046"
+  ],
+  "started_at_utc": "2026-07-31T06:12:37+00:00",
+  "status": "started"
+}

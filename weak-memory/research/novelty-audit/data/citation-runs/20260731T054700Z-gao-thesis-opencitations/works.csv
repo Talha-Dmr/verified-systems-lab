@@ -1,0 +1,2 @@
+provider,seed_id,screening_record_id,provider_work_id,work_key,title,year,publication_date,authors,doi,arxiv_id,venue,url,citation_count,reference_count,cutoff_status,raw_file
+seed-catalog,CS043,S87,URL:https://www.semanticscholar.org/paper/dcec3805ae1e9b30ccbf20184bfba14766889d8e,seed:s87,Design and Verification of Lock-Free Parallel Algorithms,2005,,,,,,,,,included,

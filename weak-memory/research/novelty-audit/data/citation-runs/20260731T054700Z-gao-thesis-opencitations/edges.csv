@@ -1,0 +1,1 @@
+provider,seed_id,screening_record_id,direction,edge_key,source_work_key,target_work_key,source_provider_id,target_provider_id,source_doi,target_doi,provider_edge_id,citing_publication_date,cutoff_status,raw_file
