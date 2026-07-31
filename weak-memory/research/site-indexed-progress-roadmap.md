@@ -1,6 +1,7 @@
 # Site-Indexed Weak-CAS Progress Roadmap
 
-**Status:** active research program
+**Status:** core theorem chain and positive/negative infinite witnesses
+complete; full milestone verification passed on 2026-07-31
 **Started:** 2026-07-31
 **Primary MSC:** 68Q85
 **Secondary MSC:** 68Q60, 68Q55, 03B70
@@ -116,9 +117,10 @@ projections, payload provenance, exact static/dynamic carrier construction,
 and validated retroactive-empty anchors. The three-operation source trace is
 packaged as a concrete `SupportedExecution` with explicit RF/MO and full RC11
 `Valid`; its dynamic next initializer is proven HB-before a cross-thread
-acquire read through the successful release link. General execution-to-chain
-refinement and general non-atomic payload publication remain M3/M4
-obligations, not hidden M2 assumptions.
+acquire read through the successful release link. The execution-to-chain and
+visibility obligations deferred at M2 are now discharged by M3/M4; general
+non-atomic payload publication remains an explicit later obligation rather
+than a hidden M2 assumption.
 
 - Model full enqueue/dequeue control flow, including validation reloads,
   mismatch, spurious failure, helping, commit, and separate response events.
@@ -132,8 +134,8 @@ progress proof circular.
 
 ### M3 -- Finite safety and linearizability
 
-**Status: active; universal canonical FIFO replay complete under an admitted
-atom schedule, client-history linearizability in progress.** A
+**Status: complete for finite-prefix safety under an admitted atom schedule
+and explicit cross-thread client-time compatibility.** A
 memory-model-independent chain state represents the permanent
 dummy, fresh append-only node chain, aligned immutable payloads, Head/Tail
 indices, and at-most-one-node Tail lag. Link, Head, Tail-help, and empty
@@ -220,28 +222,72 @@ with canonical FIFO replay into the final finite `HW.Linearizable` witness.
 
 ### M4 -- Infinite RC11 carrier and visibility
 
+**Status: complete for the explicit reclamation-free queue model.**
+
 - **Completed:** restrict one global event stream, RF lookup, and per-location
   MO relation to a `SupportedExecution` at every finite prefix.
 - **Completed:** instantiate successful CAS, every site modification, and
   matching attempts at the exact `.head`, `.tail`, or `.next node` site.
-- Generalize stable-tail/from-read visibility to selected locations.
-- Prove response-free suffix stabilization after finitely many helping
-  modifications.
+- **Completed:** define position-indexed per-site `FromReadFair` as the exact
+  prefix-finite `fr` assumption consumed by visibility, define conventional
+  `MemoryFair` as paired prefix-finite `mo`/`fr`, and derive the former from
+  the latter.
+- **Completed:** derive `SelectedSiteVisibilityFair`: once a represented site
+  stops being modified, all sufficiently late reads at that site observe the
+  maximal write of the cutoff prefix.
+- **Completed:** lift pointwise selected-site visibility to one uniform cutoff
+  and one `stableValueAt` assignment for every later atomic read. Later read
+  sites are proved to be represented at the stabilization prefix rather than
+  assumed to belong to a fixed global site universe.
+- **Completed:** prove response-free all-site stabilization. Weak thread
+  fairness excludes later abstract commits; canonical structural replay
+  bounds successful Tail advances by the already accumulated link count; and
+  source control permits at most one fresh `next` initialization per finite
+  thread. A common later cutoff therefore has no modification at any logical
+  queue site.
 
 ### M5 -- Site obligation and final theorem
 
-- **Completed conditionally:** state the non-circular algorithm/scheduler/
-  memory obligation that every response-free active suffix selects a helper
-  thread, cutoff, and one exact site with no later modification and arbitrarily
-  late matching attempts.
-- **Completed:** apply `SiteProgressRule` to obtain system response progress
-  and combine it with finite-prefix FIFO linearizability in
-  `linearizableLockFree_of_siteJustice`.
-- Derive the stable-site obligation from concrete weak thread fairness and a
-  selected-location RC11 visibility/fairness theorem.
-- Construct success-rich and site-specific all-spurious infinite witnesses.
+**Status: complete for the theorem chain and both infinite witnesses.**
 
-Target theorem shape:
+- **Completed:** retain the reusable non-circular `ProgressObligations`
+  interface: every response-free active suffix selects a thread, cutoff, and
+  one exact site with no later modification and arbitrarily late matching
+  attempts.
+- **Completed:** prove the queue control step. Under stable observations and
+  weak thread fairness, a continuously active owner cannot decrease the
+  finite stale-cache/aligned-control rank forever, so matching CAS attempts
+  occur arbitrarily late.
+- **Completed:** prove that every such later matching event is an atomic read
+  at a site represented by the finite stabilization prefix. A finite-list
+  infinitely-often pigeonhole lemma then fixes one site, rather than allowing
+  the witness site to vary with time.
+- **Completed:** derive `ProgressObligations` from `PrefixAtomSchedules`, weak
+  thread fairness, and `SelectedSiteVisibilityFair`, with public wrappers for
+  exact `FromReadFair` and conventional `MemoryFair` assumptions.
+- **Completed:** apply `SiteProgressRule` to obtain system response progress
+  and combine it with finite-prefix FIFO linearizability. The public
+  `MSQueueFairLockFreedom` module exposes
+  `linearizableLockFree_of_fairness`, whose assumptions are finite-prefix
+  client-compatible schedules, weak thread fairness, per-site RC11 memory
+  fairness, and independent per-site weak-CAS justice. It no longer accepts a
+  packaged `ProgressObligations` premise.
+- **Completed:** construct a coherent all-spurious queue execution satisfying
+  both prefix-schedule layers, weak thread fairness, `MemoryFair`,
+  `FromReadFair`, selected-site visibility, and the derived
+  `ProgressObligations`, while refuting primitive justice and system response
+  progress at `.next 0`.
+- **Completed:** `MSQueueInfiniteWitnessExecution` packages the successful
+  source and valid finite prefixes as one coherent `InfiniteRC11Execution`.
+  `MSQueueInfiniteWitnessFairness` proves both prefix-schedule layers, thread
+  and memory fairness, selected-site visibility, derived obligations,
+  recurring demand, same-site matching-attempt-to-success justice, and
+  arbitrarily late successes and responses.
+  `successfulAssumptionsJointlySatisfiable` is the headline joint witness,
+  while `successfulWitness_linearizableLongRun` applies
+  `linearizableLongRun_of_fairness`.
+
+The earlier conditional composition theorem remains available:
 
 ```lean
 theorem linearizableLockFree_of_siteJustice
@@ -252,9 +298,23 @@ theorem linearizableLockFree_of_siteJustice
     execution.LinearizableLockFreeGuarantees
 ```
 
-The stronger planned corollary replaces `ProgressObligations` with explicit
-thread- and memory-fairness hypotheses after the selected-site visibility
-proof is available.
+The completed public fairness theorem has the following shape:
+
+```lean
+theorem linearizableLockFree_of_fairness
+    (execution : InfiniteRC11Execution Value threadCount dummy)
+    (prefixSchedules : execution.PrefixSchedules)
+    (threadFair : execution.source.WeakThreadFair)
+    (memoryFair : execution.MemoryFair)
+    (justice : execution.WeakCASJustice) :
+    execution.LinearizableLockFreeGuarantees
+```
+
+The exact dependency is also exposed by
+`linearizableLockFree_of_fromReadFairness`, which replaces `MemoryFair` with
+`FromReadFair`. Primitive weak-CAS justice deliberately remains independent:
+the all-spurious witness satisfies scheduler and memory fairness but refutes
+justice and system response progress.
 
 ## Claim boundary
 

@@ -2,11 +2,16 @@
 
 ## Scope
 
-This report records verification of the active, uncommitted site-indexed
-weak-CAS and Michael--Scott queue development. It is not a release snapshot or
-a publication claim. The stated conditional objective--finite-prefix
+This report records verification of the site-indexed weak-CAS and
+Michael--Scott queue milestone. It is an implementation verification record,
+not a mathematical novelty or publication claim. The objective--finite-prefix
 Herlihy--Wing linearizability plus site-indexed system response progress--is
-now represented by a checked end-to-end theorem with explicit premises.
+now represented by a checked public theorem with explicit finite-prefix
+scheduling, weak thread fairness, per-site RC11 memory fairness, and
+independent primitive weak-CAS justice premises. The queue-specific
+`ProgressObligations` package is
+derived from those concrete scheduler and visibility assumptions rather than
+accepted by the public result.
 
 Checked milestones:
 
@@ -29,12 +34,76 @@ Checked milestones:
   `HW.Linearizable` bridge;
 - one coherent infinite queue carrier with global RF/per-site MO restrictions
   and an exact site-indexed progress-interface instantiation;
-- conditional linearizable lock-freedom, its strong-CAS specialization, and
-  the recurring-demand late-response consequence; and
+- per-site `FromReadFair`/`MemoryFair`, maximal-write selected-site visibility,
+  and one uniform stable-value cutoff for all later atomic reads;
+- response-free all-site stabilization from weak thread fairness, canonical
+  replay's finite Tail-move budget, and finite-thread bounds on fresh `next`
+  initialization;
+- the stable-read/control-rank argument, represented-site atomic-read bridge,
+  and finite-site infinitely-often pigeonhole theorem deriving
+  `ProgressObligations`;
+- `MSQueueFairLockFreedom.linearizableLockFree_of_fairness`, its exact-`fr`,
+  selected-visibility, strong-CAS, and recurring-demand variants;
+- a coherent all-spurious queue execution satisfying the concrete scheduler
+  and RC11 memory-fairness hypotheses while refuting primitive justice and
+  system response progress at `.next 0`; and
+- `MSQueueInfiniteWitnessExecution` and
+  `MSQueueInfiniteWitnessFairness`, which package the success-rich source and
+  its valid prefixes as one coherent infinite execution and prove the full
+  scheduler, memory-fairness, visibility, progress, recurring-demand, and
+  same-site weak-CAS justice bundle;
+- `successfulAssumptionsJointlySatisfiable`, the positive joint witness, and
+  `successfulWitness_linearizableLongRun`, its finite-prefix FIFO
+  linearizability and arbitrarily-late-response consequence; and
 - one concrete certificate from the checked 18-atom execution through FIFO
   legality.
 
-## Local checks
+The positive joint-satisfiability witness is therefore complete. Its justice
+proof couples each matching attempt to success at the same site; unrelated
+successes are not used to discharge the obligation.
+
+## Full milestone verification
+
+Command:
+
+```bash
+./scripts/remote_verify.sh weak-memory
+```
+
+The complete integrated suite passed on `math-msi` in 55.743 seconds for the
+remote verification command:
+
+- the local trust-boundary check matched the JSON and Lean descriptors to the
+  pinned Clang 18.1.3 AST and recorded the expected C-source hashes;
+- native C sequential and four-thread 80,000-node stress tests passed;
+- the full Lean library, public `MSQueueResult` surface, both infinite
+  witnesses, all explicit verification targets, and the demo executable
+  passed; the top-level library build completed 308 jobs;
+- the new witness modules emitted no own linter warnings; the only replayed
+  warnings were the four pre-existing warnings in
+  `MSQueueSourceHeadTailGap` and `MSQueueSourceMethodTrace`;
+- GenMC 0.17.0 completed the publication harness (2 executions) and the
+  two-thread Treiber harness (20 complete, 10 blocked executions) with no
+  errors; and
+- the GenMC Relinche one-push/one-pop check completed 2 executions and 1
+  checked hint with no errors.
+
+A direct `lean --trust=0 WeakMemory/MSQueueResult.lean` check also passed.
+`#print axioms` for the public memory-fair theorem and both headline witness
+theorems reported only Lean's standard imported axioms `propext`,
+`Classical.choice`, and `Quot.sound`. A word-boundary scan of all new queue
+modules found no `sorry`, `admit`, project `axiom`, or `unsafe` declaration;
+`git diff --check` and shell syntax checks passed.
+
+The run used the exact Lean and C source content recorded by this milestone;
+the subsequent repository-recording steps changed only Git metadata and
+documentation.
+
+## Earlier local baseline
+
+The checks below predate the final concrete fairness modules and are retained
+as historical baseline evidence, not as verification of the newly completed
+liveness extension.
 
 - `lake build`: all 188 library jobs passed.
 - The combined queue theorem surface
@@ -59,7 +128,7 @@ Checked milestones:
 - A word-boundary scan of every new Lean module found no `sorry`, `admit`,
   project `axiom`, or `unsafe` declaration.
 
-## MSI full verification
+## Earlier MSI full-verification baseline
 
 Command:
 
@@ -70,7 +139,9 @@ Command:
 The original full run passed in 2m06s wall-clock time. After adding the exact
 source-to-chain scheduling bridge, a second full run passed in 1m58s. The
 latest run, including universal replay, the complete finite HW bridge, and the
-coherent-infinite conditional lock-freedom bundle, passed in 3m14.109s.
+coherent-infinite *conditional* lock-freedom bundle, passed in 3m14.109s. These
+timings predate `MSQueueInfiniteFairProgress` and
+`MSQueueFairLockFreedom`; the current replacement timing is recorded above.
 
 - The pinned Clang 18.1.3 source descriptor was checked locally before sync.
 - Native C sequential and 80,000-node stress tests passed remotely.
@@ -119,19 +190,64 @@ commit order, including retroactive empty anchors. With explicit cross-thread
 client-time compatibility, `AtomSchedule.linearizable` constructs the full
 Herlihy--Wing witness.
 
-`MSQueueInfiniteSafety.linearizableLockFree_of_siteJustice` then combines a
-client-compatible schedule for every coherent finite prefix with two
-non-circular liveness premises: `ProgressObligations` selects one exact stable
-site with arbitrarily late matching attempts on every response-free active
-suffix, and `WeakCASJustice` excludes stable all-spurious behavior at each
-site. Its conclusion contains both finite-prefix linearizability and system
-response progress. The strong-CAS corollary discharges justice automatically.
+`MSQueueInfiniteSafety.linearizableLockFree_of_siteJustice` remains the
+conditional composition point. It combines a client-compatible schedule for
+every coherent finite prefix with two non-circular liveness premises:
+`ProgressObligations` selects one exact stable site with arbitrarily late
+matching attempts on every response-free active suffix, and `WeakCASJustice`
+excludes stable all-spurious behavior at each site.
 
-The theorem does **not** yet derive `ProgressObligations` from ordinary weak
-thread fairness plus selected-location RC11 memory fairness. That stronger
-corollary, success-rich/site-specific infinite witnesses, and a derivation of
-general payload initialization from HB remain follow-up work. The present
-payload condition is the explicit `SourceWellFormed.payloadReadInitialized`
-contract. Raw cross-thread source-carrier enumeration is never treated as an
-RC11 chronological order, and cross-thread client real time remains an
-explicit boundary for the classical history theorem.
+The concrete queue chain now derives the first premise. `FromReadFair` is the
+exact per-site prefix-finite `fr` condition used by visibility; conventional
+`MemoryFair` supplies paired prefix-finite `mo` and `fr` and implies it.
+`SelectedSiteVisibilityFair` says that, once a represented site is stable,
+all sufficiently late reads use the cutoff prefix's maximal write. A finite
+represented-site list then turns the pointwise visibility facts into one
+uniform `stableValueAt` assignment for every later atomic read.
+
+On a hypothetical response-free active suffix, weak thread fairness first
+rules out later enqueue/dequeue commits. Canonical FIFO replay bounds the
+number of successful Tail advances by the links already present at the suffix
+boundary, while the finite source thread family bounds one-time fresh `next`
+initializations. Thus `eventually_noModification_on_responseFreeSuffix`
+produces a common cutoff after which no `.head`, `.tail`, or `.next node` site
+is modified.
+
+The stable-control proof then uses a finite rank combining stale-cache
+flushing and aligned source progress. A continuously active fairly scheduled
+owner cannot decrease that rank forever, so
+`infinitelyOften_matchingCAS_of_stableObservations` produces arbitrarily late
+compare-equal CAS events. Each such event is proved to have an RC11 read
+component at a site represented by the finite stabilization prefix. The
+finite-list infinitely-often pigeonhole lemma fixes one site and thereby
+constructs the exact coupled witness required by `ProgressObligations`.
+
+The public `MSQueueFairLockFreedom` module's
+`linearizableLockFree_of_fairness` theorem therefore assumes
+`PrefixSchedules`, source `WeakThreadFair`, per-site `MemoryFair`, and
+independent `WeakCASJustice`, and concludes both
+finite-prefix Herlihy--Wing FIFO linearizability and system response progress.
+`linearizableLockFree_of_fromReadFairness` exposes the exact `fr` dependency,
+and the strong-CAS corollary discharges primitive justice automatically.
+
+The coherent all-spurious queue witness checks the remaining separation: both
+prefix scheduling layers, scheduler fairness, `MemoryFair`, `FromReadFair`,
+selected-site visibility, and the derived `ProgressObligations` all hold, yet
+primitive justice and system response progress fail at `.next 0`. The
+success-rich counterpart is now complete:
+`MSQueueInfiniteWitnessExecution` packages its valid finite prefixes as a
+coherent `InfiniteRC11Execution`, and `MSQueueInfiniteWitnessFairness` proves
+the full fairness, visibility, progress-obligation, recurring-demand, and
+same-site justice bundle. `successfulAssumptionsJointlySatisfiable` records
+those assumptions in one existential theorem, while
+`successfulWitness_linearizableLongRun` applies the public liveness result to
+obtain finite-prefix FIFO linearizability and arbitrarily late responses.
+
+The claim boundary otherwise remains unchanged. General payload
+initialization from HB is still follow-up work; the present payload condition
+is the explicit `SourceWellFormed.payloadReadInitialized` contract. Raw
+cross-thread source-carrier enumeration is never treated as an RC11
+chronological order, cross-thread client real time remains an explicit premise
+for the classical history theorem, and the result does not cover reclamation,
+address reuse/ABA, allocation progress, starvation-freedom, minimal memory
+orders, full ISO C semantics, compiler correctness, or physical hardware.

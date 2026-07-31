@@ -159,6 +159,44 @@ recorded in
   non-circular stable-site/matching-attempt obligation and per-site primitive
   justice; a strong-CAS specialization and recurring-demand late-response
   theorem are also checked
+- A concrete Michael--Scott visibility layer in which per-site prefix-finite
+  `fr` (`FromReadFair`) implies `SelectedSiteVisibilityFair`, while the paired
+  prefix-finite `mo`/`fr` predicate (`MemoryFair`) remains the conventional
+  stronger corollary
+- A response-free stabilization theorem: weak thread fairness eliminates
+  later enqueue/dequeue commits, canonical FIFO replay gives a finite budget
+  for successful Tail helping, and finite-thread source accounting bounds
+  fresh `next` initializations, yielding one cutoff after which no logical
+  queue site is modified
+- Uniform stable-read visibility after that cutoff and a checked source-control
+  rank showing that a continuously active fair thread makes compare-equal CAS
+  attempts arbitrarily late unless a response or modification occurs
+- A finite represented-site pigeonhole argument fixing one exact `.head`,
+  `.tail`, or `.next node` site, and
+  `progressObligations_of_selectedSiteVisibilityFair` together with its
+  `FromReadFair` and `MemoryFair` wrappers, which derive rather than assume
+  `ProgressObligations`
+- The public `MSQueueFairLockFreedom` module's
+  `linearizableLockFree_of_fairness`, combining finite-prefix Herlihy--Wing FIFO
+  linearizability, weak thread fairness, per-site RC11 memory fairness, and
+  independent per-site weak-CAS justice into system lock-freedom; exact-`fr`,
+  selected-visibility, strong-CAS, and recurring-demand variants are also
+  exposed
+- A coherent all-spurious Michael--Scott execution satisfying both finite
+  scheduling layers, weak thread fairness, and per-site RC11 memory fairness
+  while refuting primitive justice and system response progress at
+  `.next 0`; this checks that memory and scheduler fairness still do not
+  subsume primitive weak-CAS justice
+- `MSQueueInfiniteWitnessExecution` and
+  `MSQueueInfiniteWitnessFairness`, packaging the success-rich one-thread
+  enqueue source and every valid RC11 prefix into one coherent execution that
+  jointly satisfies both prefix-schedule layers, weak thread fairness,
+  `MemoryFair`/`FromReadFair`, selected-site visibility, derived
+  `ProgressObligations`, recurring demand, and per-site weak-CAS justice;
+  `successfulAssumptionsJointlySatisfiable` records the complete assumption
+  bundle and `successfulWitness_linearizableLongRun` applies the public
+  theorem to obtain finite-prefix FIFO linearizability and arbitrarily late
+  responses
 - A concrete one-location CAS-loop theorem discharging the scheduling and
   retry obligations from weak thread fairness
 - A second Treiber-independent client of the generic rule: a minimal
@@ -652,10 +690,9 @@ The script:
 2. Builds the C code with warnings treated as errors.
 3. Runs the sequential and multithreaded tests.
 4. Builds the Lean project so the kernel checks all theorems, the final
-   `TreiberC11V1` frontend, its concrete single-push, success-rich infinite,
-   and all-spurious infinite witnesses, the Treiber-independent weak-CAS
-   counter client, and the executable single- and cross-thread raw-model
-   examples.
+   `TreiberC11V1` and `MSQueueResult` public surfaces, their success-rich and
+   all-spurious infinite witnesses, the Treiber-independent weak-CAS counter
+   client, and the executable single- and cross-thread raw-model examples.
 5. Runs two bounded weak-memory safety harnesses explicitly under RC11 with
    GenMC.
 6. Runs GenMC's Relinche checker against the exact `treiber.c` implementation

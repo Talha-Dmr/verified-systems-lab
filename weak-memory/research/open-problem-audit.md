@@ -31,8 +31,9 @@ generation-changing modifications, an eventual stabilization cutoff, and a
 helper-thread witness. A two-site operational client now has success-rich,
 all-spurious, and wrong-site executions. This extension is an implementation
 milestone, not a retrospective change to the audited Treiber novelty claim.
-The realistic next client is a reclamation-free Michael--Scott queue; its
-separate roadmap and claim boundary are in
+That next client is now implemented as a reclamation-free
+Michael--Scott queue with a separate concrete fairness derivation and
+positive/negative infinite witnesses; its roadmap and claim boundary are in
 [`site-indexed-progress-roadmap.md`](site-indexed-progress-roadmap.md).
 
 ## 1. Purpose
