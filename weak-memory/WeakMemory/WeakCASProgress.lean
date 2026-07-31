@@ -1,4 +1,4 @@
-import WeakMemory.InfiniteExecution
+import WeakMemory.WeakCASSiteProgress
 
 namespace WeakMemory.WeakCAS
 
@@ -86,6 +86,81 @@ structure Obligations
       Liveness.InfinitelyOften
         (system.matchingAttempt thread)
 
+/-!
+## Conservative embedding into the site-indexed rule
+
+The original interface remains available to existing clients.  Its single
+logical location is represented by `Unit`, and the public theorem below is
+derived from the site-indexed theorem.  Thus the multi-location rule is a
+conservative generalization rather than a parallel proof path.
+-/
+
+namespace Interface
+
+/-- Regard a single-site interface as a site-indexed interface over `Unit`. -/
+def toSiteIndexed
+    (system : Interface Thread) :
+    SiteProgressRule.Interface Thread Unit where
+  active := system.active
+  response := system.response
+  succeededAt _ := system.succeeded
+  modifiedAt _ := system.succeeded
+  success_is_modification _ _ succeeded := succeeded
+  matchingAttemptAt thread _ := system.matchingAttempt thread
+
+end Interface
+
+namespace Obligations
+
+/-- Single-site suffix obligations discharge the indexed obligation at `()`. -/
+theorem toSiteIndexed
+    {system : Interface Thread}
+    (obligations : Obligations system) :
+    SiteProgressRule.Obligations system.toSiteIndexed := by
+  constructor
+  intro start active noResponse
+  obtain ⟨thread, activeAtStart⟩ := active
+  exact
+    ⟨thread, start, Nat.le_refl start, (),
+      obligations.noSuccess_on_responseFreeSuffix
+        start noResponse,
+      obligations.matchingAttempts_on_responseFreeSuffix
+        thread start activeAtStart noResponse⟩
+
+end Obligations
+
+/-- Single-site primitive justice gives justice at the unique indexed site. -/
+theorem primitiveJustice_toSiteIndexed
+    {system : Interface Thread}
+    (justice : PrimitiveJustice system) :
+    SiteProgressRule.PrimitiveJustice system.toSiteIndexed := by
+  intro _ thread start noSuccess matching
+  exact justice thread start noSuccess matching
+
+/-- Justice at the unique indexed site recovers single-site justice. -/
+theorem primitiveJustice_ofSiteIndexed
+    {system : Interface Thread}
+    (justice :
+      SiteProgressRule.PrimitiveJustice system.toSiteIndexed) :
+    PrimitiveJustice system := by
+  intro thread start noSuccess matching
+  exact justice () thread start noSuccess matching
+
+/-- The justice contracts agree exactly under the `Unit` embedding. -/
+theorem primitiveJustice_iff_siteIndexed
+    (system : Interface Thread) :
+    PrimitiveJustice system ↔
+      SiteProgressRule.PrimitiveJustice system.toSiteIndexed :=
+  ⟨primitiveJustice_toSiteIndexed,
+    primitiveJustice_ofSiteIndexed⟩
+
+/-- System response progress is unchanged by the `Unit` site embedding. -/
+theorem systemResponseProgress_iff_siteIndexed
+    (system : Interface Thread) :
+    SystemResponseProgress system ↔
+      SiteProgressRule.SystemResponseProgress system.toSiteIndexed := by
+  rfl
+
 /--
 Generic weak-CAS loop system-progress theorem.
 
@@ -97,33 +172,12 @@ theorem systemResponseProgress_of_primitiveJustice
     (system : Interface Thread)
     (obligations : Obligations system)
     (justice : PrimitiveJustice system) :
-    SystemResponseProgress system := by
-  intro start active
-  by_cases responds :
-      ∃ time,
-        start ≤ time ∧
-          system.response time
-  · exact responds
-  · have noResponse :
-        ∀ time,
-          start ≤ time →
-            ¬ system.response time := by
-      intro time afterStart response
-      exact responds ⟨time, afterStart, response⟩
-    obtain ⟨thread, activeAtStart⟩ := active
-    have noSuccess :
-        NoSuccessFrom system start :=
-      obligations.noSuccess_on_responseFreeSuffix
-        start noResponse
-    have matching :
-        Liveness.InfinitelyOften
-          (system.matchingAttempt thread) :=
-      obligations.matchingAttempts_on_responseFreeSuffix
-        thread start activeAtStart noResponse
-    obtain ⟨time, afterStart, succeeded⟩ :=
-      justice thread start noSuccess matching
-    exact False.elim
-      (noSuccess time afterStart succeeded)
+    SystemResponseProgress system :=
+  (systemResponseProgress_iff_siteIndexed system).mpr
+    (SiteProgressRule.systemResponseProgress_of_siteJustice
+      system.toSiteIndexed
+      obligations.toSiteIndexed
+      (primitiveJustice_toSiteIndexed justice))
 
 end ProgressRule
 
