@@ -2,3 +2,12 @@
 verified-compiler/.lake/
 weak-memory/.lake/
 weak-memory/build/
+weak-memory/research/novelty-audit/data/papers/*.pdf
+weak-memory/research/novelty-audit/data/papers/*.txt
+weak-memory/research/novelty-audit/data/runs/*/raw/
+weak-memory/research/novelty-audit/data/citation-runs/*/raw/
+weak-memory/research/novelty-audit/data/artifact-runs/*/raw/
+weak-memory/research/novelty-audit/data/artifacts/*.zip
+weak-memory/research/novelty-audit/data/artifacts/*.tar.gz
+weak-memory/research/novelty-audit/data/artifacts/extracted/
+weak-memory/research/novelty-audit/scripts/__pycache__/
