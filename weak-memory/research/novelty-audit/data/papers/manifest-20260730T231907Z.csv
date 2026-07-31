@@ -1,0 +1,2 @@
+source_id,title,version,doi,primary_url,local_pdf,local_text,retrieved_at_utc,sha256,bytes,content_type,status,error
+S26,Memento: A Framework for Detectable Recoverability in Persistent Memory,PLDI 2023 author version,10.1145/3591232,https://www.soundandcomplete.org/papers/PLDI2023/memento.pdf,cho-2023-memento.pdf,cho-2023-memento.txt,2026-07-30T23:19:07+00:00,286911551c88682a841a2987578ea1cdd706c604ce526fd282cc6880a1f43cac,672087,application/pdf,downloaded,

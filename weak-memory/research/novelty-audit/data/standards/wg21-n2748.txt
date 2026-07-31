@@ -1,0 +1,222 @@
+Strong Compare and Exchange
+Strong Compare and Exchange
+ISO/IEC JTC1 SC22 WG21 N2748 = 08-0258 - 2008-08-24
+Lawrence Crowl, Lawrence@Crowl.org, crowl@google.com
+Problem
+The current C++ compare-and-exchange operation
+was designed for maximal efficiency in the typical case
+where it is used in a loop to achieve an atomic update
+based on the value in the atomic variable.
+expected = current.load();
+do desired = function(expected);
+while (!current.compare_exchange(expected, desired));
+To achieve good efficiency on load-locked-store-conditional machines,
+the operation is defined to be spurious,
+that is the operation may fail
+even when the expected value remains unchanged.
+However,
+there are some cases,
+such as concurrently driving a state machine,
+where a compare-and-exchange without spurious failure
+would lead to simpler and more efficient code.
+Of course, one can implement a non-spurious compare-and-exchange
+with a spurious compare-and-exchange
+via a function with a loop.
+Unfortunately, this approach fails to take full advantage of machines
+that provide non-spurious compare-and-exchange in hardware.
+Solution
+The solution proposed is the consensus of the concurrency subgroup meeting
+in Sophia-Antipolis in June 2008.
+It is
+to provide both weak (spurious) and strong (non-spurious) compare-and-exchange.
+We anticipate that most code
+that naturally wraps the compare-exchange in a loop
+will use the weak form
+while most code
+that naturally does not wrap the compare-exchange in a loop
+will use the strong form.
+To make this choice clear to programmers,
+the concurrency subcommittee directed
+that neither form be syntactically simpler than the other.
+Wording
+The changes to the wording
+involve replacing each of the existing compare_exchange functions
+with equivalent compare_exchange_weak
+and compare_exchange_strong functions.
+The semantic description of the functions
+changes to incorporate the distinction.
+20.7 Memory [memory]
+In the header <memory> synopsis,
+edit as follows.
+...
+template<class T>
+bool atomic_compare_exchange_weak(shared_ptr<T> *p, shared_ptr<T> *v, shared_ptr<T> w);
+template<class T>
+bool atomic_compare_exchange_weak_explicit(shared_ptr<T> *p, shared_ptr<T> *v, shared_ptr<T> w,
+memory_order success, memory_order failure);
+template<class T>
+bool atomic_compare_exchange_strong(shared_ptr<T> *p, shared_ptr<T> *v, shared_ptr<T> w);
+template<class T>
+bool atomic_compare_exchange_strong_explicit(shared_ptr<T> *p, shared_ptr<T> *v, shared_ptr<T> w,
+memory_order success, memory_order failure);
+...
+20.7.12.5 shared_ptr atomic access [util.smartptr.shared.atomic]
+Edit the description of atomic_compare_exchange
+for shared_ptr in paragraphs 17 through 22 as follows.
+template<class T>
+bool atomic_compare_exchange_weak(shared_ptr<T> *p, shared_ptr<T> *v, shared_ptr<T> w);
+Returns:
+atomic_compare_exchange_weak_explicit(p, v, w, memory_order_seq_cst, memory_order_seq_cst).
+template<class T>
+bool atomic_compare_exchange_strong(shared_ptr<T> *p, shared_ptr<T> *v, shared_ptr<T> w);
+Returns:
+atomic_compare_exchange_strong_explicit(p, v, w, memory_order_seq_cst, memory_order_seq_cst).
+template<class T>
+bool atomic_compare_exchange_weak_explicit(shared_ptr<T> *p, shared_ptr<T> *v, shared_ptr<T> w,
+memory_order success, memory_order failure);
+template<class T>
+bool atomic_compare_exchange_strong_explicit(shared_ptr<T> *p, shared_ptr<T> *v, shared_ptr<T> w,
+memory_order success, memory_order failure);
+Requires:
+failure shall not be
+memory_order_release, memory_order_acq_rel,
+or stronger than success.
+Effects:
+If *p is equivalent to *v,
+assigns w to *p
+and has synchronization semantics
+corresponding to to the value of success,
+otherwise assigns *p to *v
+and has synchronization semantics
+corresponding to to the value of failure.
+Returns:
+true if *p was equivalent to *v,
+false otherwise.
+Throws:
+nothing.
+Remarks:
+two shared_ptr objects are equivalent
+if they store the same pointer value and share ownership.
+Remarks:
+The weak forms may fail spuriously.
+See 29.4 [atomics.types.operations].
+Chapter 29 Atomic operations library [atomics]
+In the header <cstdattomic> synopsis,
+edit as follows.
+...
+bool atomic_compare_exchange_weak(volatile atomic_bool*, bool*, bool);
+bool atomic_compare_exchange_weak_explicit(volatile atomic_bool*, bool*, bool,
+memory_order, memory_order);
+bool atomic_compare_exchange_strong(volatile atomic_bool*, bool*, bool);
+bool atomic_compare_exchange_strong_explicit(volatile atomic_bool*, bool*, bool,
+memory_order, memory_order);
+...
+bool atomic_compare_exchange_weak(volatile atomic_itype *, integral *, integral);
+bool atomic_compare_exchange_weak_explicit(volatile atomic_itype *, integral *,
+integral, memory_order, memory_order);
+bool atomic_compare_exchange_strong(volatile atomic_itype *, integral *, integral);
+bool atomic_compare_exchange_strong_explicit(volatile atomic_itype *, integral *,
+integral, memory_order, memory_order);
+...
+bool atomic_compare_exchange_weak(volatile atomic_address*, void**, void*);
+bool atomic_compare_exchange_weak_explicit(volatile atomic_address*, void**, void*,
+memory_order, memory_order);
+bool atomic_compare_exchange_strong(volatile atomic_address*, void**, void*);
+bool atomic_compare_exchange_strong_explicit(volatile atomic_address*, void**, void*,
+memory_order, memory_order);
+...
+29.3.1 Integral Types [atomics.types.integral]
+In the synopsis, edit as follows.
+...
+bool compare_exchange_weak(bool&, bool, memory_order, memory_order) volatile;
+bool compare_exchange_weak(bool&, bool, memory_order = memory_order_seq_cst) volatile;
+bool compare_exchange_strong(bool&, bool, memory_order, memory_order) volatile;
+bool compare_exchange_strong(bool&, bool, memory_order = memory_order_seq_cst) volatile;
+...
+bool atomic_compare_exchange_weak(volatile atomic_bool*, bool*, bool);
+bool atomic_compare_exchange_weak_explicit(volatile atomic_bool*, bool*, bool,
+memory_order, memory_order);
+bool atomic_compare_exchange_strong(volatile atomic_bool*, bool*, bool);
+bool atomic_compare_exchange_strong_explicit(volatile atomic_bool*, bool*, bool,
+memory_order, memory_order);
+...
+bool compare_exchange_weak(integral&, integral, memory_order, memory_order);
+bool compare_exchange_weak(integral&, integral, memory_order = memory_order_seq_cst);
+bool compare_exchange_strong(integral&, integral, memory_order, memory_order);
+bool compare_exchange_strong(integral&, integral, memory_order = memory_order_seq_cst);
+...
+bool atomic_compare_exchange_weak(volatile atomic_itype *, integral *, integral);
+bool atomic_compare_exchange_weak_explicit(volatile atomic_itype *, integral *,
+integral, memory_order, memory_order);
+bool atomic_compare_exchange_strong(volatile atomic_itype *, integral *, integral);
+bool atomic_compare_exchange_strong_explicit(volatile atomic_itype *, integral *,
+integral, memory_order, memory_order);
+...
+29.3.2 Address Type [atomics.types.address]
+In the synopsis, edit as follows.
+...
+bool compare_exchange_weak(void*&, void*, memory_order, memory_order) volatile;
+bool compare_exchange_weak(void*&, void*, memory_order = memory_order_seq_cst) volatile;
+bool compare_exchange_strong(void*&, void*, memory_order, memory_order) volatile;
+bool compare_exchange_strong(void*&, void*, memory_order = memory_order_seq_cst) volatile;
+...
+bool atomic_compare_exchange_weak(volatile atomic_address*, void**, void*);
+bool atomic_compare_exchange_weak_explicit(volatile atomic_address*, void**, void*,
+memory_order, memory_order);
+bool atomic_compare_exchange_strong(volatile atomic_address*, void**, void*);
+bool atomic_compare_exchange_strong_explicit(volatile atomic_address*, void**, void*,
+memory_order, memory_order);
+...
+29.3.3 Generic Types [atomics.types.generic]
+In the synopsis, edit as follows.
+...
+bool compare_exchange_weak(T&, T, memory_order, memory_order) volatile;
+bool compare_exchange_weak(T&, T, memory_order = memory_order_seq_cst) volatile;
+bool compare_exchange_strong(T&, T, memory_order, memory_order) volatile;
+bool compare_exchange_strong(T&, T, memory_order = memory_order_seq_cst) volatile;
+...
+bool compare_exchange_weak(T*&, T*, memory_order, memory_order) volatile;
+bool compare_exchange_weak(T*&, T*, memory_order = memory_order_seq_cst) volatile;
+bool compare_exchange_strong(T*&, T*, memory_order, memory_order) volatile;
+bool compare_exchange_strong(T*&, T*, memory_order = memory_order_seq_cst) volatile;
+...
+29.4 Operations on Atomic Types [atomics.types.operations]
+Edit the compare_exchange synopses
+after paragraph 15 as follows:
+bool atomic_compare_exchange_weak(volatile A *object, C *expected, C desired);
+bool atomic_compare_exchange_weak_explicit(volatile A *object, C *expected, C desired,
+memory_order success, memory_order failure);
+bool A ::compare_exchange_weak(C & expected, C desired,
+memory_order success, memory_order failure) volatile;
+bool A ::compare_exchange_weak(C & expected, C desired,
+memory_order order = memory_order_seq_cst) volatile;
+bool atomic_compare_exchange_strong(volatile A *object, C *expected, C desired);
+bool atomic_compare_exchange_strong_explicit(volatile A *object, C *expected, C desired,
+memory_order success, memory_order failure);
+bool A ::compare_exchange_strong(C & expected, C desired,
+memory_order success, memory_order failure) volatile;
+bool A ::compare_exchange_strong(C & expected, C desired,
+memory_order order = memory_order_seq_cst) volatile;
+Edit paragraph 20 as follows.
+Remark:
+The weak compare-and-exchange operations may fail spuriously,
+that is, return false
+while leaving the value pointed to by expected unchanged.
+[Note:
+This spurious failure
+enables implementation of compare-and-exchange on a broader class of machines,
+e.g. load-locked store-conditional machines.
+—end note]
+[Example:
+A consequence of spurious failure
+is that nearly all uses of weak compare-and-exchange
+will be in a loop.
+expected = current.load();
+do desired = function(expected);
+while (!current.compare_exchange_weak(expected, desired));
+When a compare-and-exchange is in a loop,
+the weak version will yield better performance on some platforms.
+When a weak compare-and-exchange would require a loop,
+and a strong one would not,
+the strong one is preferable.
+—end example]

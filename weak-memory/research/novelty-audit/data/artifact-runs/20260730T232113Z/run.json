@@ -1,0 +1,17 @@
+{
+  "completed_at_utc": "2026-07-30T23:21:43+00:00",
+  "failed_queries": 0,
+  "github_privacy_rule": "Only hits whose repository reports isPrivate == false are preserved; the unfiltered GitHub response is never written.",
+  "providers": [
+    "zenodo",
+    "github-code"
+  ],
+  "public_record_rows": 6,
+  "publication_cutoff": "2026-07-31",
+  "query_count": 18,
+  "query_snapshot_sha256": "c4c17c7b403ceeba30a894c797676e7d9acaffb4aae620480a18787de342c15a",
+  "script_sha256": "37a55eee411357b0b93e42c6744a92fe5a7c31932467743c58a4579e02e5c2f4",
+  "script_version": "1",
+  "started_at_utc": "2026-07-30T23:21:13+00:00",
+  "successful_queries": 18
+}

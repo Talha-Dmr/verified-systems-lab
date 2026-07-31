@@ -1,0 +1,2 @@
+source_id,title,version,doi,primary_url,local_pdf,local_text,retrieved_at_utc,sha256,bytes,content_type,status,error
+S49,Temporal Logic Verification of Lock-Freedom,MPC 2010 CiteSeerX mirror of the institutional postprint,10.1007/978-3-642-13321-3_21,https://citeseerx.ist.psu.edu/document?doi=869ae96da6326045f6dcfd0c7dbf4574a19aabcf&repid=rep1&type=pdf,tofan-2010-temporal-lock-freedom.pdf,tofan-2010-temporal-lock-freedom.txt,2026-07-31T01:48:02+00:00,005326c8fbdc53bae1d5be9fe000f11e21d8e4354dade4261487f043ff58705c,216339,application/pdf,existing,

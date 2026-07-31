@@ -1,0 +1,50 @@
+Definition of Lock-Free
+Definition of Lock-Free
+ISO/IEC JTC1 SC22 WG21 N3927 - 2014-02-13
+Lawrence Crowl, Lawrence@Crowl.org
+Introduction
+This paper addresses issue LWG 2075:
+Progress guarantees, lock-free property, and scheduling assumptions.
+This issue is also US 5 in
+N3733 ISO/IEC CD 14882, C++ 2014, National Body Comments.
+Wording
+1.10 Multi-threaded executions and data races [intro.multithread]
+Paragraph 2 remains unchanged as follows.
+Implementations should ensure that all unblocked threads
+eventually make progress.
+[Note:
+Standard library functions may silently block on I/O or locks.
+Factors in the execution environment,
+including externally-imposed thread priorities,
+may prevent an implementation
+from making certain guarantees of forward progress.
+—end note]
+Add a new paragraph after paragraph 2 as follows.
+Executions of atomic functions
+that are either defined to be lock-free (29.7 [atomics.flag])
+or indicated as lock-free (29.4 [atomics.lockfree])
+are lock-free executions.
+If there is only one unblocked thread,
+a lock-free execution in that thread shall complete.
+[Note:
+Concurrently executing threads may prevent progress of a lock-free execution.
+For example, this situation can occur with
+load-locked store-conditional implementations.
+This property is sometimes called obstruction-free.
+—end note]
+When one or more lock-free executions run concurrently,
+at least one should complete.
+[Note:
+It is difficult for some implementations
+to provide absolute guarantees to this effect,
+since repeated and particularly inopportune interference from other threads
+may prevent forward progress,
+e.g. by repeatedly stealing a cache line for unrelated purposes
+between load-locked and store-conditional instructions.
+Implementations should ensure that
+such effects cannot indefinitely delay progress
+under expected operating conditions,
+and that such anomalies can therefore safely be ignored by programmers.
+This property is sometimes called lock-free
+outside this International Standard.
+—end note]

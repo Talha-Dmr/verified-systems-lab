@@ -1,0 +1,2 @@
+source_id,title,version,doi,primary_url,local_pdf,local_text,retrieved_at_utc,sha256,text_sha256,bytes,text_bytes,content_type,status,error
+S102,CDSChecker: Checking Concurrent Data Structures Written with C/C++ Atomics,OOPSLA 2013 author PDF,10.1145/2509136.2509514,http://plrg.eecs.uci.edu/publications/c11modelcheck.pdf,norris-2013-cdschecker.pdf,norris-2013-cdschecker.txt,2026-07-31T06:06:28+00:00,b30eac491d99b5340273accc5ab3fbb04676d0b3df66449ccc98bea194867ed9,7ebab91dc67d968745b8d352fe6403a2f7cb939a3dedcb0e80d06e3324ce2d3f,662813,142231,application/pdf,downloaded,

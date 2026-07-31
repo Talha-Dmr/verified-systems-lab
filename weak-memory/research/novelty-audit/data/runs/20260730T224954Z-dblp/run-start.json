@@ -1,0 +1,15 @@
+{
+  "max_records_per_provider_query": 2000,
+  "providers": [
+    "dblp"
+  ],
+  "publication_cutoff": "2026-07-31",
+  "queries_file": "/home/talha/Projects/math/weak-memory/research/novelty-audit/provider-queries.csv",
+  "queries_sha256": "afe775b4883d8163897c2271275bc2592e51f5163c955748358970a0ba54abe8",
+  "query_count": 22,
+  "repository_commit": "764d8dc6b37c7a8d08dd10c70d6a33c4de272682",
+  "script_sha256": "730076e37b247d724cfb5d67c63a243f318e476fec9ed5fc6699dca17d9ab406",
+  "script_version": "2",
+  "started_at_utc": "2026-07-30T22:49:59+00:00",
+  "status": "started"
+}

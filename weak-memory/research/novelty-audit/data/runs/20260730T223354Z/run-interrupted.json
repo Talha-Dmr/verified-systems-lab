@@ -1,0 +1,10 @@
+{
+  "status": "interrupted",
+  "started_at_utc": "2026-07-30T22:33:54Z",
+  "interrupted_at_utc": "2026-07-30T22:40:15Z",
+  "provider": "openalex",
+  "publication_cutoff": "2026-07-31",
+  "raw_page_count": 28,
+  "reason": "The unauthenticated OpenAlex service returned HTTP 429 with a long Retry-After delay after completing OA01 through OA07 and starting OA08. The run was stopped without treating its partial output as a completed search.",
+  "reusable_as_completed_evidence": false
+}

@@ -1,0 +1,2 @@
+source_id,title,version,doi,primary_url,local_pdf,local_text,retrieved_at_utc,sha256,bytes,content_type,status,error
+S28,Formal Verification of a Lock-Free Stack with Hazard Pointers,ICTAC 2011 institutional postprint mirrored by the German National Library,10.1007/978-3-642-23283-1_16,https://d-nb.info/1383093202/34,tofan-2011-hazard-pointer-stack.pdf,tofan-2011-hazard-pointer-stack.txt,2026-07-31T00:05:31+00:00,06a7ac85d225cf684ab4bdcec4e998c479de2aa4ec27fca6a9aa448013263648,306396,application/pdf,downloaded,

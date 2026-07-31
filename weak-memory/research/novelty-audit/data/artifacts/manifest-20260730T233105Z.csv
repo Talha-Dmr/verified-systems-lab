@@ -1,0 +1,2 @@
+artifact_id,related_record,title,version,archive_url,local_archive,extracted_directory,retrieved_at_utc,expected_checksum,actual_md5,actual_sha256,bytes,file_count,status,error
+A04,PA22,Spirea Coq source,Zenodo record 8314888,https://zenodo.org/api/records/8314888/files/spirea-oopsla23-artifact.zip/content,spirea-oopsla23-artifact.zip,extracted/spirea-oopsla23-artifact,2026-07-30T23:31:05+00:00,md5:739ecfe96352b3b48c95e3cad2aa8e5e,739ecfe96352b3b48c95e3cad2aa8e5e,6acb678cde462c6d214e62b60a131fe2a3e394a58977d68855d99321875a066f,4215499,1474,downloaded,

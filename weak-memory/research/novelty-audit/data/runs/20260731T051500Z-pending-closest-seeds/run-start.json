@@ -1,0 +1,19 @@
+{
+  "max_records_per_provider_query": 100,
+  "providers": [
+    "dblp",
+    "openalex",
+    "crossref",
+    "semanticscholar",
+    "arxiv"
+  ],
+  "publication_cutoff": "2026-07-31",
+  "queries_file": "/home/talha/Projects/math/weak-memory/research/novelty-audit/provider-queries.csv",
+  "queries_sha256": "5fe6bc1668d5df073068a271149226b7c8505d07484991c3ec9774a52e4ac07b",
+  "query_count": 16,
+  "repository_commit": "764d8dc6b37c7a8d08dd10c70d6a33c4de272682",
+  "script_sha256": "678f96d668cd88b1ededafdaaf9fafd545fa1171c960aba9916e4dda3ae05fb7",
+  "script_version": "3",
+  "started_at_utc": "2026-07-31T05:15:36+00:00",
+  "status": "started"
+}

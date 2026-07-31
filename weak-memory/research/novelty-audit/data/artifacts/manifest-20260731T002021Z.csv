@@ -1,0 +1,2 @@
+artifact_id,related_record,title,version,archive_url,local_archive,extracted_directory,retrieved_at_utc,expected_checksum,actual_md5,actual_sha256,bytes,file_count,status,error
+A05,PA30,Colvin-Dongol PVS sources,Author-hosted SCP 2009 bundle,https://brijeshdongol.github.io/mechanisation/SCP-2009-PVS.zip,colvin-dongol-2009-pvs.zip,extracted/colvin-dongol-2009-pvs,2026-07-31T00:20:21+00:00,md5:d94e3786323df65a194f5279dbcd9cc3,d94e3786323df65a194f5279dbcd9cc3,ef949e62e988a57750a9765d44e41b68e988997309cbd4369292d803b3971710,51235,26,downloaded,

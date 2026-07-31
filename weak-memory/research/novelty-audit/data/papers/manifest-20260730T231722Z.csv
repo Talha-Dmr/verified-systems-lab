@@ -1,0 +1,2 @@
+source_id,title,version,doi,primary_url,local_pdf,local_text,retrieved_at_utc,sha256,bytes,content_type,status,error
+S25,Shape Abstraction of Thread Interferences,SAS 2026 artifact README,10.5281/zenodo.21258346,https://zenodo.org/api/records/21258346/files/README.pdf/content,barbazo-2026-shape-interference-artifact-readme.pdf,,,,,,failed,HTTPError: HTTP Error 406: NOT ACCEPTABLE

@@ -1,0 +1,2 @@
+source_id,title,version,doi,primary_url,local_pdf,local_text,retrieved_at_utc,sha256,text_sha256,bytes,text_bytes,content_type,status,error
+S74,On the Semantics of Fair Parallelism,Warwick technical report CS-RR-031,10.1007/3-540-10007-5_47,https://wrap.warwick.ac.uk/id/eprint/59429/1/WRAP_Park_cs-rr-031.pdf,park-1979-fair-parallelism.pdf,park-1979-fair-parallelism.txt,2026-07-31T05:13:48+00:00,fb74d8eb46c4845c4c302074b69e05b51ba94f6d58dee84b4323dd90db188bbe,423cecce72a33a79ed68a6eeb625e1e59209a91a3cfb25e056376c83c224035d,1498147,52646,application/pdf,existing,

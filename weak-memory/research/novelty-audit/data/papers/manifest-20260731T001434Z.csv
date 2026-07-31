@@ -1,0 +1,2 @@
+source_id,title,version,doi,primary_url,local_pdf,local_text,retrieved_at_utc,sha256,bytes,content_type,status,error
+S32,Zoo: A Framework for the Verification of Concurrent OCaml 5 Programs using Separation Logic,POPL 2026 author version,10.1145/3776701,https://clef-men.github.io/publications/allain-scherer-26-zoo.pdf,allain-scherer-2026-zoo.pdf,allain-scherer-2026-zoo.txt,2026-07-31T00:14:34+00:00,dcef44093e827f69d8b99a9c5549f6d731b1120857adde8e081e05c21c1f8bea,684911,application/pdf,downloaded,

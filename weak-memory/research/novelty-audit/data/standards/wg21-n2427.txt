@@ -1,0 +1,2746 @@
+C++ Atomic Types and Operations
+C++ Atomic Types and Operations
+ISO/IEC JTC1 SC22 WG21 N2427 = 07-0297 - 2007-10-03
+Hans-J. Boehm, Hans.Boehm@hp.com, boehm@acm.org
+Lawrence Crowl, crowl@google.com, Lawrence@Crowl.org
+This document is a revision of N2393 = 07-0253 - 2007-09-10.
+Introduction
+Rationale
+Goals
+Discussion of Design
+A Library API
+Atomic Types, Operations, and Volatile
+C and C++ Interoperability
+Memory Ordering
+Consistency
+Fences
+Dependent Memory Order
+Lock-Free Property
+Flag Type and Operations
+Integral and Address Types
+Atomic Operations
+Generic Types
+Implementability
+Prior Approaches
+Changes to the Standard
+Chapter 17 Library introduction [library]
+Chapter 20 General utilities library [utilities]
+20.1 Concepts [utility.concepts]
+20.1.2 Comparisons [concept.comparison]
+20.1.5 Copy and move [concept.copymove]
+Chapter 29 Atomics library [atomics]
+29.1 Order and Consistency [atomics.order]
+29.2 Lock-Free Property [atomics.lockfree]
+29.3 Flag Type and Operations [atomics.flag]
+29.4 Integral and Address Types [atomics.types]
+29.5 Operations [atomics.operations]
+29.6 Generic Types [atomics.generic]
+29.7 Synopsis [atomics.synopsis]
+Implementation
+Notes on the Presentation
+Implementation Files
+C++0x Features
+Memory Order
+Flag Type and Operations
+Implementation Macros
+Lock-Free Macro
+Integral and Address Types
+Boolean
+Address
+Integers
+Integer Typedefs
+Characters
+Template Types
+Fully Generic Type
+Pointer Partial Specialization
+Integral Full Specializations
+C++ Core Functions
+C Core Macros
+C++ Methods
+Implementation Header Cleanup
+Standard Headers
+Examples of Use
+Flag
+Lazy Initialization
+Integer
+Event Counter
+List Insert
+Update
+Main
+Introduction
+We propose standard atomic types and operations.
+In addition to normative wording for the interface,
+we present a minimal conforming implementation
+and example uses of the interface.
+Rationale
+The traditional shared-memory notion
+that every store is instantly visible to all threads
+induces an unacceptable performance loss on modern systems.
+Therefore programmers must have a mechanism
+to indicate when stores in one thread should be communicated to another.
+Specifically, a program that wishes to communicate the fact that
+a particular piece of data prepared by one thread
+is ready to be examined by another thread,
+needs a shared variable flag,
+that both:
+Allows atomic accesses,
+in the sense that concurrent reads and writes are allowed
+and that the reads result in only one of the assigned values
+and never undefined behavior.
+Ensures that any ordinary data written before the flag is set
+(i.e. the prepared data)
+is seen correctly by another thread after it sees a set flag.
+Although the second aspect is often glossed over,
+it is usually not automatic with modern hardware and compilers,
+and is just as important as the first in ensuring correctness.
+In POSIX, this communication is achieved by calling certain functions,
+particularly mutex lock and unlock.
+While mutexes are adequate for many applications,
+there is a significant need for finer-grained atomic operations:
+Lock-free concurrent data structures
+Lock-free concurrent data structures
+are difficult to design and implement correctly.
+As such, there is a significant need for programmers
+capable of doing so to write portably,
+and for that they need standards.
+Inter-thread memory synchronization
+Occasionally synchronization with locks offers insufficient performance,
+and other, more specific idioms suffice.
+Goals
+We had several goals for our design.
+Each had significant impact on the details.
+Provide the primitives critical to inter-thread memory synchronization.
+Provide the primitives critical to effective lock-free algorithms.
+Provide a very high degreee of C and C++ interoperability.
+Cover the common range of existing hardware primitives.
+Expose those hardware primitives efficiently to programmers,
+that is, the design should minimize overhead.
+Provide a syntax that reduces errors.
+Support generic programming.
+Discussion of Design
+While our proposal is based on existing practice,
+that practice is somewhat fragmented,
+so some design choices may not be obvious.
+In this section, we discuss our choices and their reasoning.
+A Library API
+We propose to add atomic types and operations purely as a library API.
+In practice, for C++, this API would have to be implemented largely with
+either compiler intrinsics or assembly code.
+(As such, this proposal should be implemented by compiler vendors,
+not library vendors,
+much as the exception facilities are implemented by compiler vendors.)
+For C, a compiler implementation is required for the type-generic macros.
+Atomic Types, Operations, and Volatile
+We propose atomic types
+rather than atomic operations on general-purpose types.
+Doing so enforces a single synchronization protocol
+for all operations on an object.
+Using two protocols simultaneously will result in synchronization failure.
+We chose to specify atomic types with conventional type names
+rather than modify the volatile type qualifier for concurrency.
+The volatile type qualifier
+has a long history within C and C++,
+and changing its meaning is both risky and unnecessary.
+In addition, the existing meaning of volatile,
+"may be modified by external agents",
+is somewhat orthogonal to
+"may be modified concurrently by the program".
+See N2016
+Should volatile
+Acquire Atomicity and Thread Visibility Semantics?
+for a more complete discussion.
+As a consequence, objects of atomic type may also be volatile qualified.
+Compilers may optimize some non-volatile atomic operations,
+where they would not be able to optimize volatile operations.
+C and C++ Interoperability
+The proposal defines the atomic types as C++ standard-layout structs.
+In C, these would be simply opaque types.
+Headers common to both C and C++
+use exactly the same syntax to declare atomic variables.
+Furthermore, the proposal defines the C++ atomic types
+such that the static initialization syntax
+can be identical to C aggregate initialization syntax.
+That is, atomic variables can be initialized in common headers as well.
+The core atomic operations are free functions
+that take pointers to atomic types.
+Programmers use the same syntax for these operations
+in both C and C++.
+That is, a header included from both C and C++
+can provide inline functions that operate on atomic types.
+The proposal defines the core functions
+as overloaded functions in C++
+and as type-generic macros in C.
+This approach helps programmers avoid changing code
+when an atomic type changes size.
+Because free functions are occasionally clumsy,
+the proposal additionally provides member operators and member functions
+so that C++ programmers may use a more concise syntax.
+Memory Ordering
+Synchronization operations in the memory model
+(N2052,
+N2138,
+N2171,
+N2176,
+N2177,
+N2300,
+N2392)
+may be either acquire or release operations, or both.
+These operations govern the communication of non-atomic stores between threads.
+A release operation ensures that
+prior memory operations become visible
+to a thread performing subsequent acquire operation
+on the same object.
+Rather than have atomic operations implicitly provide
+both acquire and release semantics,
+we choose to complicate the interface
+by adding explicit ordering specifications to various operations.
+Many comparable packages do not,
+and instead provide only a single version of operations,
+like compare-and-swap,
+which implicitly include a full memory fence.
+Unfortunately,
+the extra ordering constraint introduced by the single version
+is almost never completely necessary.
+For example,
+an atomic increment operation
+may be used simply to count the number of times a function is called,
+as in a profiler.
+This requires atomicity, but no ordering constraints.
+And on many architectures (PowerPC, ARM, Itanium, Alpha, though not X86),
+the extra ordering constraints are at least moderately expensive.
+The proposal defines an enumeration
+that enables detailed specification of the memory order
+for every operation.
+Consistency
+A strict interpretation of acquire and release
+yields a fairly weak consistency model,
+which allows threads to have a different notion of the order of writes.
+For stronger consistency,
+this proposal destinguishes between
+an operation with acquire and release semantics
+and an operation with sequentially consistent semantics.
+See N2177,
+Sequential Consistency for Atomics.
+The member operators provide no mechanism
+for specifying memory order enumeration,
+and so they have only the strongest synchronization.
+This default is not an undue burden
+because using weaker synchronization requires considerable thought.
+Any extra syntactic burden is dwarfed by the semantic burden.
+Program auditors can search for uses of the memory order enumeration
+to identify code that uses syncronization models
+that are weaker than sequentially consistent.
+Fences
+It is also unclear how a convention requiring full global memory fences
+would properly interact with an interface
+that supported simple atomic loads and stores.
+Here a full memory fence would generally multiply the cost by a large factor.
+(The current gcc interface
+does not seem to support simple atomic loads and stores explicitly,
+which makes it unclear how to support e.g. lock-based emulation,
+or architectures on which the relevant loads and stores
+are not implicitly atomic.)
+There are two possible approaches to specifying ordering constraints:
+Have the programmer provide explicit memory fences/barriers,
+perhaps most usefully
+in a way that is analogous to the SPARC membar instructions.
+Associate the ordering semantics with operations.
+The closest hardware analog for this is probably Itanium,
+though we carry this through more consistently.
+Both approaches appear to have their merits.
+We chose the latter for reasons described in
+N2176.
+Some architectures provide fences that are limited to loads or stores.
+We have, so far, not included them,
+since it seems to be hard to find cases in which both:
+Such limited ordering constraints
+are useful and not excessively brittle.
+They actually result in a performance benefit
+over the more general constraint.
+However, we have provided per-variable fence operations,
+which are semantically modeled as read-modify-write operations.
+Such fences enable programmers to conditinalize memory synchronization,
+which can substantially improve performance.
+See
+N2153
+A simple and efficient memory model for weakly-ordered architectures
+for motivating examples
+and the Lazy Initialization example
+for an use of the proposed syntax.
+We expect that implementations that have hardware fences
+will use such operations to implement the language fences.
+See
+N2362 Converting Memory Fences to N2324 Form,
+for a discussion of the issues and approaches to converting
+from existing practice of global fences
+to the per-variable fences in this proposal.
+Dependent Memory Order
+Most architectures provide additional ordering guarantees
+if one memory operation is dependent on another.
+In fact, these are critical
+for efficient implementation of languages like Java.
+For C++, there is near-universal agreement
+that it would be nice to have some such guarantees.
+The fundamental issues are:
+Compilers may remove or change data and/or control dependencies.
+Detailed guarantees vary across architectures.
+See papers
+N2359 C++ Dependency Ordering: Atomics,
+N2360 C++ Dependency Ordering: Memory Model, and
+N2361 C++ Dependency Ordering: Function Annotation
+for exploration of these issues.
+Lock-Free Property
+In some cases, both the decision to use a lock-free algorithm,
+and sometimes the choice of lock-free algorithm,
+depends on the availability of underlying hardware primitives.
+In other cases, e.g. when dealing with asynchronous signals,
+it may be important to know that operations like compare-and-swap
+are really lock-free,
+because a lock-based emulation might result in deadlock.
+The proposal defines feature queries to determine
+whether or not operations are lock-free.
+We provide two kinds of feature queries,
+compile-time preprocessor macros and run-time functions.
+To facilitate optimal storage use,
+the proposal supplies feature macros
+that indicates general lock-free status of integral and address atomic types.
+The run-time function provide per-object information.
+The proposal provides run-time lock-free query functions
+rather than compile-time constants
+because subsequent implementations of a platform
+may upgrade locking operations with lock-free operations,
+so it is common for systems to abstract such facilities
+behind dynamic libraries,
+and we wish to leave that possiblility open.
+Furthermore, we recommend that
+implementations without hardware atomic support use that technique.
+The proposal provides lock-free query functions on individual objects
+rather than whole types
+to permit unavoidably misaligned atomic variables
+without penalizing the performance of aligned atomic variables.
+Because consistent use of operations requires
+that all operations on a type must use the same protocol,
+all operations are lock-free or none of them are.
+That is, the lock-free property applies to whole objects,
+not individual operations.
+To facilitate inter-process communication via shared memory,
+it is our intent that lock-free operations also be address-free.
+That is, atomic operations on the same memory location
+via two different addresses
+will communicate atomically.
+The implementation shall not depend on any per-process state.
+While such a definition is beyond the scope of the standard,
+a clear statement of our intent
+will enable a portable expression of class of a programs already extant.
+Flag Type and Operations
+The proposal includes a very simple atomic flag type,
+providing two primary operations,
+test-and-set and clear.
+This type is the minimum hardware-implemented type
+needed to conform to this standard.
+The remaining types can be emulated with the atomic flag,
+though with less than ideal properties.
+Few programmers should be using this type.
+We considered adding a wait operation in this proposal,
+but ultimately rejected it because
+pure busy waiting has pathological performance characteristics
+on multi-programmed machines
+and because
+doing better requires interaction with the operating system scheduler,
+which seems inappropriate to a processor-level facility.
+Integral and Address Types
+The proposal includes a full set of integral atomic types
+and an address atomic type.
+This proposal includes atomic integral types smaller than a machine word,
+even though many architectures do not have such operations.
+For machines that implement a word-based compare-and-swap operation,
+the effect of operations can be achieved by loading the containing word,
+modifying the sub-word in place,
+and performing a compare-and-swap on the containing word.
+In the event that no compare-and-swap is available,
+the implementation may need to
+either implement smaller types with larger types
+or use locking algorithms.
+Using the same size for the atomic type as its base type
+eases effort required to port existing code,
+e.g. code using __sync.
+Atomic Operations
+The simplest atomic operations are load and store.
+There are times when one wishes to store a new value,
+but also load the old value.
+An atomic load followed by an atomic store
+is not an atomic sequence,
+so we provide an atomic swap operation
+that does a combined load and store atomically.
+We also provide the common fetch-and-modify operations.
+The fetch-and-modify functions return the original stored value.
+The original stored value is required for fetch-and-or and fetch-and-and
+because there is no means to compute to the original stored value
+from the new value and the modifying argument.
+In contrast to the functions,
+the fetch-and-modify assignment operators return the new value.
+We do this for consistency with normal assignment operators.
+Unlike normal C++ assignment operators, though,
+the atomic assignments return values rather than references,
+which is like C.
+The reason is that another thread might intervene
+between an assignment and a subsequent read.
+Rather than introduce this classic parallel programming bug,
+we return a value.
+The normal signed integral addition operations
+have undefined behavior in the event of an overflow.
+For atomic variables,
+this undefined behavior introduces significant burden
+because there is in general no way to pre-test for overflow.
+Rather than leave overflow undefined,
+we recognize the defacto behavior of modern systems
+and define atomic fetch-and-add (-subtract) to use two's-complement arithmetic.
+We are aware of no implementation of C++
+for which this definition is a problem.
+The compare-and-swap operation
+seems to be the minimum general-purpose synchronization primitive.
+It appears to be both necessary and sufficient
+for most interesting lock-free algorithms.
+The compare-and-swap operations may fail spuriously.
+That is, the stored value may be known to be equal to the expected value,
+and yet the operation fails to swap.
+We permit this failure for two reasons.
+First, it appears unavoidable for load-locked store-conditional implementations.
+Second, hardware memory switches may prefer to fail some operations
+to ensure overall machine performance.
+The compare-and-swap operations
+replace the expected value with the found value
+in the event that the found value does not match the expected value.
+The intent of the design is to set up a compare-and-swap loop
+for the next iteration.
+The reason for this design is that:
+Recovering from spurious failure requires a loop.
+Setting up the loop for the next iteration
+requires the least syntax in user code.
+The more comprehensive operation
+subsumes the two hardware variants of compare and swap.
+Some architectures (e.g. SPARC) return the mismatched value in hardware,
+and it is more efficient to pass that back up
+rather than artificially introduce another atomic load.
+Architectures that don't provide the mismatched value
+must do a subsequent load.
+Likewise some architectures do not set conditions (e.g. SPARC)
+and those will need to insert a comparison.
+Compilers will be able to examine the compilation context
+and remove any unnecessary overhead
+for the relatively rare cases where a loop is not needed.
+Unlike other operations,
+the compare-and-swap operations
+have two memory synchronization order parameters.
+The first is for operations that succeed;
+the second is for those that fail.
+The reason for this pair of specifications
+is that there are several circumstances in which
+the failure case can have substantially weaker,
+and substantially cheaper, synchronization.
+However, for sequential consistency,
+full synchronization is required.
+Generic Types
+Generic atomic types provide significant benefits:
+They ease type-safe use of atomic pointers.
+They ease the process of making atomic version of user-defined types.
+They enable generic algorithms,
+such as lock-free pointer-based queues.
+The generic atomic type has
+a partial specialization for pointers
+(derived from the atomic address type),
+and full specializations for integral types
+(derived from the atomic integrals).
+The primary problem with a generic atomic template
+is that effective use of machine operations
+requires that their parameter types
+are trivially copy assignable and bitwise equality comparable.
+Furthermore, parameter types that are not also
+statically initializable and trivially destructable
+may be difficult to use.
+In the present language,
+there is no mechanism to require these properties of a type parameter.
+Roland Schwarz suggests using a template union to enfore POD type parameters.
+Unfortunately, that approach also prevents
+the derivation of specializations of atomic for the types above,
+which is unacceptable.
+Furthermore, Lois Goldthwaite
+proposes generalizing unions to permit non-POD types in
+N2248 Toward a More Perfect Union.
+We believe that concepts are a more appropriate mechanism
+to enforce this restriction,
+and so we have proposed the concepts and concept maps
+necessary for safe use of generic atomics.
+The burden on programmers using generic atomics
+is to declare that types passes as template parameters
+are in fact bitwise equality comparable.
+The proposed mechanisms will infer trivially copy assignable types.
+The intent is that vendors will specialize
+a fully-general locking implementation of a generic atomic template
+with implementations using hardware primitives
+when those primitives are applicable.
+This specialization can be accomplished
+by defining a base template with the size and alignment
+of the parameter type as additional template parameters,
+and then specializing on those two arguments.
+Implementability
+We believe that there is ample evidence for implementability.
+The Intel/gcc
+__sync intrinsics
+provide evidence for compiler implementability of the proposed interface.
+(We do not advocate standardizing these intrisics as is.
+They provide far less control over memory ordering
+than we advocated above.
+For example,
+they provide no way to atomically increment a counter
+without imposing unnecessary ordering constraints.
+The lack of appropriate ordering control
+appears to already have resulted in implementation shortcuts,
+e.g. gcc does not implement __sync_synchronize()
+as a full memory barrier on X86,
+in spite of the documentation.
+We believe a number of issues were not fully understood
+when that design was developed,
+and it could could greatly benefit from another iteration at this stage.)
+Other packages,
+particularly Boehm's
+atomic_ops
+package provide evidence of efficient implementability
+over a range of architectures.
+The remaining implementation issue is the burden on implementors
+to produce a minimally conforming implementation.
+The minimum hardware support required
+is the atomic test-and-set and clear operations
+that form the basis of the atomic flag type.
+This proposal includes an example implementation
+based on that minimal hardware support,
+and thus shows the vendor work required.
+Prior Approaches
+This proposal results from experience with many approaches.
+For brevity, we address only those approaches
+with formal proposals before the C++ standards committee.
+N1875
+presented an atomic statement,
+which would require the compiler to select the appropriate atomic operations.
+We chose to abandon this approach because:
+The non-atomic evaluations within the atomic block were less than obvious.
+The atomic block syntax was too invitingly simple
+for the level of skill required to use it correctly.
+The atomic block syntax
+seems far more appropriate to express general atomic memory transactions.
+It is premature to standardize those at this point.
+N2047
+presented a template-based C++ library of atomic types
+layered on top of a C library of atomic operations on plain integral types.
+We chose to abandon this approach because:
+The template-based approach severely limits interoperability with C.
+The proposal had
+both "guaranteed atomic" and "possibly emulated" versions of atomic types,
+which appears to have insufficient expressive power
+to warrant the added complexity.
+It was originally designed in part
+to allow for access to hardware-provided atomic load and store operations
+on platforms that do not provide hardware provided compare-and-swap,
+a property not shared by the current proposal.
+Our current feeling is that such platforms
+will be rare enough by 2010
+that this property is not a major consideration.
+The distinction between wait-free and lock-free
+had insufficient user support and use cases.
+The C-level approach
+failed to identify concurrently accessed data at the point of declaration,
+and made it too easy to access such data with non-atomic primitives.
+N2145
+introduced the basic approach adopted in this proposal.
+There are atomic types, with atomic operations on them.
+The operations include synchronization semantics.
+There are a set of primitive types in common to both C and C++.
+There were definitional weaknesses in the proposal
+due to an overly-strong definition of POD.
+N2153
+proposes a fence-based memory model.
+There are atomic types, with atomic operations on them.
+The operations include synchronization semantics.
+There are global fences.
+There is some discussion of load-dependent memory order.
+N2195
+presents a lower level interface than that of
+N2145.
+N2195 deviates from the previous proposals in the following major areas:
+Absence of feature test macros or functions.
+Absence of a dedicated enumerated set of atomic types.
+Absence of a high-level C++ API
+(the std::atomic<T> class template).
+Inclusion of an acquire+release ordering constraint.
+Passing the constraint as a first argument
+instead of using several functions or macros with the appropriate suffix.
+Introduction of bi-directional fences as proposed in N2153.
+Additional requirements on the ordered constraint
+that enable the programmer to achieve sequential consistency
+and CCCC (cache-coherent casual consistency).
+N2334
+derives from N2145, but was refined in several areas.
+The synchronization specification
+has changed from a part of the function name to a function parameter.
+(Adopted from
+N2195.)
+The change simplifies the specification and
+simplifies the programming of generic algorithms.
+Its major cost is that optimizers
+will need to do constant parameter propagation to obtain full performance.
+We feel this capability is common enough in modern compilers
+to not be an excessive burden.
+We have split the "ordered" synchronization primitive
+into two parts, "acquire-release" and "sequentially-consistent".
+This split provides finer control over synchronization.
+(Adopted from
+N2195.)
+We have added per-variable fence operations,
+consistent with the updated concurrency model.
+These fences were motivated by
+N2153,
+but are not isomorphic to them.
+In particular, N2153 provides global fences
+but N2334 provides per-variable fences.)
+We have updated the proposal to include the new character types from
+N2249
+New Character Types in C++.
+We have addressed the definitional weaknesses
+with respect to POD-ness
+with the help of the following papers.
+N2215 Initializer lists (Rev.3)
+N2230 POD's Revisited;
+Resolving Core Issue 568 (Revison 3)
+N2235 Generalized Constant Expressions —
+Revision 5
+N2326 Defaulted and Deleted Functions
+N2381
+is primarily a set of editorial changes to N2324,
+but with the following substantive changes.
+We included summaries of more prior work.
+We moved some discussion of specifying ordering constraints to
+N2176.
+We added references to the work on load-dependent ordering.
+We added a discussion of the design for compare-and-swap.
+We added a second synchronization parameter to compare-and-swap
+to specify the synchronization semantics for a failed comparison.
+We removed the implicit conversion operators.
+N2393
+is a substantial editorial rewrite of N2381,
+with primary emphasis on providing normative wording.
+Changes are generally not substantive,
+but with the following exceptions.
+We split our use of "scalar" into "integral and address"
+to correctly indicate the set of atomic types.
+We have split the lock-free property macro to correspond.
+We add the concepts necessary to for the atomic generics to behave properly.
+We have eliminated one unspportable requirement on ordering,
+replacing it by a non-normative encouragement.
+We have eliminated one requirement
+as a result of simplification in the memory model.
+N2427
+is a minor change to N2393
+correcting a weakness in the interaction between concepts,
+booleans, and hardware compare-and-swap.
+We changed BitwiseEqualityComparable
+to AtomicComparable.
+We changed AtomicComparable
+to not be a refinement of EqualityComparable.
+Changes to the Standard
+This section of the proposal provides the formal wording for the standard.
+Chapter 17 Library introduction [library]
+Add a new paragraph with the following wording:
+The atomic components allow more fine-grained concurrent access to shared data
+than is possible with locks.
+Chapter 20 General utilities library [utilities]
+This chapter of the working paper has not yet been modified for concepts.
+The changes listed under this chapter will apply after those of
+N2322 Concepts for the C++0x Standard Library: Utilities
+or its adopted successor.
+20.1 Concepts [utility.concepts]
+In the synopsis, move LessThanComparable
+immediately before EqualityComparable.
+In the synopsis, immediately after EqualityComparable add:
+concept AtomicComparable<typename T>
+see below;
+concept_map AtomicComparable<T>
+see below;
+In the synopsis, immediately after CopyAssignable add:
+concept TriviallyCopyAssignable<typename T>
+see below;
+template<CopyAssignable T>
+concept_map TriviallyCopyAssignable<T>
+see below;
+20.1.2 Comparisons [concept.comparison]
+Move the paragraphs on LessThanComparable
+immediately before those on EqualityComparable.
+Add a new paragraph after those on EqualityComparable.
+Concept AtomicComparable
+to enable a bitwise equality comparison,
+as with memcmp,
+in the implementation of compare-and-swap operations.
+[Note:
+Such types should not have padding,
+i.e. the size of the type is the sum of the sizes of its elements.
+If padding exists, the comparison may provide false negatives,
+but never false positives.
+—end note]
+concept AtomicComparable<typename T> { }
+Add a new paragraph.
+All integral types are AtomicComparable.
+concept_map AtomicComparable<char> { }
+concept_map AtomicComparable<signed char> { }
+concept_map AtomicComparable<unsigned char> { }
+concept_map AtomicComparable<short> { }
+concept_map AtomicComparable<unsigned short> { }
+concept_map AtomicComparable<int> { }
+concept_map AtomicComparable<unsigned int> { }
+concept_map AtomicComparable<long> { }
+concept_map AtomicComparable<unsigned long> { }
+concept_map AtomicComparable<long long> { }
+concept_map AtomicComparable<unsigned long long> { }
+concept_map AtomicComparable<wchar_t> { }
+concept_map AtomicComparable<char16_t> { }
+concept_map AtomicComparable<char32_t> { }
+concept_map AtomicComparable<char32_t> { }
+concept_map AtomicComparable<bool> { }
+Add a new paragraph.
+All pointer types are AtomicComparable.
+template< typename T > concept_map AtomicComparable<T*> { }
+20.1.5 Copy and move [concept.copymove]
+Add a new paragraph after the paragraph on CopyAssignable:
+Concept TriviallyCopyAssignable
+requires the ability to assign to an object
+with a trivial assignment.
+concept TriviallyCopyAssignable<typename T> : CopyAssignable<T> { }
+template<CopyAssignable T>
+requires True<has_trivial_assign<T>::value>
+concept_map TriviallyCopyAssignable<T> { }
+Chapter 29 Atomics library [atomics]
+Add a new clause with the following paragraphs.
+This clause describes components
+for fine-grained atomic access.
+This access is provided via operations on atomic objects.
+[Footnote:
+Atomic objects are neither active nor radioactive.
+—end footnote]
+The following subclauses describe atomics requirements,
+and components for types and operations,
+as summarized below.
+Atomics library summary
+Subclause
+Header(s)
+29.1 Order and Consistency [atomics.order]
+29.2 Lock-Free Property [atomics.lockfree]
+29.3 Flag Type and Operations [atomics.flag]
+29.4 Integral and Address Types [atomics.types]
+29.5 Operations [atomics.operations]
+29.6 Generic Types [atomics.generic]
+29.7 Synopsis [atomics.synopsis]
+<cstdatomic> <stdatomic.h>
+29.1 Order and Consistency [atomics.order]
+Add a new sub-clause with the following paragraphs.
+The enumeration memory_order
+specifies the detailed
+regular (non-atomic) memory synchronization order
+as defined in
+[the new section added by N2334
+or its adopted successor]
+and may provide for operation ordering.
+Its enumerated values and their meanings are as follows.
+memory_order_relaxed
+The operation does not order memory.
+memory_order_release
+Performs a release operation on the affected memory locations,
+thus making regular memory writes visible to other threads
+through the atomic variable to which it is applied.
+memory_order_acquire
+Performs an acquire operation on the affected memory locations,
+thus making regular memory writes in other threads
+released through the atomic variable to which it is applied,
+visible to the current thread.
+memory_order_acq_rel
+The operation has both acquire and release semantics.
+memory_order_seq_cst
+The operation has both acquire and release semantics,
+and in addition, has sequentially-consistent operation ordering.
+The memory_order_seq_cst operations that load a value
+are acquire operations on the affected locations.
+The memory_order_seq_cst operations that store a value
+are release operations on the affected locations.
+In addition, in a consistent execution,
+there must be a single total order S
+on all memory_order_seq_cst operations,
+consistent with the happens before order and modification orders
+for all affected locations,
+such that each memory_order_seq_cst operation
+observes either
+the last preceding modification according to this order S,
+or the result of an operation that is not memory_order_seq_cst.
+[Note:
+Although we do not explicitly require that S include locks,
+it can always be extended
+to an order that does include lock and unlock operations,
+since the ordering between those
+is already included in the happens before ordering.
+—end note]
+An atomic store shall only store a value
+that has been computed from constants and program input values
+by a finite sequence of program evaluations,
+such that each evaluation observes the values of variables
+as computed by the last prior assignment in the sequence.
+[Footnote:
+Among other implications, atomic variables shall not decay.
+—end footnote]
+The ordering of evaluations in this sequence must be such that
+If an evaluation B observes a value computed by A in a different thread,
+then B must not happen before A.
+If an evaluation A is included in the sequence,
+then all evaluations that assign to the same variable
+and are sequenced before or happens-before A
+must be included.
+[Note: Requirement 2 disallows "out-of-thin-air",
+or "speculative" stores of atomics when relaxed atomics are used.
+Since unordered operations are involved,
+evaluations may appear in this sequence out of thread order.
+For example, with x and y initially zero,
+Thread 1:
+r1 = y.load( memory_order_relaxed );
+x.store( r1, memory_order_relaxed );
+Thread 2:
+r2 = x.load( memory_order_relaxed );
+y.store( 42, memory_order_relaxed );
+is allowed to produce r1 = r2 = 42.
+The sequence of evaluations justifying this consists of:
+y.store( 42, memory_order_relaxed );
+r1 = y.load( memory_order_relaxed );
+x.store( r1, memory_order_relaxed );
+r2 = x.load( memory_order_relaxed );
+On the other hand,
+Thread 1:
+r1 = y.load( memory_order_relaxed );
+x.store( r1, memory_order_relaxed );
+Thread 2:
+r2 = x.load( memory_order_relaxed );
+y.store( r2, memory_order_relaxed );
+may not produce r1 = r2 = 42,
+since there is no sequence of evaluations
+that results in the computation of 42.
+In the absence of "relaxed" operations
+and read-modify-write operations
+with weaker than memory_order_acq_rel ordering,
+it has no impact.
+—end note]
+[Note:
+The requirements do allow r1 == r2 == 42 in
+(x, y initially zero):
+Thread 1:
+r1 = x.load( memory_order_relaxed );
+if ( r1 == 42 ) y.store( r1, memory_order_relaxed );
+Thread 2:
+r2 = y.load( memory_order_relaxed );
+if ( r2 == 42 ) x.store( 42, memory_order_relaxed );
+Implementations are discouraged from allowing such behavior.
+—end note]
+Implementations shall strive
+to make atomic stores
+visible to atomic loads within a reasonable amount of time.
+They shall never move an atomic operation out of an unbounded loop.
+29.2 Lock-Free Property [atomics.lockfree]
+Add a new sub-clause with the following paragraphs.
+The macros ATOMIC_INTEGRAL_LOCK_FREE
+and ATOMIC_ADDRESS_LOCK_FREE
+indicates the general lock-free property of integral and address atomic types.
+The properties also apply
+to the corresponding specializations of the atomic template.
+A value of 0 indicates that the types are never lock-free.
+A value of 1 indicates that the types are sometimes lock-free.
+A value of 2 indicates that the types are always lock-free.
+The function atomic_is_lock_free
+indicates whether or not the object is lock-free.
+The result of a lock-free query on one object
+cannot be inferred from the result of a lock-free query
+on another object.
+[Note:
+Operations that are lock-free should also be also address-free.
+That is, atomic operations on the same memory location
+via two different addresses will communicate atomically.
+The implementation shall not depend on any per-process state.
+This restriction enables communication
+via memory mapped into a process more than once
+and memory shared between two processes.
+—end note]
+29.3 Flag Type and Operations [atomics.flag]
+Add a new sub-clause with the following paragraphs.
+The atomic_flag type
+provides the classic test-and-set functionality.
+It has two states, set and clear.
+Operations on an atomic_flag
+must be lock free.
+[Note:
+Hence the operations must be address-free.
+No other type requires lock-free operations,
+and hence the atomic_flag type
+is the minimum hardware-implemented type needed to conform to this standard.
+The remaining types can be emulated with atomic_flag,
+though with less than ideal properties.
+—end note]
+The atomic_flag type shall have standard layout.
+It shall have a trivial default constructor,
+deleted copy constructor, a deleted copy assignment operator,
+and a trivial destructor.
+The macro ATOMIC_FLAG_INIT
+shall be used to initialize an atomic_flag
+to the clear state.
+Such initialization shall be static for static-duration variables.
+An atomic_flag shall not be zero initialized.
+[Example:
+atomic_flag guard = ATOMIC_FLAG_INIT;
+—end example].
+bool atomic_flag_test_and_set( volatile atomic_flag* object )
+bool atomic_flag_test_and_set_explicit( volatile atomic_flag* object,
+memory_order )
+bool atomic_flag::test_and_set(
+memory_order order = memory_order_seq_cst ) volatile
+Effects:
+Atomically, set the value in object to true.
+Memory is affected as per order.
+These operations are read-modify-write operations
+in the sense of the "synchronizes with" definition in
+[the new section added by
+N2334 or successor],
+and hence both such an operation and the evaluation
+that produced the input value
+synchronize with any evaluation that reads the updated value.
+Returns:
+Atomically, true if the set of object
+immediately before the effects.
+void atomic_flag_clear( volatile atomic_flag* object )
+void atomic_flag_clear_explicit( volatile atomic_flag* object,
+memory_order )
+void atomic_flag::clear(
+memory_order order = memory_order_seq_cst ) volatile
+Effects:
+Atomically, set the value in object to true.
+Memory is affected as per order.
+Requires:
+The order argument shall be
+neither memory_order_acquire nor memory_order_acq_rel.
+void atomic_flag_fence( const volatile atomic_flag* object,
+memory_order order )
+void atomic_flag::fence( memory_order order ) const volatile
+Effects:
+Memory is affected as per order.
+These operations are read-modify-write operations
+in the sense of the "synchronizes with" definition in
+[the new section added by
+N2334 or successor],
+and hence such an operation
+synchronizes with any operation on the same variable.
+Requires:
+The order argument shall not be
+memory_order_relaxed.
+The
+static-duration variable atomic_global_fence_compatibility
+of type atomic_flag
+may be used to emulate global fences.
+[Example:
+atomic_flag_fence( &atomic_global_fence_compatibility, memory_order_acquire );
+atomic_global_fence_compatibility.fence( memory_order_release );
+—end example]
+29.4 Integral and Address Types [atomics.types]
+Add a new sub-clause with the following paragraphs.
+The atomic integral and address types are listed below.
+These types shall have standard layout.
+They shall have a trivial default constructor,
+A constexpr explicit value constructor,
+a deleted copy constructor,
+a deleted copy assignment operator,
+and a trivial destructor.
+These types shall support aggregate initialization syntax.
+The set of operations availble for these types
+are defined in
+29.7 Synopsis [atomics.synopsis].
+The semantics of those operations are defined in
+29.5 Operations [atomics.operations].
+The atomic_bool type
+provides an atomic boolean.
+The atomic_address type
+provides atomic void* operations.
+The unit of addition/subtraction is one byte.
+[Note:
+The fetch-and-and, fetch-and-or, and fetch-and-xor operations
+are not supported as those operations have no semantics for pointers.
+—end note]
+There are a full set of atomic integral types.
+atomic_char,
+atomic_schar,
+atomic_uchar,
+atomic_short,
+atomic_ushort,
+atomic_int,
+atomic_uint,
+atomic_long,
+atomic_ulong,
+atomic_llong,
+atomic_ullong
+atomic_char16_t,
+atomic_char32_t,
+atomic_wchar_t
+In addition to integral types, there are typedefs
+for atomic types corresponding to the <cstdint> typedefs.
+atomic_int_least8_t,
+atomic_uint_least8_t,
+atomic_int_least16_t,
+atomic_uint_least16_t,
+atomic_int_least32_t,
+atomic_uint_least32_t,
+atomic_int_least64_t,
+atomic_uint_least64_t,
+atomic_int_fast8_t,
+atomic_uint_fast8_t,
+atomic_int_fast16_t,
+atomic_uint_fast16_t,
+atomic_int_fast32_t,
+atomic_uint_fast32_t,
+atomic_int_fast64_t,
+atomic_uint_fast64_t,
+atomic_intptr_t,
+atomic_uintptr_t,
+atomic_size_t,
+atomic_ssize_t,
+atomic_ptrdiff_t,
+atomic_intmax_t,
+atomic_uintmax_t
+[Note:
+The representation of atomic integral and address types
+need not have the same size
+as their corresponding regular types.
+They should have the same size whenever possible,
+as it eases effort required to port existing code.
+—end note]
+29.5 Operations [atomics.operations]
+Add a new sub-clause with the following paragraphs.
+There are only a few kinds of operations on atomic types,
+though there are many instances on those kinds.
+This section specifies each general kind,
+and the specific instances are defined in
+29.7 Synopsis [atomics.synopsis].
+In the following operation definitions:
+An A refers to one of the atomic types.
+A C refers to its corresponding non-atomic type.
+The atomic_address atomic type
+corresponds to the void* non-atomic type.
+A M
+refers to type of the other argument for arithmetic operaions.
+For integral atomic types, M
+is C.
+For atomic address types, M
+is std::ptrdiff_t.
+The free functions not ending in _explicit
+have the semantics of their corresponding _explicit
+with memory_order arguments of memory_order_seq_cst.
+[Note:
+Many operations are volatile-qualified.
+The "volatile as device register" semantics have not changed
+in the standard.
+This qualification means that volatility is preserved
+when applying these operations to volatile objects.
+It does not mean that operations
+on non-volatile objects
+become volatile.
+Thus, volatile qualified operations on non-volatile objects
+may be merged under some conditions.
+—end note]
+bool atomic_is_lock_free( const volatile A* object )
+void A::is_lock_free() const volatile
+Returns:
+True if the object's operations are lock-free,
+false otherwise.
+void atomic_store( volatile A* object, C desired )
+void atomic_store_explicit( volatile A* object, C desired,
+memory_order order )
+void A::store( C desired,
+memory_order order = memory_order_seq_cst ) volatile
+Effects:
+Atomically replace the value in object
+with desired.
+Memory is affected as per order.
+Requires:
+The order argument shall be
+neither memory_order_acquire nor memory_order_acq_rel.
+C A::operator =( C desired ) volatile
+Effects:
+store( desired )
+Returns:
+desired
+C atomic_load( volatile A* object )
+C atomic_load_explicit( volatile A* object, memory_order )
+C A::load( memory_order order = memory_order_seq_cst ) volatile
+Effects:
+Memory is affected as per order.
+Returns:
+Atomically return value in object.
+Memory is affected as per order.
+Requires:
+The order argument shall be
+neither memory_order_release nor memory_order_acq_rel.
+C atomic_swap( volatile A* object, C desired )
+C atomic_swap_explicit( volatile A* object, C desired, memory_order )
+C A::swap( C desired,
+memory_order order = memory_order_seq_cst ) volatile
+Effects:
+Atomically replace the value in object
+with desired.
+Memory is affected as per order.
+These operations are read-modify-write operations
+in the sense of the "synchronizes with" definition in
+[the new section added by
+N2334 or successor],
+and hence both such an operation and the evaluation
+that produced the input value
+synchronize with any evaluation that reads the updated value.
+Returns:
+Atomically, the value of object
+immediately before the effects.
+bool atomic_compare_swap( volatile A* object, C* expected, C desired )
+bool atomic_compare_swap_explicit( volatile A* object,
+C* expected, C desired, memory_order success, memory_order failure )
+bool A::compare_swap( C& expected, C desired,
+memory_order success, memory_order failure ) volatile
+bool A::compare_swap( C& expected, C desired,
+memory_order order = memory_order_seq_cst ) volatile
+Effects:
+Atomically, compares the value in object
+for equality with that in expected,
+and if true,
+replaces the value in object
+with desired,
+and if false,
+updates the value in expected
+with the value in object.
+If true,
+memory is affected as per success.
+If false,
+memory is affected as per failure.
+When only a single order is specified,
+success is order
+and failure is order
+with memory_order_acq_rel
+decaying to memory_order_acquire
+and memory_order_release
+decaying to memory_order_relaxed.
+[Footnote:
+The memory order decays, not the memory itself.
+—end footnote]
+These operations are read-modify-write operations
+in the sense of the "synchronizes with" definition in
+[the new section added by
+N2334 or successor],
+and hence both such an operation and the evaluation
+that produced the input value
+synchronize with any evaluation that reads the updated value.
+Returns:
+The result of the comparison.
+Requires:
+The failure argument shall be
+neither memory_order_release nor memory_order_acq_rel.
+The failure argument shall be
+no stronger than the success argument.
+[Note:
+The effect of the compare-and-swap operations is
+if ( *object == *expected )
+*object = desired;
+else
+*expected = *object;
+—end note]
+The compare-and-swap operations may fail spuriously,
+that is return false
+while leaving the value in expected unchanged.
+[Note:
+This spurious failure enables implementation of compare-and-swap
+on a broader class of machines, e.g. load-locked store-conditional machines.
+—end note]
+[Example:
+A consequence of spurious failure
+is that nearly all uses of compare-and-swap will be in a loop.
+expected = current.load();
+do desired = function( expected );
+while ( ! current.compare_swap( expected, desired ) );
+—end example]
+void atomic_fence( const volatile A* object, memory_order order )
+void A::fence( memory_order order ) const volatile
+Effects:
+Memory is affected as per order.
+These operations are read-modify-write operations
+in the sense of the "synchronizes with" definition in
+[the new section added by
+N2334 or successor],
+and hence such an operation
+synchronizes with any operation on the same variable.
+Requires:
+The failure argument shall not be
+memory_order_relaxed.
+The following operations perform arithmetic computations.
+The key, operator, and computation correspondence is:
+key
+op
+computation
+key
+op
+computation
+add
++
+addition
+sub
+-
+subtraction
+or
+|
+bitwise inclusive or
+xor
+^
+bitwise exclusive or
+and
+&
+bitwise and
+C atomic_fetch_key( volatile A* object, M operand )
+C atomic_fetch_key_explicit( volatile A* object, M operand,
+memory_order )
+C A::fetch_key( M operand,
+memory_order order = memory_order_seq_cst ) volatile
+Effects:
+Atomically replace the value in object
+with result of the computation
+applied to the value in object
+and the given operand.
+Memory is affected as per order.
+These operations are read-modify-write operations
+in the sense of the "synchronizes with" definition in
+[the new section added by
+N2334 or successor],
+and hence both such an operation and the evaluation
+that produced the input value
+synchronize with any evaluation that reads the updated value.
+Returns:
+Atomically, the value of object
+immediately before the effects.
+For signed integral types,
+arithmetic is defined to use two's-complement representation.
+There are no undefined results.
+For address types,
+the result may be an undefined address,
+but the operations otherwise have no undefined behavior.
+C A::operator op=( M operand ) volatile
+Effects:
+fetch_key( operand )
+Returns:
+fetch_key( operand ) op operand
+C A::operator ++( int ) volatile
+Effects:
+fetch_add( 1 )
+Returns:
+fetch_add( 1 )
+C A::operator --( int ) volatile
+Effects:
+fetch_sub( 1 )
+Returns:
+fetch_sub( 1 )
+C A::operator ++() volatile
+Effects:
+fetch_add( 1 )
+Returns:
+fetch_add( 1 ) + 1
+C A::operator --() volatile
+Effects:
+fetch_sub( 1 )
+Returns:
+fetch_sub( 1 ) - 1
+29.6 Generic Types [atomics.generic]
+Add a new sub-clause with the following paragraphs.
+There is a generic atomic class template.
+The template requires that its type argument be
+trivially copy assignable and
+bitwise equality comparable.
+[Note:
+Type arguments that are not also statically initializable
+and trivially destructable
+may be difficult to use.
+—end note]
+The atomic template instances
+shall have a deleted copy constructor,
+and a deleted copy assignment operator.
+They shal have a constexpr explicit value constructor.
+There are pointer partial specializations
+on the atomic class template.
+These specializations publically derive from atomic_address
+For atomic pointer partial specializations,
+the unit of addition/subtraction is the size of the referenced type.
+These instances shall have trivial default constructors
+and trivial destructors.
+There are full specializations
+over the integral types
+on the atomic class template.
+These specializations publically
+derive from the corresponding atomic integral type.
+These instances shall have trivial default constructors
+and trivial destructors.
+29.7 Synopsis [atomics.synopsis]
+Add a new sub-clause with the following paragraphs.
+The atomic types and operations have the following synopsis.
+namespace std {
+#define ATOMIC_INTEGRAL_LOCK_FREE implementation-defined
+#define ATOMIC_ADDRESS_LOCK_FREE implementation-defined
+typedef enum memory_order {
+memory_order_relaxed, memory_order_acquire, memory_order_release,
+memory_order_acq_rel, memory_order_seq_cst
+} memory_order;
+typedef struct atomic_flag
+{
+bool test_and_set( memory_order = memory_order_seq_cst ) volatile;
+void clear( memory_order = memory_order_seq_cst ) volatile;
+void fence( memory_order ) const volatile;
+atomic_flag() = default;
+atomic_flag( const atomic_flag& ) = delete;
+atomic_flag& operator =( const atomic_flag& ) = delete;
+} atomic_flag;
+#define ATOMIC_FLAG_INIT implementation-defined
+extern const atomic_flag atomic_global_fence_compatibility;
+bool atomic_flag_test_and_set( volatile atomic_flag* );
+bool atomic_flag_test_and_set_explicit( volatile atomic_flag*,
+memory_order );
+void atomic_flag_clear( volatile atomic_flag* );
+void atomic_flag_clear_explicit( volatile atomic_flag*, memory_order );
+void atomic_flag_fence( const volatile atomic_flag*, memory_order );
+typedef struct atomic_bool
+{
+bool is_lock_free() const volatile;
+void store( bool, memory_order = memory_order_seq_cst ) volatile;
+bool load( memory_order = memory_order_seq_cst ) volatile;
+bool swap( bool, memory_order = memory_order_seq_cst ) volatile;
+bool compare_swap( bool&, bool, memory_order, memory_order ) volatile;
+bool compare_swap( bool&, bool,
+memory_order = memory_order_seq_cst ) volatile;
+void fence( memory_order ) const volatile;
+atomic_bool() = default;
+constexpr explicit atomic_bool( bool );
+atomic_bool( const atomic_bool& ) = delete;
+atomic_bool& operator =( const atomic_bool & ) = delete;
+bool operator =( bool ) volatile;
+} atomic_bool;
+bool atomic_is_lock_free( const volatile atomic_bool* );
+void atomic_store( volatile atomic_bool*, bool );
+void atomic_store_explicit( volatile atomic_bool*, bool, memory_order );
+bool atomic_load( volatile atomic_bool* );
+bool atomic_load_explicit( volatile atomic_bool*, memory_order );
+bool atomic_swap( volatile atomic_bool* );
+bool atomic_swap_explicit( volatile atomic_bool*, bool );
+bool atomic_compare_swap( volatile atomic_bool*, bool*, bool );
+bool atomic_compare_swap_explicit( volatile atomic_bool*, bool*, bool,
+memory_order, memory_order );
+void atomic_fence( const volatile atomic_bool*, memory_order );
+typedef struct atomic_address
+{
+bool is_lock_free() const volatile;
+void store( void*, memory_order = memory_order_seq_cst ) volatile;
+void* load( memory_order = memory_order_seq_cst ) volatile;
+void* swap( void*, memory_order = memory_order_seq_cst ) volatile;
+bool compare_swap( void*&, void*,
+memory_order, memory_order ) volatile;
+bool compare_swap( void*&, void*,
+memory_order = memory_order_seq_cst ) volatile;
+void fence( memory_order ) const volatile;
+void* fetch_add( ptrdiff_t,
+memory_order = memory_order_seq_cst ) volatile;
+void* fetch_sub( ptrdiff_t,
+memory_order = memory_order_seq_cst ) volatile;
+atomic_address() = default;
+constexpr explicit atomic_address( void* );
+atomic_address( const atomic_address& ) = delete;
+atomic_address& operator =( const atomic_address& ) = delete;
+void* operator =( void* ) volatile;
+void* operator +=( ptrdiff_t ) volatile;
+void* operator -=( ptrdiff_t ) volatile;
+} atomic_address;
+bool atomic_is_lock_free( const volatile atomic_address* );
+void atomic_store( volatile atomic_address*, void* );
+void atomic_store_explicit( volatile atomic_address*, void*, memory_order );
+void* atomic_load( volatile atomic_address* );
+void* atomic_load_explicit( volatile atomic_address*, memory_order );
+void* atomic_swap( volatile atomic_address* );
+void* atomic_swap_explicit( volatile atomic_address*, void*, memory_order );
+bool atomic_compare_swap( volatile atomic_address*, void**, void* );
+bool atomic_compare_swap_explicit( volatile atomic_address*, void**, void*,
+memory_order, memory_order );
+void atomic_fence( const volatile atomic_address*, memory_order );
+void* atomic_fetch_add( volatile atomic_address*, ptrdiff_t );
+void* atomic_fetch_add_explicit( volatile atomic_address*, ptrdiff_t,
+memory_order );
+void* atomic_fetch_sub( volatile atomic_address*, ptrdiff_t );
+void* atomic_fetch_sub_explicit( volatile atomic_address*, ptrdiff_t,
+memory_order );
+And for each of
+the integral (character and integer) types listed above,
+typedef struct atomic_integral
+{
+bool is_lock_free() const volatile;
+void store( integral, memory_order = memory_order_seq_cst ) volatile;
+integral load( memory_order = memory_order_seq_cst ) volatile;
+integral swap( integral,
+memory_order = memory_order_seq_cst ) volatile;
+bool compare_swap( integral&, integral,
+memory_order, memory_order ) volatile;
+bool compare_swap( integral&, integral,
+memory_order = memory_order_seq_cst ) volatile;
+void fence( memory_order ) const volatile;
+integral fetch_add( integral,
+memory_order = memory_order_seq_cst ) volatile;
+integral fetch_sub( integral,
+memory_order = memory_order_seq_cst ) volatile;
+integral fetch_and( integral,
+memory_order = memory_order_seq_cst ) volatile;
+integral fetch_or( integral,
+memory_order = memory_order_seq_cst ) volatile;
+integral fetch_xor( integral,
+memory_order = memory_order_seq_cst ) volatile;
+atomic_integral() = default;
+constexpr explicit atomic_integral( integral );
+atomic_integral( const atomic_integral& ) = delete;
+atomic_integral& operator =( const atomic_integral & ) = delete;
+integral operator =( integral ) volatile;
+integral operator ++( int ) volatile;
+integral operator --( int ) volatile;
+integral operator ++() volatile;
+integral operator --() volatile;
+integral operator +=( integral ) volatile;
+integral operator -=( integral ) volatile;
+integral operator &=( integral ) volatile;
+integral operator |=( integral ) volatile;
+integral operator ^=( integral ) volatile;
+} atomic_integral;
+bool atomic_is_lock_free( const volatile atomic_integral* );
+void atomic_store( volatile atomic_integral*, integral );
+void atomic_store_explicit( volatile atomic_integral*, integral,
+memory_order );
+integral atomic_load( volatile atomic_integral* );
+integral atomic_load_explicit( volatile atomic_integral*, memory_order );
+integral atomic_swap( volatile atomic_integral*, integral );
+integral atomic_swap_explicit( volatile atomic_integral*, integral,
+memory_order );
+bool atomic_compare_swap( volatile atomic_integral*, integral*, integral );
+bool atomic_compare_swap_explicit( volatile atomic_integral*, integral*,
+integral, memory_order, memory_order );
+void atomic_fence( const volatile atomic_integral*, memory_order );
+integral atomic_fetch_add( volatile atomic_integral*, integral );
+integral atomic_fetch_add_explicit( volatile atomic_integral*, integral,
+memory_order );
+integral atomic_fetch_sub( volatile atomic_integral*, integral );
+integral atomic_fetch_sub_explicit( volatile atomic_integral*, integral,
+memory_order );
+integral atomic_fetch_and( volatile atomic_integral*, integral );
+integral atomic_fetch_and_explicit( volatile atomic_integral*, integral,
+memory_order );
+integral atomic_fetch_or( volatile atomic_integral*, integral );
+integral atomic_fetch_or_explicit( volatile atomic_integral*, integral,
+memory_order );
+integral atomic_fetch_xor( volatile atomic_integral*, integral );
+integral atomic_fetch_xor_explicit( volatile atomic_integral*, integral,
+memory_order );
+template< TriviallyCopyConstructable T >
+requires AtomicComparable< T >
+struct atomic
+{
+bool is_lock_free() const volatile;
+void store( T, memory_order = memory_order_seq_cst ) volatile;
+T load( memory_order = memory_order_seq_cst ) volatile;
+T swap( T, memory_order = memory_order_seq_cst ) volatile;
+bool compare_swap( T&, T, memory_order, memory_order ) volatile;
+bool compare_swap( T&, T,
+memory_order = memory_order_seq_cst ) volatile;
+void fence( memory_order ) const volatile;
+atomic() = default;
+constexpr explicit atomic( T );
+atomic( const atomic& ) = delete;
+atomic& operator =( const atomic& ) = delete;
+T operator =( T ) volatile;
+};
+template<typename T>
+struct atomic< T* > : atomic_address
+{
+T* fetch_add( ptrdiff_t, memory_order = memory_order_seq_cst ) volatile;
+T* fetch_sub( ptrdiff_t, memory_order = memory_order_seq_cst ) volatile;
+atomic() = default;
+constexpr explicit atomic( T );
+atomic( const atomic& ) = delete;
+atomic& operator =( const atomic& ) = delete;
+T* operator =( T* ) volatile;
+T* operator ++( int ) volatile;
+T* operator --( int ) volatile;
+T* operator ++() volatile;
+T* operator --() volatile;
+T* operator +=( ptrdiff_t ) volatile;
+T* operator -=( ptrdiff_t ) volatile;
+};
+template<>
+struct atomic< integral > : atomic_integral
+{
+atomic() = default;
+constexpr explicit atomic( integral );
+atomic( const atomic& ) = delete;
+atomic& operator =( const atomic& ) = delete;
+integral operator =( integral ) volatile;
+};
+} // namespace std
+The standard provides two headers,
+cstdatomic and
+stdatomic.h.
+The cstdatomic header
+defines the types and functions in namespace std.
+The stdatomic.h header
+declares the types and functions in namespace std
+and has using declarations for those types and functions
+in the global namespace.
+Implementation
+This proposal embeds
+an example, minimally-conforming, implementation
+for both C and C++.
+The implementation uses a hash table of flags
+and does busy waiting on the flags.
+Notes on the Presentation
+The proposal marks the defined interface
+with the <code> font tag,
+which typically renders in a teletype font.
+The proposal marks the example implemenation
+with the <var> font tag
+within the <code> font tag,
+which typically renders in an italic teletype font.
+This example implementation is not part of the standard;
+it is evidence of implementability.
+The embedded source is a bash script
+that generates the C and C++ source files.
+We have taken this approach
+because the definitions have a high degree of redundancy,
+which would otherwise interfere with the readability of the document.
+To extract the bash script from the HTML source,
+use the following sed script.
+(The bash script will also generate the sed script.)
+echo n2427.sed
+cat <<EOF >n2427.sed
+1,/<code>/ d
+/<\/code>/,/<code>/ d
+s|<var>||g
+s|</var>||g
+s|&lt;|<|g
+s|&gt;|>|g
+s|&amp;|\&|g
+EOF
+To compile the enclosed sources and examples,
+use the following Makefile.
+(The bash script will also generate the Makefile.)
+echo Makefile
+cat <<EOF >Makefile
+default : test
+n2427.bash : n2427.html
+sed -f n2427.sed n2427.html > n2427.bash
+stdatomic.h cstdatomic impatomic.h impatomic.c n2427.c : n2427.bash
+bash n2427.bash
+impatomic.o : impatomic.h impatomic.c
+gcc -std=c99 -c impatomic.c
+n2427.c.exe : n2427.c stdatomic.h impatomic.o
+gcc -std=c99 -o n2427.c.exe n2427.c impatomic.o
+n2427.c++.exe : n2427.c stdatomic.h impatomic.o
+g++ -o n2427.c++.exe n2427.c impatomic.o
+test : n2427.c.exe n2427.c++.exe
+clean :
+rm -f n2427.bash stdatomic.h cstdatomic impatomic.h impatomic.c
+rm -f impatomic.o n2427.c.exe n2427.c++.exe
+EOF
+Implementation Files
+As is common practice,
+we place the common portions of the C and C++ standard headers
+in a separate implementation header.
+The implementation header includes standard headers
+to obtain basic typedefs.
+echo impatomic.h includes
+cat <<EOF >impatomic.h
+#ifdef __cplusplus
+#include <cstddef>
+namespace std {
+#else
+#include <stddef.h>
+#include <stdbool.h>
+#endif
+EOF
+The corresponding implementation source
+includes the implementation header and stdint.h.
+echo impatomic.c includes
+cat <<EOF >impatomic.c
+#include <stdint.h>
+#include "impatomic.h"
+EOF
+C++0x Features
+Because current compilers do not support the new C++0x features,
+we have surrounded these with a macro to conditionally remove them.
+echo impatomic.h CPP0X
+cat <<EOF >>impatomic.h
+#define CPP0X( feature )
+EOF
+Memory Order
+echo impatomic.h order
+cat <<EOF >>impatomic.h
+typedef enum memory_order {
+memory_order_relaxed, memory_order_acquire, memory_order_release,
+memory_order_acq_rel, memory_order_seq_cst
+} memory_order;
+EOF
+Flag Type and Operations
+To aid the emulated implementation,
+the example implementation includes a predefined hashtable of locks
+implemented via flags.
+echo impatomic.h flag
+cat <<EOF >>impatomic.h
+typedef struct atomic_flag
+{
+#ifdef __cplusplus
+bool test_and_set( memory_order = memory_order_seq_cst ) volatile;
+void clear( memory_order = memory_order_seq_cst ) volatile;
+void fence( memory_order ) const volatile;
+CPP0X( atomic_flag() = default; )
+CPP0X( atomic_flag( const atomic_flag& ) = delete; )
+atomic_flag& operator =( const atomic_flag& ) CPP0X(=delete);
+CPP0X(private:)
+#endif
+bool __f__;
+} atomic_flag;
+#define ATOMIC_FLAG_INIT { false }
+#ifdef __cplusplus
+extern "C" {
+#endif
+extern bool atomic_flag_test_and_set( volatile atomic_flag* );
+extern bool atomic_flag_test_and_set_explicit
+( volatile atomic_flag*, memory_order );
+extern void atomic_flag_clear( volatile atomic_flag* );
+extern void atomic_flag_clear_explicit
+( volatile atomic_flag*, memory_order );
+extern void atomic_flag_fence
+( const volatile atomic_flag*, memory_order );
+extern void __atomic_flag_wait__
+( volatile atomic_flag* );
+extern void __atomic_flag_wait_explicit__
+( volatile atomic_flag*, memory_order );
+extern volatile atomic_flag* __atomic_flag_for_address__
+( const volatile void* __z__ )
+__attribute__((const));
+#ifdef __cplusplus
+}
+#endif
+#ifdef __cplusplus
+inline bool atomic_flag::test_and_set( memory_order __x__ ) volatile
+{ return atomic_flag_test_and_set_explicit( this, __x__ ); }
+inline void atomic_flag::clear( memory_order __x__ ) volatile
+{ atomic_flag_clear_explicit( this, __x__ ); }
+inline void atomic_flag::fence( memory_order __x__ ) const volatile
+{ atomic_flag_fence( this, __x__ ); }
+#endif
+EOF
+The wait operation may be implemented with busy-waiting,
+and hence must be used only with care.
+The for_address function returns the address of a flag
+for the given address.
+Multiple argument values may yield a single flag,
+and the implementation of locks may use these flags,
+so no operation should attempt to hold any flag or lock
+while holding a flag for an address.
+The prototype implementation of flags
+uses the
+__sync macros
+from the GNU C/C++ compiler,
+when available,
+and otherwise uses a non-atomic implementation
+with the expectation that vendors will replace it.
+It might even be implemented with, for example,
+pthread_mutex_trylock,
+in which case the internal flag wait function
+might just be pthread_mutex_lock.
+This would of course tend to
+make atomic_flag larger than necessary.
+The prototype implementation of flags is implemented in C.
+echo impatomic.c flag
+cat <<EOF >>impatomic.c
+#if defined(__GNUC__)
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 0)
+#define USE_SYNC
+#endif
+#endif
+bool atomic_flag_test_and_set_explicit
+( volatile atomic_flag* __a__, memory_order __x__ )
+{
+#ifdef USE_SYNC
+if ( __x__ >= memory_order_acq_rel )
+__sync_synchronize();
+return __sync_lock_test_and_set( &(__a__->__f__), 1 );
+#else
+bool result = __a__->__f__;
+__a__->__f__ = true;
+return result;
+#endif
+}
+bool atomic_flag_test_and_set( volatile atomic_flag* __a__ )
+{ return atomic_flag_test_and_set_explicit( __a__, memory_order_seq_cst ); }
+void atomic_flag_clear_explicit
+( volatile atomic_flag* __a__, memory_order __x__ )
+{
+#ifdef USE_SYNC
+__sync_lock_release( &(__a__->__f__) );
+if ( __x__ >= memory_order_acq_rel )
+__sync_synchronize();
+#else
+__a__->__f__ = false;
+#endif
+}
+void atomic_flag_clear( volatile atomic_flag* __a__ )
+{ atomic_flag_clear_explicit( __a__, memory_order_seq_cst ); }
+void atomic_flag_fence( const volatile atomic_flag* __a__, memory_order __x__ )
+{
+#ifdef USE_SYNC
+__sync_synchronize();
+#endif
+}
+Note that the following implementation of wait
+is almost always wrong --
+it has high contention.
+Some form of exponential backoff prevents excessive contention.
+void __atomic_flag_wait__( volatile atomic_flag* __a__ )
+{ while ( atomic_flag_test_and_set( __a__ ) ); }
+void __atomic_flag_wait_explicit__( volatile atomic_flag* __a__,
+memory_order __x__ )
+{ while ( atomic_flag_test_and_set_explicit( __a__, __x__ ) ); }
+#define LOGSIZE 4
+static atomic_flag volatile __atomic_flag_anon_table__[ 1 << LOGSIZE ] =
+{
+ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT,
+ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT,
+ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT,
+ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT,
+};
+volatile atomic_flag* __atomic_flag_for_address__( const volatile void* __z__ )
+{
+uintptr_t __u__ = (uintptr_t)__z__;
+__u__ += (__u__ >> 2) + (__u__ << 4);
+__u__ += (__u__ >> 7) + (__u__ << 5);
+__u__ += (__u__ >> 17) + (__u__ << 13);
+if ( sizeof(uintptr_t) > 4 ) __u__ += (__u__ >> 31);
+__u__ &= ~((~(uintptr_t)0) << LOGSIZE);
+return __atomic_flag_anon_table__ + __u__;
+}
+EOF
+Implementation Macros
+The remainder of the example implementation uses the following macros.
+These macros exploit GNU extensions for
+value-returning blocks (AKA statement expressions)
+and __typeof__.
+The macros rely on data fields of atomic structs being named __f__.
+Other symbols used are
+__a__=atomic,
+__e__=expected,
+__f__=field,
+__g__=flag,
+__m__=modified,
+__o__=operation,
+__r__=result,
+__p__=pointer to field,
+__v__=value (for single evaluation),
+__x__=memory-ordering, and
+__y__=memory-ordering.
+echo impatomic.h macros implementation
+cat <<EOF >>impatomic.h
+#define _ATOMIC_LOAD_( __a__, __x__ ) \\
+({ volatile __typeof__((__a__)->__f__)* __p__ = &((__a__)->__f__); \\
+volatile atomic_flag* __g__ = __atomic_flag_for_address__( __p__ ); \\
+__atomic_flag_wait_explicit__( __g__, __x__ ); \\
+__typeof__((__a__)->__f__) __r__ = *__p__; \\
+atomic_flag_clear_explicit( __g__, __x__ ); \\
+__r__; })
+#define _ATOMIC_STORE_( __a__, __m__, __x__ ) \\
+({ volatile __typeof__((__a__)->__f__)* __p__ = &((__a__)->__f__); \\
+__typeof__(__m__) __v__ = (__m__); \\
+volatile atomic_flag* __g__ = __atomic_flag_for_address__( __p__ ); \\
+__atomic_flag_wait_explicit__( __g__, __x__ ); \\
+*__p__ = __v__; \\
+atomic_flag_clear_explicit( __g__, __x__ ); \\
+__v__; })
+#define _ATOMIC_MODIFY_( __a__, __o__, __m__, __x__ ) \\
+({ volatile __typeof__((__a__)->__f__)* __p__ = &((__a__)->__f__); \\
+__typeof__(__m__) __v__ = (__m__); \\
+volatile atomic_flag* __g__ = __atomic_flag_for_address__( __p__ ); \\
+__atomic_flag_wait_explicit__( __g__, __x__ ); \\
+__typeof__((__a__)->__f__) __r__ = *__p__; \\
+*__p__ __o__ __v__; \\
+atomic_flag_clear_explicit( __g__, __x__ ); \\
+__r__; })
+#define _ATOMIC_CMPSWP_( __a__, __e__, __m__, __x__ ) \\
+({ volatile __typeof__((__a__)->__f__)* __p__ = &((__a__)->__f__); \\
+__typeof__(__e__) __q__ = (__e__); \\
+__typeof__(__m__) __v__ = (__m__); \\
+bool __r__; \\
+volatile atomic_flag* __g__ = __atomic_flag_for_address__( __p__ ); \\
+__atomic_flag_wait_explicit__( __g__, __x__ ); \\
+__typeof__((__a__)->__f__) __t__ = *__p__; \\
+if ( __t__ == *__q__ ) { *__p__ = __v__; __r__ = true; } \\
+else { *__q__ = __t__; __r__ = false; } \\
+atomic_flag_clear_explicit( __g__, __x__ ); \\
+__r__; })
+#define _ATOMIC_FENCE_( __a__, __x__ ) \\
+({ volatile __typeof__((__a__)->__f__)* __p__ = &((__a__)->__f__); \\
+volatile atomic_flag* __g__ = __atomic_flag_for_address__( __p__ ); \\
+atomic_flag_fence( __g__, __x__ ); \\
+})
+EOF
+Lock-Free Macro
+echo impatomic.h lock-free macros
+cat <<EOF >>impatomic.h
+#define ATOMIC_INTEGRAL_LOCK_FREE 0
+#define ATOMIC_ADDRESS_LOCK_FREE 0
+EOF
+Integral and Address Types
+The standard defines atomic types
+corresponding to booleans, addresses, integers, and for C++, wider characters.
+These atomic types are defined in terms of a base type.
+The base types have two names in this proposal,
+a short name usually embedded within other identifiers,
+and a long name for the base type.
+The mapping between them is as follows.
+bool="bool"
+address="void*"
+INTEGERS="char schar uchar short ushort int uint long ulong llong ullong"
+char="char"
+schar="signed char"
+uchar="unsigned char"
+short="short"
+ushort="unsigned short"
+int="int"
+uint="unsigned int"
+long="long"
+ulong="unsigned long"
+llong="long long"
+ullong="unsigned long long"
+CHARACTERS="wchar_t"
+# CHARACTERS="char16_t char32_t wchar_t" // char*_t not yet in compilers
+char16_t="char16_t"
+char32_t="char32_t"
+wchar_t="wchar_t"
+In addition to types, some operations also need two names,
+one for embedding within other identifiers,
+and one consisting of the operator.
+ADR_OPERATIONS="add sub"
+INT_OPERATIONS="add sub and or xor"
+add="+"
+sub="-"
+and="&"
+or="|"
+xor="^"
+Boolean
+echo impatomic.h type boolean
+cat <<EOF >>impatomic.h
+typedef struct atomic_bool
+{
+#ifdef __cplusplus
+bool is_lock_free() const volatile;
+void store( bool, memory_order = memory_order_seq_cst ) volatile;
+bool load( memory_order = memory_order_seq_cst ) volatile;
+bool swap( bool, memory_order = memory_order_seq_cst ) volatile;
+bool compare_swap ( bool&, bool, memory_order, memory_order ) volatile;
+bool compare_swap ( bool&, bool,
+memory_order = memory_order_seq_cst) volatile;
+void fence( memory_order ) const volatile;
+CPP0X( atomic_bool() = delete; )
+CPP0X( constexpr explicit atomic_bool( bool __v__ ) : __f__( __v__ ) { } )
+CPP0X( atomic_bool( const atomic_bool& ) = delete; )
+atomic_bool& operator =( const atomic_bool& ) CPP0X(=delete);
+bool operator =( bool __v__ ) volatile
+{ store( __v__ ); return __v__; }
+friend void atomic_store_explicit( volatile atomic_bool*, bool,
+memory_order );
+friend bool atomic_load_explicit( volatile atomic_bool*, memory_order );
+friend bool atomic_swap_explicit( volatile atomic_bool*, bool,
+memory_order );
+friend bool atomic_compare_swap_explicit( volatile atomic_bool*, bool*, bool,
+memory_order, memory_order );
+friend void atomic_fence( const volatile atomic_bool*, memory_order );
+CPP0X(private:)
+#endif
+bool __f__;
+} atomic_bool;
+EOF
+Address
+echo impatomic.h type address
+cat <<EOF >>impatomic.h
+typedef struct atomic_address
+{
+#ifdef __cplusplus
+bool is_lock_free() const volatile;
+void store( void*, memory_order = memory_order_seq_cst ) volatile;
+void* load( memory_order = memory_order_seq_cst ) volatile;
+void* swap( void*, memory_order = memory_order_seq_cst ) volatile;
+bool compare_swap( void*&, void*, memory_order, memory_order ) volatile;
+bool compare_swap( void*&, void*,
+memory_order = memory_order_seq_cst ) volatile;
+void fence( memory_order ) const volatile;
+void* fetch_add( ptrdiff_t, memory_order = memory_order_seq_cst ) volatile;
+void* fetch_sub( ptrdiff_t, memory_order = memory_order_seq_cst ) volatile;
+CPP0X( atomic_address() = default; )
+CPP0X( constexpr explicit atomic_address( void* __v__ ) : __f__( __v__) { } )
+CPP0X( atomic_address( const atomic_address& ) = delete; )
+atomic_address& operator =( const atomic_address & ) CPP0X(=delete);
+void* operator =( void* __v__ ) volatile
+{ store( __v__ ); return __v__; }
+void* operator +=( ptrdiff_t __v__ ) volatile
+{ return fetch_add( __v__ ); }
+void* operator -=( ptrdiff_t __v__ ) volatile
+{ return fetch_sub( __v__ ); }
+friend void atomic_store_explicit( volatile atomic_address*, void*,
+memory_order );
+friend void* atomic_load_explicit( volatile atomic_address*, memory_order );
+friend void* atomic_swap_explicit( volatile atomic_address*, void*,
+memory_order );
+friend bool atomic_compare_swap_explicit( volatile atomic_address*,
+void**, void*, memory_order, memory_order );
+friend void atomic_fence( const volatile atomic_address*, memory_order );
+friend void* atomic_fetch_add_explicit( volatile atomic_address*, ptrdiff_t,
+memory_order );
+friend void* atomic_fetch_sub_explicit( volatile atomic_address*, ptrdiff_t,
+memory_order );
+CPP0X(private:)
+#endif
+void* __f__;
+} atomic_address;
+EOF
+Integers
+echo impatomic.h type integers
+for TYPEKEY in ${INTEGERS}
+do
+TYPENAME=${!TYPEKEY}
+cat <<EOF >>impatomic.h
+typedef struct atomic_${TYPEKEY}
+{
+#ifdef __cplusplus
+bool is_lock_free() const volatile;
+void store( ${TYPENAME},
+memory_order = memory_order_seq_cst ) volatile;
+${TYPENAME} load( memory_order = memory_order_seq_cst ) volatile;
+${TYPENAME} swap( ${TYPENAME},
+memory_order = memory_order_seq_cst ) volatile;
+bool compare_swap( ${TYPENAME}&, ${TYPENAME},
+memory_order, memory_order ) volatile;
+bool compare_swap( ${TYPENAME}&, ${TYPENAME},
+memory_order = memory_order_seq_cst ) volatile;
+void fence( memory_order ) const volatile;
+${TYPENAME} fetch_add( ${TYPENAME},
+memory_order = memory_order_seq_cst ) volatile;
+${TYPENAME} fetch_sub( ${TYPENAME},
+memory_order = memory_order_seq_cst ) volatile;
+${TYPENAME} fetch_and( ${TYPENAME},
+memory_order = memory_order_seq_cst ) volatile;
+${TYPENAME} fetch_or( ${TYPENAME},
+memory_order = memory_order_seq_cst ) volatile;
+${TYPENAME} fetch_xor( ${TYPENAME},
+memory_order = memory_order_seq_cst ) volatile;
+CPP0X( atomic_${TYPEKEY}() = default; )
+CPP0X( constexpr atomic_${TYPEKEY}( ${TYPENAME} __v__ ) : __f__( __v__) { } )
+CPP0X( atomic_${TYPEKEY}( const atomic_${TYPEKEY}& ) = delete; )
+atomic_${TYPEKEY}& operator =( const atomic_${TYPEKEY}& ) CPP0X(=delete);
+${TYPENAME} operator =( ${TYPENAME} __v__ ) volatile
+{ store( __v__ ); return __v__; }
+${TYPENAME} operator ++( int ) volatile
+{ return fetch_add( 1 ); }
+${TYPENAME} operator --( int ) volatile
+{ return fetch_sub( 1 ); }
+${TYPENAME} operator ++() volatile
+{ return fetch_add( 1 ) + 1; }
+${TYPENAME} operator --() volatile
+{ return fetch_sub( 1 ) - 1; }
+${TYPENAME} operator +=( ${TYPENAME} __v__ ) volatile
+{ return fetch_add( __v__ ) + __v__; }
+${TYPENAME} operator -=( ${TYPENAME} __v__ ) volatile
+{ return fetch_sub( __v__ ) - __v__; }
+${TYPENAME} operator &=( ${TYPENAME} __v__ ) volatile
+{ return fetch_and( __v__ ) & __v__; }
+${TYPENAME} operator |=( ${TYPENAME} __v__ ) volatile
+{ return fetch_or( __v__ ) | __v__; }
+${TYPENAME} operator ^=( ${TYPENAME} __v__ ) volatile
+{ return fetch_xor( __v__ ) ^ __v__; }
+friend void atomic_store_explicit( volatile atomic_${TYPEKEY}*, ${TYPENAME},
+memory_order );
+friend ${TYPENAME} atomic_load_explicit( volatile atomic_${TYPEKEY}*,
+memory_order );
+friend ${TYPENAME} atomic_swap_explicit( volatile atomic_${TYPEKEY}*,
+${TYPENAME}, memory_order );
+friend bool atomic_compare_swap_explicit( volatile atomic_${TYPEKEY}*,
+${TYPENAME}*, ${TYPENAME}, memory_order, memory_order );
+friend void atomic_fence( const volatile atomic_${TYPEKEY}*, memory_order );
+friend ${TYPENAME} atomic_fetch_add_explicit( volatile atomic_${TYPEKEY}*,
+${TYPENAME}, memory_order );
+friend ${TYPENAME} atomic_fetch_sub_explicit( volatile atomic_${TYPEKEY}*,
+${TYPENAME}, memory_order );
+friend ${TYPENAME} atomic_fetch_and_explicit( volatile atomic_${TYPEKEY}*,
+${TYPENAME}, memory_order );
+friend ${TYPENAME} atomic_fetch_or_explicit( volatile atomic_${TYPEKEY}*,
+${TYPENAME}, memory_order );
+friend ${TYPENAME} atomic_fetch_xor_explicit( volatile atomic_${TYPEKEY}*,
+${TYPENAME}, memory_order );
+CPP0X(private:)
+#endif
+${TYPENAME} __f__;
+} atomic_${TYPEKEY};
+EOF
+done
+Integer Typedefs
+The following typedefs
+support atomic versons
+of the cstdint and stdint.h types.
+echo impatomic.h typedefs integers
+cat <<EOF >>impatomic.h
+typedef atomic_schar atomic_int_least8_t;
+typedef atomic_uchar atomic_uint_least8_t;
+typedef atomic_short atomic_int_least16_t;
+typedef atomic_ushort atomic_uint_least16_t;
+typedef atomic_int atomic_int_least32_t;
+typedef atomic_uint atomic_uint_least32_t;
+typedef atomic_llong atomic_int_least64_t;
+typedef atomic_ullong atomic_uint_least64_t;
+typedef atomic_schar atomic_int_fast8_t;
+typedef atomic_uchar atomic_uint_fast8_t;
+typedef atomic_short atomic_int_fast16_t;
+typedef atomic_ushort atomic_uint_fast16_t;
+typedef atomic_int atomic_int_fast32_t;
+typedef atomic_uint atomic_uint_fast32_t;
+typedef atomic_llong atomic_int_fast64_t;
+typedef atomic_ullong atomic_uint_fast64_t;
+typedef atomic_long atomic_intptr_t;
+typedef atomic_ulong atomic_uintptr_t;
+typedef atomic_long atomic_ssize_t;
+typedef atomic_ulong atomic_size_t;
+typedef atomic_long atomic_ptrdiff_t;
+typedef atomic_llong atomic_intmax_t;
+typedef atomic_ullong atomic_uintmax_t;
+EOF
+Characters
+echo impatomic.h type characters
+cat <<EOF >>impatomic.h
+#ifdef __cplusplus
+EOF
+for TYPEKEY in ${CHARACTERS}
+do
+TYPENAME=${!TYPEKEY}
+cat <<EOF >>impatomic.h
+typedef struct atomic_${TYPEKEY}
+{
+#ifdef __cplusplus
+bool is_lock_free() const volatile;
+void store( ${TYPENAME}, memory_order = memory_order_seq_cst ) volatile;
+${TYPENAME} load( memory_order = memory_order_seq_cst ) volatile;
+${TYPENAME} swap( ${TYPENAME},
+memory_order = memory_order_seq_cst ) volatile;
+bool compare_swap( ${TYPENAME}&, ${TYPENAME},
+memory_order, memory_order ) volatile;
+bool compare_swap( ${TYPENAME}&, ${TYPENAME},
+memory_order = memory_order_seq_cst ) volatile;
+void fence( memory_order ) const volatile;
+${TYPENAME} fetch_add( ${TYPENAME},
+memory_order = memory_order_seq_cst ) volatile;
+${TYPENAME} fetch_sub( ${TYPENAME},
+memory_order = memory_order_seq_cst ) volatile;
+${TYPENAME} fetch_and( ${TYPENAME},
+memory_order = memory_order_seq_cst ) volatile;
+${TYPENAME} fetch_or( ${TYPENAME},
+memory_order = memory_order_seq_cst ) volatile;
+${TYPENAME} fetch_xor( ${TYPENAME},
+memory_order = memory_order_seq_cst ) volatile;
+CPP0X( atomic_${TYPENAME}() = default; )
+CPP0X( constexpr atomic_${TYPEKEY}( ${TYPENAME} __v__ ) : __f__( __v__) { } )
+CPP0X( atomic_${TYPENAME}( const atomic_${TYPENAME}& ) = delete; )
+atomic_${TYPENAME}& operator =( const atomic_${TYPENAME}& ) CPP0X(=delete);
+${TYPENAME} operator =( ${TYPENAME} __v__ ) volatile
+{ store( __v__ ); return __v__; }
+${TYPENAME} operator ++( int ) volatile
+{ return fetch_add( 1 ); }
+${TYPENAME} operator --( int ) volatile
+{ return fetch_sub( 1 ); }
+${TYPENAME} operator ++() volatile
+{ return fetch_add( 1 ) + 1; }
+${TYPENAME} operator --() volatile
+{ return fetch_sub( 1 ) - 1; }
+${TYPENAME} operator +=( ${TYPENAME} __v__ ) volatile
+{ return fetch_add( __v__ ) + __v__; }
+${TYPENAME} operator -=( ${TYPENAME} __v__ ) volatile
+{ return fetch_sub( __v__ ) - __v__; }
+${TYPENAME} operator &=( ${TYPENAME} __v__ ) volatile
+{ return fetch_and( __v__ ) & __v__; }
+${TYPENAME} operator |=( ${TYPENAME} __v__ ) volatile
+{ return fetch_or( __v__ ) | __v__; }
+${TYPENAME} operator ^=( ${TYPENAME} __v__ ) volatile
+{ return fetch_xor( __v__ ) ^ __v__; }
+friend void atomic_store_explicit( volatile atomic_${TYPEKEY}*, ${TYPENAME},
+memory_order );
+friend ${TYPENAME} atomic_load_explicit( volatile atomic_${TYPEKEY}*,
+memory_order );
+friend ${TYPENAME} atomic_swap_explicit( volatile atomic_${TYPEKEY}*,
+${TYPENAME}, memory_order );
+friend bool atomic_compare_swap_explicit( volatile atomic_${TYPEKEY}*,
+${TYPENAME}*, ${TYPENAME}, memory_order, memory_order );
+friend void atomic_fence( const volatile atomic_${TYPEKEY}*, memory_order );
+friend ${TYPENAME} atomic_fetch_add_explicit( volatile atomic_${TYPEKEY}*,
+${TYPENAME}, memory_order );
+friend ${TYPENAME} atomic_fetch_sub_explicit( volatile atomic_${TYPEKEY}*,
+${TYPENAME}, memory_order );
+friend ${TYPENAME} atomic_fetch_and_explicit( volatile atomic_${TYPEKEY}*,
+${TYPENAME}, memory_order );
+friend ${TYPENAME} atomic_fetch_or_explicit( volatile atomic_${TYPEKEY}*,
+${TYPENAME}, memory_order );
+friend ${TYPENAME} atomic_fetch_xor_explicit( volatile atomic_${TYPEKEY}*,
+${TYPENAME}, memory_order );
+CPP0X(private:)
+#endif
+${TYPENAME} __f__;
+} atomic_${TYPEKEY};
+EOF
+done
+cat <<EOF >>impatomic.h
+#else
+typedef atomic_int_least16_t atomic_char16_t;
+typedef atomic_int_least32_t atomic_char32_t;
+typedef atomic_int_least32_t atomic_wchar_t;
+#endif
+EOF
+Template Types
+This section defines the atomic template
+and its various specializations.
+Fully Generic Type
+This minimal implementation does not specialize on size.
+echo impatomic.h type generic
+cat <<EOF >>impatomic.h
+#ifdef __cplusplus
+template< typename T >
+struct atomic
+{
+#ifdef __cplusplus
+bool is_lock_free() const volatile;
+void store( T, memory_order = memory_order_seq_cst ) volatile;
+T load( memory_order = memory_order_seq_cst ) volatile;
+T swap( T __v__, memory_order = memory_order_seq_cst ) volatile;
+bool compare_swap( T&, T, memory_order, memory_order ) volatile;
+bool compare_swap( T&, T, memory_order = memory_order_seq_cst ) volatile;
+void fence( memory_order ) const volatile;
+CPP0X( atomic() = default; )
+CPP0X( constexpr explicit atomic( T __v__ ) : __f__( __v__ ) { } )
+CPP0X( atomic( const atomic& ) = delete; )
+atomic& operator =( const atomic& ) CPP0X(=delete);
+T operator =( T __v__ ) volatile
+{ store( __v__ ); return __v__; }
+CPP0X(private:)
+#endif
+T __f__;
+};
+#endif
+EOF
+Pointer Partial Specialization
+echo impatomic.h type pointer
+cat <<EOF >>impatomic.h
+#ifdef __cplusplus
+template<typename T> struct atomic< T* > : atomic_address
+{
+T* load( memory_order = memory_order_seq_cst ) volatile;
+T* swap( T*, memory_order = memory_order_seq_cst ) volatile;
+bool compare_swap( T*&, T*, memory_order, memory_order ) volatile;
+bool compare_swap( T*&, T*,
+memory_order = memory_order_seq_cst ) volatile;
+T* fetch_add( ptrdiff_t, memory_order = memory_order_seq_cst ) volatile;
+T* fetch_sub( ptrdiff_t, memory_order = memory_order_seq_cst ) volatile;
+CPP0X( atomic() = default; )
+CPP0X( constexpr explicit atomic( T __v__ ) : atomic_address( __v__ ) { } )
+CPP0X( atomic( const atomic& ) = delete; )
+atomic& operator =( const atomic& ) CPP0X(=delete);
+T* operator =( T* __v__ ) volatile
+{ store( __v__ ); return __v__; }
+T* operator ++( int ) volatile
+{ return fetch_add( 1 ); }
+T* operator --( int ) volatile
+{ return fetch_sub( 1 ); }
+T* operator ++() volatile
+{ return fetch_add( 1 ) + 1; }
+T* operator --() volatile
+{ return fetch_sub( 1 ) - 1; }
+T* operator +=( T* __v__ ) volatile
+{ return fetch_add( __v__ ) + __v__; }
+T* operator -=( T* __v__ ) volatile
+{ return fetch_sub( __v__ ) - __v__; }
+};
+#endif
+EOF
+Integral Full Specializations
+We provide full specializations of the generic atomic
+for integers and characters.
+These specializations derive from the specific atomic types
+to enable implicit reference conversions.
+The implicit assignment of the derived class
+prevents inheriting the base class assignments,
+and so the assignment must be explicitly redeclared.
+echo impatomic.h type specializations
+cat <<EOF >>impatomic.h
+#ifdef __cplusplus
+EOF
+for TYPEKEY in bool address ${INTEGERS} ${CHARACTERS}
+do
+TYPENAME=${!TYPEKEY}
+cat <<EOF >>impatomic.h
+template<> struct atomic< ${TYPENAME} > : atomic_${TYPEKEY}
+{
+CPP0X( atomic() = default; )
+CPP0X( constexpr explicit atomic( ${TYPENAME} __v__ )
+: atomic_${TYPEKEY}( __v__ ) { } )
+CPP0X( atomic( const atomic& ) = delete; )
+atomic& operator =( const atomic& ) CPP0X(=delete);
+${TYPENAME} operator =( ${TYPENAME} __v__ ) volatile
+{ store( __v__ ); return __v__; }
+};
+EOF
+done
+cat <<EOF >>impatomic.h
+#endif
+EOF
+C++ Core Functions
+In C++, these operations are implemented as overloaded functions.
+cat <<EOF >>impatomic.h
+#ifdef __cplusplus
+EOF
+echo impatomic.h functions ordinary basic
+for TYPEKEY in bool address ${INTEGERS} ${CHARACTERS}
+do
+TYPENAME=${!TYPEKEY}
+cat <<EOF >>impatomic.h
+inline bool atomic_is_lock_free( const volatile atomic_${TYPEKEY}* __a__ )
+{ return false; }
+inline ${TYPENAME} atomic_load_explicit
+( volatile atomic_${TYPEKEY}* __a__, memory_order __x__ )
+{ return _ATOMIC_LOAD_( __a__, __x__ ); }
+inline ${TYPENAME} atomic_load( volatile atomic_${TYPEKEY}* __a__ )
+{ return atomic_load_explicit( __a__, memory_order_seq_cst ); }
+inline void atomic_store_explicit
+( volatile atomic_${TYPEKEY}* __a__, ${TYPENAME} __m__, memory_order __x__ )
+{ _ATOMIC_STORE_( __a__, __m__, __x__ ); }
+inline void atomic_store
+( volatile atomic_${TYPEKEY}* __a__, ${TYPENAME} __m__ )
+{ atomic_store_explicit( __a__, __m__, memory_order_seq_cst ); }
+inline ${TYPENAME} atomic_swap_explicit
+( volatile atomic_${TYPEKEY}* __a__, ${TYPENAME} __m__, memory_order __x__ )
+{ return _ATOMIC_MODIFY_( __a__, =, __m__, __x__ ); }
+inline ${TYPENAME} atomic_swap
+( volatile atomic_${TYPEKEY}* __a__, ${TYPENAME} __m__ )
+{ return atomic_swap_explicit( __a__, __m__, memory_order_seq_cst ); }
+inline bool atomic_compare_swap_explicit
+( volatile atomic_${TYPEKEY}* __a__, ${TYPENAME}* __e__, ${TYPENAME} __m__,
+memory_order __x__, memory_order __y__ )
+{ return _ATOMIC_CMPSWP_( __a__, __e__, __m__, __x__ ); }
+inline bool atomic_compare_swap
+( volatile atomic_${TYPEKEY}* __a__, ${TYPENAME}* __e__, ${TYPENAME} __m__ )
+{ return atomic_compare_swap_explicit( __a__, __e__, __m__,
+memory_order_seq_cst, memory_order_seq_cst ); }
+inline void atomic_fence
+( const volatile atomic_${TYPEKEY}* __a__, memory_order __x__ )
+{ _ATOMIC_FENCE_( __a__, __x__ ); }
+EOF
+done
+echo impatomic.h functions address fetch
+TYPEKEY=address
+TYPENAME=${!TYPEKEY}
+for FNKEY in ${ADR_OPERATIONS}
+do
+OPERATOR=${!FNKEY}
+cat <<EOF >>impatomic.h
+inline ${TYPENAME} atomic_fetch_${FNKEY}_explicit
+( volatile atomic_${TYPEKEY}* __a__, ptrdiff_t __m__, memory_order __x__ )
+{ ${TYPENAME} volatile* __p__ = &((__a__)->__f__);
+volatile atomic_flag* __g__ = __atomic_flag_for_address__( __p__ );
+__atomic_flag_wait_explicit__( __g__, __x__ );
+${TYPENAME} __r__ = *__p__;
+*__p__ = (${TYPENAME})((char*)(*__p__) ${OPERATOR} __m__);
+atomic_flag_clear_explicit( __g__, __x__ );
+return __r__; }
+inline ${TYPENAME} atomic_fetch_${FNKEY}
+( volatile atomic_${TYPEKEY}* __a__, ptrdiff_t __m__ )
+{ return atomic_fetch_${FNKEY}_explicit( __a__, __m__, memory_order_seq_cst ); }
+EOF
+done
+echo impatomic.h functions integer fetch
+for TYPEKEY in ${INTEGERS} ${CHARACTERS}
+do
+TYPENAME=${!TYPEKEY}
+for FNKEY in ${INT_OPERATIONS}
+do
+OPERATOR=${!FNKEY}
+cat <<EOF >>impatomic.h
+inline ${TYPENAME} atomic_fetch_${FNKEY}_explicit
+( volatile atomic_${TYPEKEY}* __a__, ${TYPENAME} __m__, memory_order __x__ )
+{ return _ATOMIC_MODIFY_( __a__, ${OPERATOR}=, __m__, __x__ ); }
+inline ${TYPENAME} atomic_fetch_${FNKEY}
+( volatile atomic_${TYPEKEY}* __a__, ${TYPENAME} __m__ )
+{ atomic_fetch_${FNKEY}_explicit( __a__, __m__, memory_order_seq_cst ); }
+EOF
+done
+done
+C Core Macros
+For C, we need type-generic macros.
+cat <<EOF >>impatomic.h
+#else
+EOF
+echo impatomic.h type-generic macros basic
+cat <<EOF >>impatomic.h
+#define atomic_is_lock_free( __a__ ) \\
+false
+#define atomic_load( __a__ ) \\
+_ATOMIC_LOAD_( __a__, memory_order_seq_cst )
+#define atomic_load_explicit( __a__, __x__ ) \\
+_ATOMIC_LOAD_( __a__, __x__ )
+#define atomic_store( __a__, __m__ ) \\
+_ATOMIC_STORE_( __a__, __m__, memory_order_seq_cst )
+#define atomic_store_explicit( __a__, __m__, __x__ ) \\
+_ATOMIC_STORE_( __a__, __m__, __x__ )
+#define atomic_swap( __a__, __m__ ) \\
+_ATOMIC_MODIFY_( __a__, =, __m__, memory_order_seq_cst )
+#define atomic_swap_explicit( __a__, __m__, __x__ ) \\
+_ATOMIC_MODIFY_( __a__, =, __m__, __x__ )
+#define atomic_compare_swap( __a__, __e__, __m__ ) \\
+_ATOMIC_CMPSWP_( __a__, __e__, __m__, memory_order_seq_cst )
+#define atomic_compare_swap_explicit( __a__, __e__, __m__, __x__, __y__ ) \\
+_ATOMIC_CMPSWP_( __a__, __e__, __m__, __x__ )
+#define atomic_fence( __a__, __x__ ) \\
+({ _ATOMIC_FENCE_( __a__, __x__ ); })
+EOF
+echo impatomic.h type-generic macros fetch
+for FNKEY in ${INT_OPERATIONS}
+do
+OPERATOR=${!FNKEY}
+cat <<EOF >>impatomic.h
+#define atomic_fetch_${FNKEY}_explicit( __a__, __m__, __x__ ) \\
+_ATOMIC_MODIFY_( __a__, ${OPERATOR}=, __m__, __x__ )
+#define atomic_fetch_${FNKEY}( __a__, __m__ ) \\
+_ATOMIC_MODIFY_( __a__, ${OPERATOR}=, __m__, memory_order_seq_cst )
+EOF
+done
+cat <<EOF >>impatomic.h
+#endif
+EOF
+C++ Methods
+The core functions are difficult to use,
+and so the proposal includes member function definitions
+that are syntactically simpler.
+The member operators are defined in the class definitions.
+cat <<EOF >>impatomic.h
+#ifdef __cplusplus
+EOF
+echo impatomic.h methods ordinary basic
+for TYPEKEY in bool address ${INTEGERS} ${CHARACTERS}
+do
+TYPENAME=${!TYPEKEY}
+cat <<EOF >>impatomic.h
+inline bool atomic_${TYPEKEY}::is_lock_free() const volatile
+{ return false; }
+inline void atomic_${TYPEKEY}::store
+( ${TYPENAME} __m__, memory_order __x__ ) volatile
+{ atomic_store_explicit( this, __m__, __x__ ); }
+inline ${TYPENAME} atomic_${TYPEKEY}::load
+( memory_order __x__ ) volatile
+{ return atomic_load_explicit( this, __x__ ); }
+inline ${TYPENAME} atomic_${TYPEKEY}::swap
+( ${TYPENAME} __m__, memory_order __x__ ) volatile
+{ return atomic_swap_explicit( this, __m__, __x__ ); }
+inline bool atomic_${TYPEKEY}::compare_swap
+( ${TYPENAME}& __e__, ${TYPENAME} __m__,
+memory_order __x__, memory_order __y__ ) volatile
+{ return atomic_compare_swap_explicit( this, &__e__, __m__, __x__, __y__ ); }
+inline bool atomic_${TYPEKEY}::compare_swap
+( ${TYPENAME}& __e__, ${TYPENAME} __m__, memory_order __x__ ) volatile
+{ return atomic_compare_swap_explicit( this, &__e__, __m__, __x__,
+__x__ == memory_order_acq_rel ? memory_order_acquire :
+__x__ == memory_order_release ? memory_order_relaxed : __x__ ); }
+inline void atomic_${TYPEKEY}::fence
+( memory_order __x__ ) const volatile
+{ return atomic_fence( this, __x__ ); }
+EOF
+done
+echo impatomic.h methods template basic
+cat <<EOF >>impatomic.h
+template< typename T >
+inline bool atomic<T>::is_lock_free() const volatile
+{ return false; }
+template< typename T >
+inline void atomic<T>::store( T __v__, memory_order __x__ ) volatile
+{ _ATOMIC_STORE_( this, __v__, __x__ ); }
+template< typename T >
+inline T atomic<T>::load( memory_order __x__ ) volatile
+{ return _ATOMIC_LOAD_( this, __x__ ); }
+template< typename T >
+inline T atomic<T>::swap( T __v__, memory_order __x__ ) volatile
+{ return _ATOMIC_MODIFY_( this, =, __v__, __x__ ); }
+template< typename T >
+inline bool atomic<T>::compare_swap
+( T& __r__, T __v__, memory_order __x__, memory_order __y__ ) volatile
+{ return _ATOMIC_CMPSWP_( this, &__r__, __v__, __x__ ); }
+template< typename T >
+inline bool atomic<T>::compare_swap
+( T& __r__, T __v__, memory_order __x__ ) volatile
+{ return compare_swap( __r__, __v__, __x__,
+__x__ == memory_order_acq_rel ? memory_order_acquire :
+__x__ == memory_order_release ? memory_order_relaxed : __x__ ); }
+EOF
+echo impatomic.h methods address fetch
+TYPEKEY=address
+TYPENAME=${!TYPEKEY}
+cat <<EOF >>impatomic.h
+inline void* atomic_address::fetch_add
+( ptrdiff_t __m__, memory_order __x__ ) volatile
+{ return atomic_fetch_add_explicit( this, __m__, __x__ ); }
+inline void* atomic_address::fetch_sub
+( ptrdiff_t __m__, memory_order __x__ ) volatile
+{ return atomic_fetch_sub_explicit( this, __m__, __x__ ); }
+EOF
+echo impatomic.h methods integer fetch
+for TYPEKEY in ${INTEGERS} ${CHARACTERS}
+do
+TYPENAME=${!TYPEKEY}
+for FNKEY in ${INT_OPERATIONS}
+do
+OPERATOR=${!FNKEY}
+cat <<EOF >>impatomic.h
+inline ${TYPENAME} atomic_${TYPEKEY}::fetch_${FNKEY}
+( ${TYPENAME} __m__, memory_order __x__ ) volatile
+{ return atomic_fetch_${FNKEY}_explicit( this, __m__, __x__ ); }
+EOF
+done
+done
+echo impatomic.h methods pointer fetch
+cat <<EOF >>impatomic.h
+template< typename T >
+T* atomic<T*>::load( memory_order __x__ ) volatile
+{ return static_cast<T*>( atomic_address::load( __x__ ) ); }
+template< typename T >
+T* atomic<T*>::swap( T* __v__, memory_order __x__ ) volatile
+{ return static_cast<T*>( atomic_address::swap( __v__, __x__ ) ); }
+template< typename T >
+bool atomic<T*>::compare_swap
+( T*& __r__, T* __v__, memory_order __x__, memory_order __y__) volatile
+{ return atomic_address::compare_swap( *reinterpret_cast<void**>( &__r__ ),
+static_cast<void*>( __v__ ), __x__, __y__ ); }
+//{ return _ATOMIC_CMPSWP_( this, &__r__, __v__, __x__ ); }
+template< typename T >
+bool atomic<T*>::compare_swap
+( T*& __r__, T* __v__, memory_order __x__ ) volatile
+{ return compare_swap( __r__, __v__, __x__,
+__x__ == memory_order_acq_rel ? memory_order_acquire :
+__x__ == memory_order_release ? memory_order_relaxed : __x__ ); }
+template< typename T >
+T* atomic<T*>::fetch_add( ptrdiff_t __v__, memory_order __x__ ) volatile
+{ return atomic_fetch_add_explicit( this, sizeof(T) * __v__, __x__ ); }
+template< typename T >
+T* atomic<T*>::fetch_sub( ptrdiff_t __v__, memory_order __x__ ) volatile
+{ return atomic_fetch_sub_explicit( this, sizeof(T) * __v__, __x__ ); }
+EOF
+cat <<EOF >>impatomic.h
+#endif
+EOF
+Implementation Header Cleanup
+echo impatomic.h close namespace
+cat <<EOF >>impatomic.h
+#ifdef __cplusplus
+} // namespace std
+#endif
+EOF
+Standard Headers
+The C standard header.
+echo stdatomic.h
+cat <<EOF >stdatomic.h
+#include "impatomic.h"
+#ifdef __cplusplus
+EOF
+for TYPEKEY in flag bool address ${INTEGERS} ${CHARACTERS}
+do
+cat <<EOF >>stdatomic.h
+using std::atomic_${TYPEKEY};
+EOF
+done
+cat <<EOF >>stdatomic.h
+using std::atomic;
+using std::memory_order;
+using std::memory_order_relaxed;
+using std::memory_order_acquire;
+using std::memory_order_release;
+using std::memory_order_acq_rel;
+using std::memory_order_seq_cst;
+#endif
+EOF
+The C++ standard header.
+echo cstdatomic
+cat <<EOF >cstdatomic
+#include "impatomic.h"
+EOF
+Examples of Use
+The following program shows example uses of the atomic types,
+in both C and C++.
+These examples also serve as tests for the interface definition.
+echo n2427.c include
+cat <<EOF >n2427.c
+#include "stdatomic.h"
+EOF
+Flag
+We show two uses,
+global functions with explicit memory ordering
+and member functions with implicit memory ordering.
+echo n2427.c flag
+cat <<EOF >>n2427.c
+atomic_flag af = ATOMIC_FLAG_INIT;
+void flag_example( void )
+{
+if ( ! atomic_flag_test_and_set_explicit( &af, memory_order_acquire ) )
+atomic_flag_clear_explicit( &af, memory_order_release );
+#ifdef __cplusplus
+if ( ! af.test_and_set() )
+af.clear();
+#endif
+}
+EOF
+Lazy Initialization
+For lazy initialization,
+a thread that does not do initialization
+may need to wait on the thread that does.
+(Lazy initialization is similar to double-checked locking.)
+For this example, we busy wait on a boolean.
+Busy waiting like this is usually ill-advised,
+but it sufficies for the example.
+There are three variants of the example:
+one using strong C++ operators and methods,
+one using weak C functions, and
+one using fence-based C++ operators and methods.
+echo n2427.c lazy
+cat <<EOF >>n2427.c
+atomic_bool lazy_ready = { false };
+atomic_bool lazy_assigned = { false };
+int lazy_value;
+#ifdef __cplusplus
+int lazy_example_strong_cpp( void )
+{
+if ( ! lazy_ready.load() ) {
+/* the value is not yet ready */
+if ( lazy_assigned.swap( true ) ) {
+/* initialization assigned to another thread; wait */
+while ( ! lazy_ready.load() );
+}
+else {
+lazy_value = 42;
+lazy_ready = true;
+}
+}
+return lazy_value;
+}
+#endif
+int lazy_example_weak_c( void )
+{
+if ( ! atomic_load_explicit( &lazy_ready, memory_order_acquire ) ) {
+if ( atomic_swap_explicit( &lazy_assigned, true,
+memory_order_relaxed ) ) {
+while ( ! atomic_load_explicit( &lazy_ready,
+memory_order_acquire ) );
+}
+else {
+lazy_value = 42;
+atomic_store_explicit( &lazy_ready, true, memory_order_release );
+}
+}
+return lazy_value;
+}
+#ifdef __cplusplus
+int lazy_example_fence_cpp( void )
+{
+if ( lazy_ready.load( memory_order_relaxed ) )
+lazy_ready.fence( memory_order_acquire );
+else if ( lazy_assigned.swap( true, memory_order_relaxed ) ) {
+while ( ! lazy_ready.load( memory_order_relaxed ) );
+lazy_ready.fence( memory_order_acquire );
+}
+else {
+lazy_value = 42;
+lazy_ready.store( true, memory_order_release );
+}
+return lazy_value;
+}
+#endif
+EOF
+Integer
+echo n2427.c integer
+cat <<EOF >>n2427.c
+atomic_ulong volatile aulv = { 0 };
+atomic_ulong auln = { 1 };
+#ifdef __cplusplus
+atomic< unsigned long > taul CPP0X( { 3 } );
+#endif
+void integer_example( void )
+{
+atomic_ulong a = { 3 };
+unsigned long x = atomic_load( &auln );
+atomic_store_explicit( &aulv, x, memory_order_release );
+unsigned long y = atomic_fetch_add_explicit( &aulv, 1,
+memory_order_relaxed );
+unsigned long z = atomic_fetch_xor( &auln, 4 );
+#ifdef __cplusplus
+// x = auln; // implicit conversion disallowed
+x = auln.load();
+aulv = x;
+auln += 1;
+aulv ^= 4;
+// auln = aulv; // uses a deleted operator
+aulv -= auln++;
+auln |= --aulv;
+aulv &= 7;
+atomic_store_explicit( &taul, 7, memory_order_release );
+x = taul.load( memory_order_acquire );
+y = atomic_fetch_add_explicit( & taul, 1, memory_order_acquire );
+z = atomic_fetch_xor( & taul, 4 );
+x = taul.load();
+// auln = taul; // uses a deleted operator
+// taul = aulv; // uses a deleted operator
+taul = x;
+taul += 1;
+taul ^= 4;
+taul -= taul++;
+taul |= --taul;
+taul &= 7;
+#endif
+}
+EOF
+Note that because taul is not a volatile variable,
+the compiler would be permitted to merge the last six statements.
+Event Counter
+An event counter is not part of the communication between threads,
+and so it can use faster primitives.
+echo n2427.c event
+cat <<EOF >>n2427.c
+#ifdef __cplusplus
+struct event_counter
+{
+void inc() { au.fetch_add( 1, memory_order_relaxed ); }
+unsigned long get() { au.load( memory_order_relaxed ); }
+atomic_ulong au;
+};
+event_counter ec = { 0 };
+void generate_events()
+{
+ec.inc();
+ec.inc();
+ec.inc();
+}
+int read_events()
+{
+return ec.get();
+}
+int event_example()
+{
+generate_events(); // possibly in multiple threads
+// join all other threads, ensuring that final value is written
+return read_events();
+}
+#endif
+EOF
+An important point here is that this is safe,
+and we are guaranteed to see exactly the final value,
+because the thread joins force the necessary ordering
+between the inc calls and the get call.
+List Insert
+The insertion into a shared linked list
+can be accomplished in a lock-free manner with compare-and-swap,
+provided that compare-and-swap is lock-free.
+(Note that adding a correct "remove" operation
+is harder than it seems
+because removing it from the list does not imply
+that there will be no outstanding accesses,
+and thus any modification or deallocation of the node
+might constitute a race condition.)
+In both of the following examples,
+a comparison failure in the compare-and-swap
+will update candidate->next
+with the current value of head.
+echo n2427.c list
+cat <<EOF >>n2427.c
+#ifdef __cplusplus
+struct data;
+struct node
+{
+node* next;
+data* value;
+};
+atomic< node* > head CPP0X( { (node*)0 } );
+void list_example_strong( data* item )
+{
+node* candidate = new node;
+candidate->value = item;
+candidate->next = head.load();
+while ( ! head.compare_swap( candidate->next, candidate ) );
+}
+void list_example_weak( data* item )
+{
+node* candidate = new node;
+candidate->value = item;
+candidate->next = head.load( memory_order_relaxed );
+while ( ! head.compare_swap( candidate->next, candidate,
+memory_order_release, memory_order_relaxed ) );
+}
+#endif
+EOF
+Update
+The best algorithm for updating a variable
+may depend on whether or not atomics are lock-free.
+In the example below,
+this update can be accomplished in a lock-free manner with compare-and-swap
+when atomic integrals are lock-free,
+but may require other mechanisms when
+atomic integrals are not lock-free.
+This example uses the feature macro to generate minimal code
+when the lock-free status is known a priori.
+echo n2427.c update
+cat <<EOF >>n2427.c
+#if ATOMIC_INTEGRAL_LOCK_FREE <= 1
+atomic_flag pseudo_mutex = ATOMIC_FLAG_INIT;
+unsigned long regular_variable = 1;
+#endif
+#if ATOMIC_INTEGRAL_LOCK_FREE >= 1
+atomic_ulong atomic_variable = { 1 };
+#endif
+void update()
+{
+#if ATOMIC_INTEGRAL_LOCK_FREE == 1
+if ( atomic_is_lock_free( &atomic_variable ) ) {
+#endif
+#if ATOMIC_INTEGRAL_LOCK_FREE > 0
+unsigned long full = atomic_load( atomic_variable );
+unsigned long half = full / 2;
+while ( ! atomic_compare_swap( &atomic_variable, &full, half ) )
+half = full / 2;
+#endif
+#if ATOMIC_INTEGRAL_LOCK_FREE == 1
+} else {
+#endif
+#if ATOMIC_INTEGRAL_LOCK_FREE < 2
+__atomic_flag_wait__( &pseudo_mutex );
+regular_variable /= 2 ;
+atomic_flag_clear( &pseudo_mutex );
+#endif
+#if ATOMIC_INTEGRAL_LOCK_FREE == 1
+}
+#endif
+}
+EOF
+Main
+echo n2427.c main
+cat <<EOF >>n2427.c
+int main()
+{
+}
+EOF

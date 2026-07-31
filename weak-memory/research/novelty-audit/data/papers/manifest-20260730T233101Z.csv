@@ -1,0 +1,2 @@
+source_id,title,version,doi,primary_url,local_pdf,local_text,retrieved_at_utc,sha256,bytes,content_type,status,error
+S27,Spirea: A Mechanized Concurrent Separation Logic for Weak Persistent Memory,OOPSLA 2023 author version,10.1145/3622820,https://cs.au.dk/~birke/papers/spirea-2023.pdf,vindum-2023-spirea.pdf,vindum-2023-spirea.txt,2026-07-30T23:31:01+00:00,b26d1a96bab3e67d019420dd74916df1e950d43d97175733769fe103c3d054a2,362478,application/pdf,downloaded,

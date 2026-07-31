@@ -1,0 +1,6 @@
+provider,query_id,provider_record_id,title_or_path,repository,creators,publication_date,doi,resource_type,url,sha
+zenodo,Z01,21258346,"Artifact for ""Shape Abstraction of Thread Interferences""",,"Barbazo, Valentin; Rival, Xavier",2026-07-08,10.5281/zenodo.21258346,Software,https://zenodo.org/records/21258346,
+zenodo,Z01,7811928,"Artifact for Article ""Memento: A Framework for Detectable Recoverability in Persistent Memory""",,"Cho, Kyeongmin; Jeon, Seungmin; Raad, Azalea; Kang, Jeehoon",2023-03-08,10.5281/zenodo.7811928,Software,https://zenodo.org/records/7811928,
+zenodo,Z02,7811928,"Artifact for Article ""Memento: A Framework for Detectable Recoverability in Persistent Memory""",,"Cho, Kyeongmin; Jeon, Seungmin; Raad, Azalea; Kang, Jeehoon",2023-03-08,10.5281/zenodo.7811928,Software,https://zenodo.org/records/7811928,
+zenodo,Z03,21258346,"Artifact for ""Shape Abstraction of Thread Interferences""",,"Barbazo, Valentin; Rival, Xavier",2026-07-08,10.5281/zenodo.21258346,Software,https://zenodo.org/records/21258346,
+zenodo,Z11,15002568,Robustness Sanitizer,,"Margalit, Roy; Kokologiannakis, Michalis; Itzhaky, Shachar; Lahav, Ori",2025-03-10,10.5281/zenodo.15002568,Software,https://zenodo.org/records/15002568,

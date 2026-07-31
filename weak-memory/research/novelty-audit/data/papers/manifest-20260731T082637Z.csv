@@ -1,0 +1,2 @@
+source_id,title,version,doi,primary_url,local_pdf,local_text,retrieved_at_utc,sha256,text_sha256,bytes,text_bytes,content_type,status,error
+S184,"A Scalable, Correct Time-Stamped Stack",POPL 2015 author PDF,10.1145/2775051.2676963,https://www.cs.uni-salzburg.at/~ahaas/papers/POPL15-TSStack.pdf,dodds-2015-timestamped-stack.pdf,dodds-2015-timestamped-stack.txt,2026-07-31T08:26:37+00:00,a2a769dcf1daa2344547c89ff5719be72a45288f472e83b3298bcdd18f717288,c0b8a8170dbbfbf85c96574839555e8189e073022da54a06f1688f330d4554b1,720523,184226,application/pdf,downloaded,

@@ -1,0 +1,31 @@
+{
+  "arxiv_submission_cutoff": "202607312359",
+  "coverage_notes": {
+    "crossref": "Exact-title DOI reconciliation only; top 20 results per seed are retained, not exhaustive discovery.",
+    "dblp": "The public search API exposes at most 1000 hits.",
+    "semanticscholar": "Bulk search is skipped unless SEMANTIC_SCHOLAR_API_KEY is set."
+  },
+  "deduplicated_record_count": 305,
+  "failed_request_count": 0,
+  "finished_at_utc": "2026-07-30T22:49:50+00:00",
+  "max_records_per_provider_query": 2000,
+  "normalized_record_count": 333,
+  "providers": [
+    "arxiv",
+    "crossref",
+    "semanticscholar"
+  ],
+  "publication_cutoff": "2026-07-31",
+  "queries_file": "/home/talha/Projects/math/weak-memory/research/novelty-audit/provider-queries.csv",
+  "queries_sha256": "afe775b4883d8163897c2271275bc2592e51f5163c955748358970a0ba54abe8",
+  "query_count": 35,
+  "repository_commit": "764d8dc6b37c7a8d08dd10c70d6a33c4de272682",
+  "request_count": 35,
+  "script_sha256": "730076e37b247d724cfb5d67c63a243f318e476fec9ed5fc6699dca17d9ab406",
+  "script_version": "2",
+  "skipped_request_count": 16,
+  "started_at_utc": "2026-07-30T22:49:02+00:00",
+  "status": "complete",
+  "successful_request_count": 19,
+  "user_agent": "verified-systems-lab-novelty-audit/1 (https://github.com/Talha-Dmr/verified-systems-lab)"
+}

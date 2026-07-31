@@ -1,0 +1,2 @@
+source_id,title,version,doi,primary_url,local_pdf,local_text,retrieved_at_utc,sha256,text_sha256,bytes,text_bytes,content_type,status,error
+S218,Proving Linearizability Via Non-atomic Refinement,IFM 2007 proceedings version,10.1007/978-3-540-73210-5_11,https://link.springer.com/content/pdf/10.1007/978-3-540-73210-5_11.pdf,derrick-2007-nonatomic-refinement.pdf,,,,,,,text/html,failed,ValueError: response does not start with a PDF signature

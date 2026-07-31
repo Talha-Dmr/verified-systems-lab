@@ -1,0 +1,2 @@
+source_id,title,version,doi,primary_url,local_pdf,local_text,retrieved_at_utc,sha256,text_sha256,bytes,text_bytes,content_type,status,error
+S224,A Program Logic for Obstruction-Freedom,Frontiers of Computer Science 2024 publisher PDF,10.1007/s11704-023-2774-9,https://journal.hep.com.cn/fcs/EN/PDF/10.1007/s11704-023-2774-9,li-2024-obstruction-freedom.pdf,,,,,,,text/html,failed,ValueError: response does not start with a PDF signature

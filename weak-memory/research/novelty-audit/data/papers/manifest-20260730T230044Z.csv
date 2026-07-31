@@ -1,0 +1,2 @@
+source_id,title,version,doi,primary_url,local_pdf,local_text,retrieved_at_utc,sha256,bytes,content_type,status,error
+S20,Compositional Verification of a Lock-Free Stack with RGITL,AVoCS 2013/ECEASST volume 66 version,10.14279/tuj.eceasst.66.885,https://eceasst.org/index.php/eceasst/article/download/2091/2244/2255,tofan-2013-rgitl-stack.pdf,tofan-2013-rgitl-stack.txt,2026-07-30T23:00:44+00:00,9d8ac82fe520d46f056fd2241e7fb97c478d3c6a5084703904ce437337092a36,149702,application/pdf,downloaded,

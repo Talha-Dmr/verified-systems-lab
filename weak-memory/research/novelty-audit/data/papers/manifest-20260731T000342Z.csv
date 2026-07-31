@@ -1,0 +1,2 @@
+source_id,title,version,doi,primary_url,local_pdf,local_text,retrieved_at_utc,sha256,bytes,content_type,status,error
+S28,Formal Verification of a Lock-Free Stack with Hazard Pointers,ICTAC 2011 institutional postprint,10.1007/978-3-642-23283-1_16,https://opus.bibliothek.uni-augsburg.de/opus4/frontdoor/deliver/index/docId/55403/file/55403.pdf,tofan-2011-hazard-pointer-stack.pdf,,,,,,failed,URLError: <urlopen error timed out>

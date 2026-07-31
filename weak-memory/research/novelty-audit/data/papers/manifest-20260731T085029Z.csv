@@ -1,0 +1,2 @@
+source_id,title,version,doi,primary_url,local_pdf,local_text,retrieved_at_utc,sha256,text_sha256,bytes,text_bytes,content_type,status,error
+S205,Mechanized Verification of Fine-Grained Concurrent Programs,PLDI 2015 author PDF,10.1145/2737924.2737964,https://ilyasergey.net/papers/fcsl-pldi15.pdf,sergey-2015-mechanized-fcsl.pdf,sergey-2015-mechanized-fcsl.txt,2026-07-31T08:50:29+00:00,98830b0ffab5ca8039377186eb5e38baa620f44dac2d62163048f35ec626696c,456c2c714dbdd1d5e7d0ac0fcd9879dbb4fbc8e9d8efce4f8c20c70b06946abb,511608,107439,application/pdf,existing,
